@@ -1,6 +1,6 @@
 # BASIC-transpiler
 Converts from the BASIC programming language into executable JavaScript.
- 
+
 The preloaded applications are as follows:
 - Number Guessing Game
 - String Functions
