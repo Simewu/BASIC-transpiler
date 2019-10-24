@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>BASIC Programming</title>
+	<style>
+		.all,#header{text-align:center}
+		#draw,#drawBG{cursor:default}
+		#loadBtn,#saveBtn{width:60px;float:left}
+		#drawBG,#terminal{background-color:#000}
+		body,button,h1,h2,h3,h4,h5,h6,html,img,p{margin:0;padding:0;border:none;font-familiy:arial;-moz-transition:all .5s ease;-webkit-transition:all .5s ease;-o-transition:all .5s ease;transition:all .5s ease}
+		body{background-color:#333;font-family:arial}
+		p{font-size:11px;color:#333}
+		.all{background-color:#AAA;border-radius:15px;border:2px solid #FFF;display:table;margin:30px auto;padding:20px;min-width:500px}
+		#screenshotBtn{background-color:rgba(0,0,0,.1);font-size:18px;height:80px;padding:0 20px;margin:-20px -20px 0 0;border:none;float:right;border-radius:0 13px 0 0}
+		#screenshotBtn:hover{background-color:rgba(0,0,0,.3)}
+		#header{background-color:#CCC;border-radius:10px 10px 0 0;margin:-20px -20px 20px;height:80px;line-height:80px}
+		#editor,#terminal{border:none;display:block}
+		.app{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+		#drawBG{z-index:0}
+		#draw{background-color:rgba(0,0,0,0);z-index:1}
+		#terminal{color:#0F0;margin:0 auto;padding:10px;border-radius:0 0 10px 10px;resize:vertical}
+		#editor{background-color:rgba(0,0,0,.8);color:#FFF;font-size:15px;tab-size:3;-o-tab-size:3;-moz-tab-size:3;height:700px;margin:0;padding:10px 25px;border-radius:10px;resize:both}
+		#breakBtn,#formatBtn,#loadBtn,#runBtn,#saveBtn{background-color:rgba(0,0,0,.3);font-size:18px;height:80px;margin:0;border:none}
+		#loadBtn,#runBtn,#saveBtn{background-color:rgba(0,0,0,.9);color:#FFF}
+		#breakBtn:hover,#formatBtn:hover,#loadBtn:hover,#runBtn:hover,#saveBtn:hover{background-color:rgba(0,0,0,.7)}
+		#saveBtn{border-radius:13px 0 0}
+		#loadBtn{margin-left:1px}
+		#formatBtn{float:left;width:80px}
+		#breakBtn{float:right;width:80px}
+		#runBtn{float:right;width:121px;border-radius:0 13px 0 0}
+		#saveWrapper{background-color:rgba(0,0,0,.6);width:100%;height:100%;position:fixed;display:none;top:0;left:0}
+		#saves{background-color:#111;width:50%;height:80%;display:block;margin:20px auto 0;border:2px solid #FFF;border-radius:14px}
+		#saveItems{width:100%;height:82%;overflow:auto}
+		#saveTitle{background-color:rgba(255,255,255,.2);color:#FFF;width:85%;height:15%;float:left;font-size:32px;font-weight:700;display:flex;justify-content:center;align-items:center;border-radius:11px 0 0}
+		#closeBtn{background-color:rgba(255,255,255,.55);width:15%;height:15%;float:right;font-size:18px;border-radius:0 11px 0 0}
+		#closeBtn:hover{background-color:rgba(255,255,255,.3)}
+		#deleteItem{background-color:rgba(255,255,255,.6);width:20%;height:30px;font-size:18px;margin-bottom:1px}
+		#loadItem,#saveItem{background-color:rgba(255,255,255,.8);width:80%;height:30px;font-size:18px}
+		#deleteItem:hover,#loadItem:hover,#saveItem:hover{background-color:rgba(255,255,255,.1);color:#FFF}
+		#createItem,#createItem2,#deleteAllItems,#deleteAllItems2{background-color:#000;color:#FFF;width:80%;height:30px;margin:10px 0;font-size:18px;font-weight:700;border:1px solid #FFF;border-radius:15px}
+		#createItem2,#deleteAllItems2{margin-top:-10px}
+		#deleteAllItems2{background-color:#555;color:#AAA}
+		#createItem2:hover,#createItem:hover,#deleteAllItems:hover{background-color:#DDF;color:#000;width:90%}
+		#logger{background-color:#444;color:#FFF;overflow:scroll;text-align:left;width:700px;max-height:700px;}
+	</style>
+</head>
+<body>
+	<div class='all app'>
+		<button id='screenshotBtn' onclick='snapScreenshot()'>Snap a<br>Screenshot</button>
+		<h1 id='header'>BASIC Programming by S1Meon</h1>
+		<canvas id='drawBG'></canvas>
+		<canvas id='draw'>This browser does not support the HTML5.</canvas>
+		<br>
+		<textarea id='terminal' readonly></textarea>
+	</div>
+	<div class='all'>
+		<h1 id='header'>
+			<button id='saveBtn' onclick='load(true)'>Save</button>
+			<button id='loadBtn' onclick='load(false)'>Load</button>
+			<button id='formatBtn' onclick='formatEditor()'>Format</button>
+			Editor
+			<button id='runBtn' onclick='compile()'>Run</button>
+			<button id='breakBtn' onclick='stop()'>Break</button>
+		</h1>
+		<div id='saveWrapper'>
+			<div id='saves'>
+				<div id='saveTitle'>Load a File</div>
+				<button id='closeBtn' onclick='closeBox()'>Close</button>
+				<div id='saveItems'></div>
+			</div>
+		</div>
+		<textarea id='editor' onchange='formatEditor()'></textarea>
+	</div>
+	<pre id='logger' class='all'><center>Console<center></pre>
+	<script>
+		var ScreenWidth=700,ScreenHeight=400;
+		var ConsoleWidth=ScreenWidth-20,ConsoleHeight=150;
+		var canvas=document.getElementById('draw');
+		var ctx=canvas.getContext('2d');
+		var canvasBG=document.getElementById('drawBG');
+		var ctxBG=canvasBG.getContext('2d');
+		var editor=document.getElementById('editor');
+		var terminal=document.getElementById('terminal');
+		var logger=document.getElementById("logger");
+		canvas.width=ScreenWidth;
+		canvas.height=ScreenHeight;
+		canvasBG.width=ScreenWidth;
+		canvasBG.height=ScreenHeight;
+		canvasBG.style.marginRight=-ScreenWidth+'px';
+		editor.style.width=ScreenWidth-50+'px';
+		terminal.style.width=ConsoleWidth+'px';
+		terminal.style.height=ConsoleHeight+'px';
+		var symbols=['+','-','*','/',',','<','>','=','^','%','(',')','\\'];
+		var specialWords=['end','rem','dim','if','and','or','then','else','endif','for','to','step','next','while','wend','cls','gfx','tty','begindraw','enddraw','circle','arc','point','ellipse','rect','rrect','line','linecap','on','off','triangle','shape','color','colorhue','bcolor','bcolorhue','tcolor','tcolorhue','print','rnd','pi','int','round','abs','sqr','mod','pow','sin','cos','tan','log','asn','acs','atn','atn2','textfont','drawtext','textwidth','readpixel','readpixelr','readpixelg','readpixelb','screenwidth','screenheight','consolewidth','consoleheight','touch','touchx','touchy','mouse','mousex','mousey','retina','spc','str$','val','mid$','right$','left$','len','pause','alert','input','sleep','goto','gosub','return','beep','tickcount','asc','chr$','upper$','lower$','replace$','indexof','lastindexof','break','continue'];
+		var examples=[]; //preloaded programs
+		examples.push('List of BASIC Commands');
+		examples.push('List of BASIC commands:\n\n\nTo start, I would highly recommend using Google Chrome to run this html file, Chrome was the browser used to test all of the functions.\n\n\nEditor Shortcuts:\n\tCTRL+D\t\tDuplicate current line\n\tCTRL+S\t\tOpen and toggle between save/load screens\n\tCTRL+F\t\tFormat\n\tCTRL+B\t\tBreak\n\tCTRL+ENTER\tRun Program\n\n\nGeneral Commands:\n\tvar=5\n\t\tCreates a number variable named var with a value of 5\n\tvar$="5"\n\t\tCreates a string variable named var$ with a value of "5"\n\tIF a=b THEN\n\t\t[some code]\n\t[ELSE]\n\t\t[some code]\n\tENDIF\n\t\tRun the code inside the if statement if a [is equal to] b\n\t\t=\t\tis equal to\n\t\t<>\t\tis not equal to\n\t\t>\t\tis greater than\n\t\t<\t\tis less than\n\t\t>=\t\tis greater than or equal to\n\t\t<=\t\tis less than or equal to\n\tPRINT "Hello World"\n\t\tSends the string "Hello World" to the text console\n\tPRINT "Hello World";\n\t\tSends the string "Hello World" to the text console but without a line break\n\t\tExample:\n\t\t\tPRINT "Hello ";\n\t\t\tPRINT "World"\n\t\tWill return "Hello World"\n\tINPUT "What is your name?",nameVar\n\t\tAsks the user what their name is then stores the value they type into nameVar\n\t\t\tINPUT nameVar\n\t\t\tOpens a blank input window, whatever the user types gets stores in nameVar\n\t\t\t(if the user clicks cancel or X, the input will return -1)\n\t\tYou can also add a : (colon) to the end of the string followed by a default value\n\t\tExample:\n\t\t\tINPUT "What is your name?:Anonymous",nameStr\n\t\tNow an input box will pop up with "Anonymous" automatically typed into the input\n\t\tIf the user types a blank string (""), it will return "Anonymous" instead of ""\n\tALERT "Hello World"\n\t\tShows a pop-up displaying the string "Hello World"\n\tScreenWidth\n\t\tGet OR Set the width of the canvas\n\tScreenHeight\n\t\tGet OR Set the height of the canvas\n\tConsoleWidth\n\t\tGet OR Set the width of the text console\n\t\t(must be greater than 20)\n\tConsoleHeight\n\t\tGet OR Set the height of the text console\n\tDIM var1(10,10,10),var2(5,8,12)\n\t\tCreates a 10x10x10 array named var1 and a 5x8x12 array named var2\n\t\tAll the values in it are initialized to 0\n\t\t(if var was to be var$ then all the values would be initialized to "" since it would be a string array)\n\t\tYou can also print out the entire array separated by commas like so:\n\t\t\tPRINT var1\n\t\tThere is no limit as to how many dimensions an array can have. Although I cannot think of a situation where more than 3 is needed.\n\tBEEP Frequency[,Duration][,Offset]\n\t\t(BEEP is only supported in some browsers, Google Chrome is recommended)\n\t\tFrequency:\n\t\t\tC3:\t130.81\tC4:\t261.63\tC5:\t523.25\tC6:\t1046.50\n\t\t\tD3:\t146.83\tD4:\t293.66\tD5:\t587.33\tD6:\t1174.66\n\t\t\tE3:\t164.81\tE4:\t329.63\tE5:\t659.25\tE6:\t1318.51\n\t\t\tF3:\t174.61\tF4:\t349.23\tF5:\t698.46\tF6:\t1396.91\n\t\t\tG3:\t196   \tG4:\t392   \tG5:\t783.99\tG6:\t1567.98\n\t\t\tA3:\t220   \tA4:\t440   \tA5:\t880   \tA6:\t1760.00\n\t\t\tB3:\t246.94\tB4:\t493.88\tB5:\t987.77\tB6:\t1975.53\n\t\tDuration:\n\t\t\tHow long (in seconds) you want that beep to play\n\t\t\tDefault=1\n\t\tOffset:\n\t\t\tThe offset (in seconds) before the beep plays\n\t\t\tDefault=0\n\n\nStrings:\n\tUPPER$(str)\n\t\tConverts str to UPPERCASE\n\tLOWER$(str)\n\t\tConverts str to lowercase\n\tSTR$(num)\n\t\tConverts num into a string\n\t\tExample:\n\t\t\tPRINT 5+5\n\t\t\t\tPrints "10"\n\t\t\tPRINT STR$(5)+5\n\t\t\t\tPrints "55"\n\tVAL(str)\n\t\tOpposite of STR$ command, converts a string into a number\n\tLEFT$(str,len)\n\t\tReturns str trimmed down to len length from the left side\n\t\tExample:\n\t\t\tPRINT LEFT$("Hello World",7)\n\t\t\t\tPrints "Hello W"\n\tRIGHT$(str,len)\n\t\tReturns str trimmed down to len length from the right side\n\t\tExample:\n\t\t\tPRINT RIGHT$("Hello World",7)\n\t\t\t\tPrints "o World"\n\tMID$(str,start,len)\n\t\tTakes str and returns its trimmed length from start to start+len\n\t\tExample:\n\t\t\tPRINT MID$("Hello World",1,6)\n\t\t\t\tPrints "ello W"\n\tREPLACE$(str,a,b)\n\t\tReturns str with all occurences of string a replaced with string b\n\t\ta can be a regular expressions\n\t\tb can contain $1,$2,$3,... to match every capturing group in a\n\t\tSurrounding something in parentheses in the regular expression will create a new variable $1\n\t\tFor more information on regular expressions, visit https://www.regular-expressions.info/tutorial.html\n\t\tExamples:\n\t\t\tPRINT REPLACE$("Hello World","l"," L ")\n\t\t\t\tReturns "He L  L o Wor L d"\n\t\t\tPRINT REPLACE$("Hello World","([a-zA-Z])","$1 ")\n\t\t\t\tAdds a space after every letter\n\t\t\t\tReturns "H e l l o  W o r l d "\n\t\t\tPRINT REPLACE$("Hello World","([a-zA-Z]+) ([a-zA-Z]+)","$2 $1")\n\t\t\t\tReturns "World Hello"\n\tINDEXOF(str,a)\n\t\tReturns the index of the first occurence of string a in str\n\t\tReturns -1 if string a was not found in str\n\tLASTINDEXOF(str,a)\n\t\tReturns the index of the last occurence of string a in str\n\t\tReturns -1 if string a was not found in str\n\tCHR$(str)\n\t\tConverts the first character of str into an ASCII Number\n\tASC(num)\n\t\tConverts an ASCII Number (num) into a character\n\tSPC(n[,Character])\n\t\tCharacter by default is " " (space)\n\t\tReturns a string with n characters in it\n\t\tExample:\n\t\t\tPRINT SPC(10)\n\t\t\t\tPrints "          "\n\t\t\tPRINT SPC(10,"!")\n\t\t\t\tPrints "!!!!!!!!!!"\n\tLEN(str)\n\t\tReturns the length of the str\n\t\t(If str is an array, it will return the number of elements)\n\t\\n\n\t\tNewline character\n\t\\"\n\t\tQuotation mark character as a string\n\t\\t\n\t\tCreates a tab indent\n\t\\\\\n\t\tReturns a single backslash\n\n\nLoops:\n\t[label]:\n\t\tThis is a label, used to mark a position in the code\n\t\tA SLEEP should ALWAYS be directly after a label that is going to be looping, the reason for this being that this BASIC emulator runs so fast that the browser needs some time to process all of the commands on the browser\'s queue. And a SLEEP is exactly what the browser needs... even if it is SLEEP 0.004 (the fastest possible sleep interval)\n\tGOTO [label]\n\t\tGoes back to [label]\n\t\t\tloop:\n\t\t\tSLEEP 0.1\n\t\t\tPRINT "INFINITE LOOP!"\n\t\t\tGOTO loop\n\tGOSUB [label]\n\t\tTemporarily goes to [label] until it reaches RETURN\n\t\t\tloop:\n\t\t\tSLEEP 0.1\n\t\t\tGOSUB sayHI\n\t\t\tGOTO loop\n\t\t\t\n\t\t\tsayHI:\n\t\t\tPRINT "HI!"\n\t\t\tRETURN\n\t\t\t\n\tFOR var=a TO b [STEP stepsize]\n\t\t[some code]\n\tNEXT\n\t\tLoop through code until a reaches b\n\t\t\tFOR i=1 TO 100\n\t\t\t\tPRINT i;\n\t\t\tNEXT\n\tWHILE [statement]\n\t\t[some code]\n\tWEND\n\t\tLoops through code until [statement] returns false\n\t\t\tWHILE count<100\n\t\t\t\tcount=count+1\n\t\t\t\tPRINT count\n\t\t\tWEND\n\n\nGraphics:\n\tCLS\n\t\tClear the text console and the canvas\n\tCLS GFX\n\t\tClears only the canvas\n\tCLS TTY\n\t\tClears only the text console\n\tCOLOR red,blue,green[,alpha]\n\t\tChanges the color used to draw graphics\n\t\tred=\t0-1 or 2-255\n\t\tgreen=\t0-1 or 2-255\n\t\tblue=\t0-1 or 2-255\n\t\talpha=\t0-1\n\t\t(alpha is transparency and it is optional)\n\tBCOLOR red,blue,green[,alpha]\n\t\tChange the background color\n\tTCOLOR red,blue,green[,alpha]\n\t\tChange the text color of the console\n\tCOLORHUE hue[,saturation][,value][,alpha]\n\t\tChanges the color based on HSV instead of RGB\n\t\thue:\t\t0 to 360\n\t\tsaturation:\t0 to 1 (Default=1)\n\t\tvalue:\t\t0 to 1 (Default=1)\n\t\talpha:\t\t0 to 1 (Default=1) (this is the transparency)\n\tBCOLORHUE hue[,saturation][,value][,alpha]\n\t\tChanges the background color based on HSV instead of RGB\n\t\thue:\t\t0 to 360\n\t\tsaturation:\t0 to 1 (Default=1)\n\t\tvalue:\t\t0 to 1 (Default=1)\n\t\talpha:\t\t0 to 1 (Default=1) (this is the transparency)\n\tTCOLORHUE hue[,saturation][,value][,alpha]\n\t\tChanges the console text color based on HSV instead of RGB\n\t\thue:\t\t0 to 360\n\t\tsaturation:\t0 to 1 (Default=1)\n\t\tvalue:\t\t0 to 1 (Default=1)\n\t\talpha:\t\t0 to 1 (Default=1) (this is the transparency)\n\tPOINT x,y[,size]\n\t\tDraws a square/pixel onto the screen at the given position\n\tCIRCLE x,y[,size][,lineWidth]\n\t\tDraws a circle onto the screen\n\t\t(lineWidth will make it hollow\n\tLINE x1,y1,x2,y2[,lineWidth]\n\t\tDraws a line from (x1,y1) to (x2,y2)\n\tLINECAP ON/Off\n\t\tSpecify whether drawn lines should have rounded edges or not\n\t\tDefault=ON\n\tELLIPSE x1,y1,x2,y2[,lineWidth]\n\t\tDraws an ellipse from (x1,y1) to (x2,y2)\n\tRECT x1,y1,x2,y2[,lineWidth]\n\t\tDraws a rectangle\n\tRRECT x1,y1,x2,y2,radius[,lineWidth]\n\t\tDraws a rounded corner rectangle\n\tARC radius,x,y,startAngle,endAngle[,lineWidth]\n\t\tDraws an arc(semi-circle) at x,y\n\tTRIANGLE x1,y1,x2,y2,x3,y3[,lineWidth]\n\t\tDraws a triangle\n\tSHAPE numPoints,arrayOfX,arrayOfY[,lineWidth]\n\t\tDraws a custom shape\n\tDRAWTEXT "string",x,y\n\t\tDraws a string of text centered at (x,y)\n\tTEXTFONT "font"[,"style"][,size]\n\t\tSet the font style to be used with DRAWTEXT\n\t\t"font"=Any font on your computer\n\t\t["style"]=Bold and/or Italic\n\t\t["font"]=Pixel size\n\tTEXTWIDTH "string"\n\t\tMeasures the width of "string" in its current font style and returns the total width in pixels\n\t\tExample:\n\t\t\tTEXTFONT "Times",20\n\t\t\tPRINT TEXTWIDTH "Hello World"\n\t\t\tTEXTFONT "Times",40\n\t\t\tPRINT TEXTWIDTH "Hello World"\n\t\tWill return 100.52734375 and 201.0546875\n\tMouse\n\t\tReturns -1 if the cursor is not hovering over the canvas\n\t\tReturns 0 if the cursor is not currently clicking the canvas but is hovering over it\n\t\tReturns 1 if the cursor is currently clicking the canvas\n\tMouseX\n\t\tGets the x position of the cursor\n\tMouseY\n\t\tGets the y position of the cursor\n\tTouch\n\t\tSame as Mouse\n\tTouchX\n\t\tSame as MouseX\n\tTouchY\n\t\tSame as MouseY\n\tREADPIXEL x,y\n\t\tGet the pixel color at (x,y)\n\t\tUse READPIXELR to get the red\n\t\tUse READPIXELG to get the green\n\t\tUse READPIXELB to get the blue\n\n\nKeys Being Pressed:\n\t1 if it is being pressed\n\t0 is it is not being pressed\n\tVariables include:\n\t\tSpaceKey,ShiftKey,CtrlKey,AltKey,EnterKey,BackspaceKey,EscapeKey\n\t\tUpArrow,DownArrow,LeftArrow,RightArrow\n\t\tKey0,Key1,Key2,Key3, [...] ,Key9\n\t\tKeyA,KeyB,KeyC,KeyD, [...] ,KeyZ\n\tUsing this method you can check if multiple keys are currently being pressed which can be very handy\n\n\nMath:\n\ta*b\n\t\tReturns the product of a and b\n\ta/b\n\t\tReturns the quotient of a and b\n\ta+b\n\t\tReturns the sum of a and b\n\ta-b\n\t\tReturns the difference of a and b\n\ta^b\n\t\tReturns a to the power of b\n\ta%b\n\t\tReturns the modulus or remainder of a/b\n\tMOD(a,b)\n\t\tSame as a%b\n\tRND\n\t\tA random number from 0 to 0.9999999999999999\n\tPI\n\t\tReturns 3.141592653589793\n\tINT(n)\n\t\tRounds a decimal number down to the nearest whole number\n\t\tINT(0.999)=0\n\t\tINT(1)=1\n\tROUND(n)\n\t\tRounds a decimal to the nearest whole number\n\t\tROUND(0.4)=0\n\t\tROUND(0.5)=1\n\tABS(n)\n\t\tReturns the absolute value of n\n\t\tABS(5)=5\n\t\tABS(-5)=5\n\tSQR(n)\n\t\tSquare root of n\n\tPOW(a,b)\n\t\tSame as a^b\n\tSIN(n)\n\t\tSine of n\n\tCOS(n)\n\t\tCosine of n\n\tTAN(n)\n\t\tTangent of n\n\tASIN(n)\n\t\tArc sine of n\n\tACOS(n)\n\t\tArc cosine of n\n\tATN(n)\n\t\tArc tangent of n\n\tATN2(y,x)\n\t\tCalculate the angle of (x,y) to the positive x axis\n\tLOG(n)\n\t\tReturns the natural logarithm (base e) of n\n\n\nTime:\n\tSLEEP n\n\t\tPauses the program for n seconds\n\t\t(The fastest possible SLEEP interval is 0.004 seconds. Anything under that will be converted to 0.004)\n\t\tFor now, the SLEEP command does not function properly inside FOR or WHILE loops, it would be best if you just put the sleep inside a label with GOTO label at the end.\n\tTICKCOUNT\n\t\tReturns the number of seconds since 1/1/1970\n\t\tYou can use this as a checkpoint to time how long a block of code took to run\n\t\tJust subtract the TICKCOUNTs\n\tGetDate\n\t\tReturns a string containing the current date in (d/m/yyyy) format\n\tGetTime\n\t\tReturns a string containing the current time in (hh:mm:ss AM/PM) format\n\tDateYear\n\t\tReturns the current year (yyyy)\n\tDateMonth\n\t\tReturns the current month as a string\n\tDateMonthNum\n\t\tReturns the current month as a number (1-12)\n\tDateDay\n\t\tReturns the current day (1-31)\n\tDateWeekDay\n\t\tReturns the current weekday as a string\n\tDateWeekDayNum\n\t\tReturns the current weekday as a number (1-7)\n\tTimeHours\n\t\tReturns the current hour (1-12)\n\tTimeHours24\n\t\tReturns the current hour (0-23)\n\tTimeMinutes\n\t\tReturns the current minute (0-59)\n\tTimeSeconds\n\t\tReturns the current second (0-59)\n\tTimeMilliseconds\n\t\tReturns the current millisecond (0-999)\n\n\nComments:\n\tREM This code will not be read\n\t\' This code will not be read either\n\tExample:\n\t\tWHILE x<>5 \'x loops until it equals 5\n\t\t\t[code block]\n\t\t\tREM Make sure x eventually equals 5\n\t\t\tREM To prevent an infinite loop from occurring\n\t\tWEND\n\tThe above example will completely ignore the comments and run the code.\n\nBe sure to try out the examples to understand this documentation better.\n\n~ Simeon');
+		examples.push('Number Guessing Game');
+		examples.push('num=INT(1+RND*100)\ntrys=0\nINPUT "I\'m thinking of a number between 1 and 100...:50",guess\nWHILE guess<>num AND guess<>-1\n\ttrys=trys+1\n\tIF guess>num THEN\n\t\tINPUT "Lower!",guess\n\tELSE\n\t\tINPUT "Higher!",guess\n\tENDIF\nWEND\nIF guess=num THEN\n\tALERT "Correct!\\nI was thinking of "+num+"!"\n\tCOLOR 1,1,1\n\tTEXTFONT "Times",70\n\tDRAWTEXT "That took "+trys+" trys!",ScreenWidth/2,ScreenHeight/2\n\tRRECT 50,100,ScreenWidth-50,ScreenHeight-100,50,2\nELSE\n\tALERT "Nope! I win!\\nI was thinking of "+num+"."\nENDIF');
+		examples.push('String Functions');
+		examples.push('ScreenHeight=10\nConsoleHeight=200\n\nBCOLOR 1,1,1\nTCOLOR 0,0,0\nPRINT "PRINT \\"Hello World\\":\\t\\t\\t";\nPRINT "Hello World"\nPRINT "PRINT LEN(\\"Hello World\\"):\\t\\t";\nPRINT LEN("Hello World")\nPRINT "PRINT LEFT$(\\"Hello World\\",7):\\t\\t";\nPRINT LEFT$("Hello World",7)\nPRINT "PRINT RIGHT$(\\"Hello World\\",7):\\t\\t";\nPRINT RIGHT$("Hello World",7)\nPRINT "PRINT MID$(\\"Hello World\\",1,6):\\t\\t";\nPRINT MID$("Hello World",1,6)\nPRINT "PRINT UPPER$(\\"Hello World\\"):\\t\\t";\nPRINT UPPER$("Hello World")\nPRINT "PRINT LOWER$(\\"Hello World\\"):\\t\\t";\nPRINT LOWER$("Hello World")\nPRINT "PRINT REPLACE$(\\"Hello World\\",\\"H\\",\\"W\\"):\\t";\nPRINT REPLACE$("Hello World","H","W")\nPRINT "PRINT REPLACE$(\\"Hello World\\",\\"[f-z]\\",\\"*\\"): ";\nPRINT REPLACE$("Hello World","[f-z]","*")\nPRINT "PRINT CHR$(\\"Hello World\\"):\\t";\nPRINT CHR$("Hello World")\nPRINT "PRINT ASC(72):\\t\\t\\t\\t";\nPRINT ASC(72)\nPRINT "PRINT INDEXOF(\\"Hello World\\",\\"W\\"):\\t";\nPRINT INDEXOF("Hello World","W")\nPRINT "PRINT \\"Hello World\\"[6]:\\t\\t\\t";\nPRINT "Hello World"[6]');
+		examples.push('Random Circles');
+		examples.push('FOR i=1 TO 300\n\tCOLOR RND,RND,RND,RND\n\tPosX=RND*ScreenWidth\n\tPosY=RND*ScreenHeight\n\tRadius=RND*50\n\tCIRCLE PosX,PosY,Radius\nNEXT');
+		examples.push('Simple Hue');
+		examples.push('FOR X=0 TO ScreenWidth\n\tCOLORHUE 360*X/ScreenWidth\n\tLINE X,0,X,ScreenHeight\nNEXT');
+		examples.push('Functional Analog Clock');
+		examples.push('ScreenWidth=600\nScreenHeight=600\nConsoleHeight=15\nBCOLOR 170,170,170\nCOLOR 220,220,220\n\nloop:\nSLEEP 1\nCIRCLE 300,300,300\nCOLOR 51,51,51\nCIRCLE 300,300,285,30\nTEXTFONT "Times",50\nFOR i=1 TO 12\n\tDRAWTEXT i,300+SIN((6-i)*PI/6)*240,300+COS((6-i)*PI/6)*240\n\tCIRCLE 300+SIN((6-i)*PI/6)*200,300+COS((6-i)*PI/6)*200,3\nNEXT\nCOLOR 30,30,30\nHour=(TimeHours/12)+(TimeMinutes/720)+(TimeSeconds/43200)\nx=300+SIN((0.5-Hour)*PI*2)*150\ny=300+COS((0.5-Hour)*PI*2)*150\nLINE 300,300,x,y,20\nMin=(TimeMinutes/60)+(TimeSeconds/3600)\nx=300+SIN((0.5-Min)*PI*2)*220\ny=300+COS((0.5-Min)*PI*2)*220\nLINE 300,300,x,y,10\nSec=(TimeSeconds/60)\nx=300+SIN((0.5-Sec)*PI*2)*240\ny=300+COS((0.5-Sec)*PI*2)*240\nx2=300+SIN((1-Sec)*PI*2)*70\ny2=300+COS((1-Sec)*PI*2)*70\nLINE x,y,x2,y2,3\nCOLOR 220,220,220\nCIRCLE 300,300,5\nGOTO loop');
+		examples.push('Random Grid');
+		examples.push('Size=10\nFOR X=Size/2 TO ScreenWidth+Size/2 STEP Size\n\tFOR Y=Size/2 TO ScreenHeight+Size/2 STEP Size\n\t\tCOLOR RND,RND,RND\n\t\tPOINT X,Y,Size\n\tNEXT\nNEXT');
+		examples.push('Bell Curve Random');
+		examples.push('\'This simulation will calculate random points that have a higher chance of being in the center of the screen then anywhere else on the screen\n\niterations=30\n\nCOLOR 1,1,1,0.1\n\nloop:\nSLEEP 0.01\nFOR i=1 TO 500 \'this loop improves performance\n\tx=0\n\ty=0\n\tFOR j=1 TO iterations\n\t\tx=x+RND\n\t\ty=y+RND\n\tNEXT\n\tx=x/iterations\n\ty=y/iterations\n\tx=ScreenWidth/2+(x*2-1)*ScreenHeight\n\ty=ScreenHeight/2+(y*2-1)*ScreenHeight\n\tPOINT x,y\nNEXT\nGOTO loop');
+		examples.push('Modulus Design #1');
+		examples.push('Size=3\nPRINT "When you multiply X and Y, and make the MOD of that the color."\nFOR X=Size/2 TO ScreenWidth+Size/2 STEP Size\n\tFOR Y=Size/2 TO ScreenHeight+Size/2 STEP Size\n\t\tn=MOD(X*Y,255)\n\t\tCOLOR n,n,n\n\t\tPOINT X,Y,Size\n\tNEXT\nNEXT');
+		examples.push('Modulus Design #2');
+		examples.push('Zoom=3000000\nSize=1\nPRINT "Another design!"\nFOR X=Size/2 TO ScreenWidth+Size/2 STEP Size\n\tFOR Y=Size/2 TO ScreenHeight+Size/2 STEP Size\n\t\tx=X-ScreenWidth/2-Size/2\n\t\ty=Y-ScreenHeight/2-Size/2\n\t\tn=MOD(Zoom/ABS(x*y),255)\n\t\tCOLOR n,n,n\n\t\tPOINT X,Y,Size\n\tNEXT\nNEXT');
+		examples.push('Random Shape from Array');
+		examples.push('PTS=10\nDIM x(PTS),y(PTS)\n\nFOR i=1 TO PTS\n\tx(i)=RND*ScreenWidth\n\ty(i)=RND*ScreenHeight\nNEXT\n\nSHAPE PTS,x,y');
+		examples.push('Random Beep Music');
+		examples.push('TCOLOR 1,1,1\nPRINT "Put some headphones on learn to speak robot!"\nSLEEP 3\n\nloop:\nr=RND\nSLEEP r\nBEEP 100+RND*1000,r\nOldX=X\nOldY=Y\nX=RND*ScreenWidth\nY=RND*ScreenHeight\nCOLOR RND/2,RND/2,RND/2\nPOINT X,Y,10+RND*80\nIF OldX<>0 AND OldY<>0 THEN\n\tCOLOR 1,1,1\n\tLINE X,Y,OldX,OldY\nENDIF\nGOTO loop');
+		examples.push('Simple Physics Simulation');
+		examples.push('ScreenWidth=300\nScreenHeight=500\n\nPosX=ScreenWidth/2 \'Ball start x position\nPosY=ScreenHeight/2 \'Ball start y position\nRadius=30 \'Size of ball\nVelX=-10+RND*20 \'Make the inital x velocity random from -10 to 10\nVelY=RND*-10 \'Make the inital y velocity random from -10 to 0\nGravity=0.15\nFriction=1.1\n\nPRINT "The ball orbits around your mouse!"\n\nloop:\nSLEEP 0.01\nCLS GFX\nVelY=VelY+Gravity\nPosX=PosX+VelX\nPosY=PosY+VelY\n\nIF Mouse=1 THEN\n\tVelX=-10+RND*20\n\tVelY=RND*-20\n\tPosX=MouseX\n\tPosY=MouseY\nENDIF\nIF Mouse=0 THEN \'Make the ball orbit the mouse\n\tdx=MouseX-PosX\n\tdy=MouseY-PosY\n\tdist=SQR(dx*dx+dy*dy)\n\tVelX=VelX+(dx/dist)/3\n\tVelY=VelY+(dy/dist)/3\nENDIF\n\nIF PosY<Radius THEN \'Top Wall Collision\n\tPosY=Radius\n\tVelY=-VelY/Friction\n\tVelX=VelX/Friction\nENDIF\nIF PosY>ScreenHeight-Radius THEN \'Bottom Wall Collision\n\tPosY=ScreenHeight-Radius\n\tVelY=-VelY/Friction\n\tVelX=VelX/Friction\nENDIF\nIF PosX<Radius THEN \'Left Wall Collision\n\tPosX=Radius\n\tVelX=-VelX/Friction\n\tVelY=VelY/Friction\nENDIF\nIF PosX>ScreenWidth-Radius THEN \'Right Wall Collision\n\tPosX=ScreenWidth-Radius\n\tVelX=-VelX/Friction\n\tVelY=VelY/Friction\nENDIF\n\nCIRCLE PosX,PosY,Radius\n\nGOTO loop');
+		examples.push('Particle Movement');
+		examples.push('numBalls=800\nFriction=10\n\nDIM X(numBalls),Y(numBalls),VX(numBalls),VY(numBalls),Size(numBalls)\nDIM Hue(numBalls),Saturation(numBalls),Value(numBalls)\nsw=ScreenWidth\nsh=ScreenHeight\nFOR i=1 TO numBalls\n\t \'Initialize the arrays starting values\n\tX(i)=RND*sw\n\tY(i)=RND*sh\n\tVY(i)=RND*10-5\n\tVX(i)=RND*10-5\n\tSize(i)=5+RND*10\n\tHue(i)=360*i/numBalls\n\tSaturation(i)=(RND+1)/2 \'0.5 to 1 saturation\n\tValue(i)=(RND+1)/2 \'0.5 to 1 value\nNEXT\nPRINT "The particles are attracted to your mouse pointer."\n\nloop:\nSLEEP 0.05\nCLS GFX\nFOR i=1 TO numBalls\n\tIF Mouse=1 THEN\n\t\t \'Make the particles orbit the mouse\n\t\tdx=MouseX-X(i)\n\t\tdy=MouseY-Y(i)\n\t\tdist=SQR(dx*dx+dy*dy)\n\t\tVX(i)=VX(i)+(dx/dist)\n\t\tVY(i)=VY(i)+(dy/dist)\n\tENDIF\n\t\n\t \'Increment the particle positions by the velocity of that particle\n\tX(i)=X(i)+VX(i)/Friction\n\tY(i)=Y(i)+VY(i)/Friction\n\t\n\t \'Wall collision detection:\n\tIF Y(i)<Size(i)THEN\n\t\tY(i)=Size(i)\n\t\tVY(i)=-VY(i)\n\tENDIF\n\tIF Y(i)>ScreenHeight-Size(i)THEN\n\t\tY(i)=ScreenHeight-Size(i)\n\t\tVY(i)=-VY(i)\n\tENDIF\n\tIF X(i)<Size(i)THEN\n\t\tX(i)=Size(i)\n\t\tVX(i)=-VX(i)\n\tENDIF\n\tIF X(i)>ScreenWidth-Size(i)THEN\n\t\tX(i)=ScreenWidth-Size(i)\n\t\tVX(i)=-VX(i)\n\tENDIF\n\t\n\tCOLORHUE Hue(i),Saturation(i),Value(i),0.8\n\tCIRCLE X(i),Y(i),Size(i)\nNEXT\nGOTO loop');
+		examples.push('Mandelbrot');
+		examples.push('\'Mandelbrot settings\nresolution=2\nzoom=350\niterations=100\nrealPart=0\ncomplexPart=0\n\nScreenWidth=1000 \'set the size of the canvas\nScreenHeight=1000\n\nFOR X=0 TO ScreenWidth+resolution STEP resolution\n\tFOR Y=0 TO ScreenHeight+resolution STEP resolution\n\t\tX0=(X-ScreenWidth/2)/zoom-0.75\n\t\tY0=(Y-ScreenHeight/2)/zoom\n\t\tGOSUB mandelbrot\n\t\tPOINT X,Y,resolution\n\tNEXT\nNEXT\nPRINT "Mandelbrot has been rendered."\n\nmandelbrot: \'gets a pixel color\nXREAL=realPart\nYCOMP=complexPart\nFOR I=0 TO iterations\n\tX2=XREAL*XREAL-YCOMP*YCOMP+X0\n\tYCOMP=2*XREAL*YCOMP+Y0\n\tC=X2*X2+YCOMP*YCOMP\n\tXREAL=X2\n\tIF C>=16 THEN\n\t\tBREAK\n\tENDIF\nNEXT\nIF I<iterations THEN\n\tCOLOR 0,0,0\nELSE\n\tCOLOR 1,1,1\nENDIF\nRETURN');
+		examples.push('Don\'t Touch Anything');
+		examples.push('px=ScreenWidth/2\npy=ScreenHeight/2\n\nlength=40\nDIM ox(length),oy(length),os(length),vx(length),vy(length)\nframes=0\nPRINT "Don\'t let your mouse cursor touch anything!"\n\nFOR i=1 TO length\n\tox(i)=RND*ScreenWidth\n\toy(i)=RND*ScreenHeight\n\tvx(i)=RND*2-1\n\tvy(i)=RND*2-1\n\tos(i)=10\nNEXT\n\nloop:\nSLEEP 0.01\nIF Mouse>=0 OR frames=0 THEN\n\tframes=frames+1\n\tGOSUB runStep\n\tCOLORHUE frames%360,0.5\n\tBCOLORHUE frames/3%360,0.9,0.3\nENDIF\nGOTO loop\n\nrunStep:\nSLEEP 0.01\nCLS GFX\npx=MouseX\npy=MouseY\ncollisionDetected=0\nPOINT px,py\nFOR i=1 TO length\n\tox(i)=ox(i)+vx(i)\n\toy(i)=oy(i)+vy(i)\n\tIF ox(i)<-os(i)THEN\n\t\tox(i)=ScreenWidth+os(i)\n\t\tvx(i)=vx(i)+RND-0.5\n\t\tvy(i)=vy(i)+RND-0.5\n\t\tos(i)=os(i)+1\n\tENDIF\n\tIF ox(i)>ScreenWidth+os(i)THEN\n\t\tox(i)=-os(i)\n\t\tvx(i)=vx(i)+RND-0.5\n\t\tvy(i)=vy(i)+RND-0.5\n\t\tos(i)=os(i)+1\n\tENDIF\n\tIF oy(i)<-os(i)THEN\n\t\toy(i)=ScreenHeight+os(i)\n\t\tvx(i)=vx(i)+RND-0.5\n\t\tvy(i)=vy(i)+RND-0.5\n\t\tos(i)=os(i)+1\n\tENDIF\n\tIF oy(i)>ScreenHeight+os(i)THEN\n\t\toy(i)=-os(i)\n\t\tvx(i)=vx(i)+RND-0.5\n\t\tvy(i)=vy(i)+RND-0.5\n\t\tos(i)=os(i)+1\n\tENDIF\n\tCIRCLE ox(i),oy(i),os(i)\n\tGOSUB checkCollision\nNEXT\nDRAWTEXT frames,30,10\nIF collisionDetected=1 THEN\n\tFOR i=10 TO ScreenWidth STEP 20\n\t\tCIRCLE px,py,i,1\n\tNEXT\n\tPRINT "You survived "+frames+" frames."\n\tEND\nENDIF\nRETURN\n\ncheckCollision:\ndx=px-ox(i)\ndy=py-oy(i)\ndt=SQR(dx*dx+dy*dy)\nIF dt+1<=os(i)THEN\n\tcollisionDetected=1\nENDIF\nRETURN\n\n');
+		examples.push('Interactive Mandelbrot Fractal');
+		examples.push('\'Mandelbrot settings\nrealPart=0\ncomplexPart=0\nresolution=16\nzoom=350\ndetail=25\niterations=30\n\nupdateDrawing=1\nresBackup=resolution\nScreenWidth=1000\nScreenHeight=1000\nxoff=-0.75\nyoff=0\n\nPRINT "Use the arrow keys to move around"\nPRINT "Hold W/E to zoom"\nPRINT "Hold A/D to change number of iterations"\nPRINT "Hold Q/E to change density"\nPRINT "Press J to generate a mid-resolution render (fast)"\nPRINT "Press K to generate a high-resolution render (slow)"\n\nloop:\nSLEEP 0.01\nIF KeyW=1 THEN\n\tzoom=zoom*1.05\n\tupdateDrawing=1\nENDIF\nIF KeyS=1 THEN\n\tzoom=zoom/1.05\n\tupdateDrawing=1\nENDIF\nIF KeyD=1 THEN\n\titerations=iterations+0.5\n\tupdateDrawing=1\nENDIF\nIF KeyA=1 THEN\n\titerations=iterations-0.5\n\tupdateDrawing=1\nENDIF\nIF UpArrow=1 THEN\n\tyoff=yoff-20/zoom\n\tupdateDrawing=1\nENDIF\nIF DownArrow=1 THEN\n\tyoff=yoff+20/zoom\n\tupdateDrawing=1\nENDIF\nIF LeftArrow=1 THEN\n\txoff=xoff-20/zoom\n\tupdateDrawing=1\nENDIF\nIF RightArrow=1 THEN\n\txoff=xoff+20/zoom\n\tupdateDrawing=1\nENDIF\nIF KeyE=1 THEN\n\tdetail=detail+0.3\n\tupdateDrawing=1\nENDIF\nIF KeyQ=1 THEN\n\tdetail=detail-0.3\n\tupdateDrawing=1\nENDIF\nIF KeyJ=1 THEN\n\tKeyJ=0\n\tTEXTFONT "Times",70\n\tCOLOR 0,0,0,0.8\n\tRECT 0,ScreenHeight/2.25,ScreenWidth,ScreenHeight-ScreenHeight/2.25\n\tCOLOR 1,1,1\n\tDRAWTEXT "Rendering...",ScreenWidth/2,ScreenHeight/2\n\ttemp=resolution\n\tresolution=3\n\tGOSUB draw\n\tupdateDrawing=0\nENDIF\nIF KeyK=1 THEN\n\tKeyK=0\n\tINPUT "Please be patient during the high resolution render\\nType \\"ok\\" to continue:ok",confirm\n\tIF confirm="ok" THEN\n\t\tTEXTFONT "Times",70\n\t\tCOLOR 0,0,0,0.8\n\t\tRECT 0,ScreenHeight/2.25,ScreenWidth,ScreenHeight-ScreenHeight/2.25\n\t\tCOLOR 1,1,1\n\t\tDRAWTEXT "Rendering...",ScreenWidth/2,ScreenHeight/2\n\t\ttemp=resolution\n\t\tresolution=1\n\t\tGOSUB draw\n\t\tupdateDrawing=0\n\tENDIF\nENDIF\nIF updateDrawing=1 THEN\n\tresolution=resBackup\n\tGOSUB draw\n\tupdateDrawing=0\nENDIF\nGOTO loop\n\ndraw:\nSLEEP 0.01\nCLS GFX\nIF iterations<0 THEN\n\titerations=0\nENDIF\nIF detail<0 THEN\n\tdetail=0\nENDIF\nFOR X=0 TO ScreenWidth+resolution STEP resolution\n\tFOR Y=0 TO ScreenHeight+resolution STEP resolution\n\t\tX0=(X-ScreenWidth/2)/zoom+xoff\n\t\tY0=(Y-ScreenHeight/2)/zoom+yoff\n\t\tGOSUB mandelbrot\n\t\tPOINT X,Y,resolution\n\tNEXT\nNEXT\nRETURN\n\nmandelbrot: \'gets a pixel color\nXREAL=realPart\nYCOMP=complexPart\nFOR I=0 TO iterations\n\tX2=XREAL*XREAL-YCOMP*YCOMP+X0\n\tYCOMP=2*XREAL*YCOMP+Y0\n\tC=X2*X2+YCOMP*YCOMP\n\tXREAL=X2\n\tIF C>=16 THEN\n\t\tBREAK\n\tENDIF\nNEXT\n \'equation to get a smooth gradient\nS=(I+1-LOG(ABS(LOG(ABS(SQR(C)))))/0.693147)\nCOLORHUE MOD(S*detail,360)\nRETURN\n\n');
+		examples.push('Interactive Julia Set Fractal');
+		examples.push('\'Julia Set settings\nrealPart=-0.8\ncomplexPart=0.156\nresolution=16\nzoom=300\ndetail=25\niterations=30\n\nupdateDrawing=1\nresBackup=resolution\nScreenWidth=1000\nScreenHeight=1000\nxoff=0\nyoff=0\n\nPRINT "Use the arrow keys to move around"\nPRINT "Hold W/E to zoom"\nPRINT "Hold A/D to change number of iterations"\nPRINT "Hold Q/E to change density"\nPRINT "Press J to generate a mid-resolution render (fast)"\nPRINT "Press K to generate a high-resolution render (slow)"\n\nloop:\nSLEEP 0.01\nIF KeyW=1 THEN\n\tzoom=zoom*1.05\n\tupdateDrawing=1\nENDIF\nIF KeyS=1 THEN\n\tzoom=zoom/1.05\n\tupdateDrawing=1\nENDIF\nIF KeyD=1 THEN\n\titerations=iterations+0.5\n\tupdateDrawing=1\nENDIF\nIF KeyA=1 THEN\n\titerations=iterations-0.5\n\tupdateDrawing=1\nENDIF\nIF UpArrow=1 THEN\n\tyoff=yoff-20/zoom\n\tupdateDrawing=1\nENDIF\nIF DownArrow=1 THEN\n\tyoff=yoff+20/zoom\n\tupdateDrawing=1\nENDIF\nIF LeftArrow=1 THEN\n\txoff=xoff-20/zoom\n\tupdateDrawing=1\nENDIF\nIF RightArrow=1 THEN\n\txoff=xoff+20/zoom\n\tupdateDrawing=1\nENDIF\nIF KeyE=1 THEN\n\tdetail=detail+0.3\n\tupdateDrawing=1\nENDIF\nIF KeyQ=1 THEN\n\tdetail=detail-0.3\n\tupdateDrawing=1\nENDIF\nIF KeyJ=1 THEN\n\tKeyJ=0\n\tTEXTFONT "Times",70\n\tCOLOR 0,0,0,0.8\n\tRECT 0,ScreenHeight/2.25,ScreenWidth,ScreenHeight-ScreenHeight/2.25\n\tCOLOR 1,1,1\n\tDRAWTEXT "Rendering...",ScreenWidth/2,ScreenHeight/2\n\ttemp=resolution\n\tresolution=3\n\tGOSUB draw\n\tupdateDrawing=0\nENDIF\nIF KeyK=1 THEN\n\tKeyK=0\n\tINPUT "Please be patient during the high resolution render\\nType \\"ok\\" to continue:ok",confirm\n\tIF confirm="ok" THEN\n\t\tTEXTFONT "Times",70\n\t\tCOLOR 0,0,0,0.8\n\t\tRECT 0,ScreenHeight/2.25,ScreenWidth,ScreenHeight-ScreenHeight/2.25\n\t\tCOLOR 1,1,1\n\t\tDRAWTEXT "Rendering...",ScreenWidth/2,ScreenHeight/2\n\t\ttemp=resolution\n\t\tresolution=1\n\t\tGOSUB draw\n\t\tupdateDrawing=0\n\tENDIF\nENDIF\nIF updateDrawing=1 THEN\n\tresolution=resBackup\n\tGOSUB draw\n\tupdateDrawing=0\nENDIF\nGOTO loop\n\ndraw:\nSLEEP 0.01\nCLS GFX\nIF iterations<0 THEN\n\titerations=0\nENDIF\nIF detail<0 THEN\n\tdetail=0\nENDIF\nFOR X=0 TO ScreenWidth+resolution STEP resolution\n\tFOR Y=0 TO ScreenHeight+resolution STEP resolution\n\t\tX0=(X-ScreenWidth/2)/zoom+xoff\n\t\tY0=(Y-ScreenHeight/2)/zoom+yoff\n\t\tGOSUB juliaSet\n\t\tPOINT X,Y,resolution\n\tNEXT\nNEXT\nRETURN\n\njuliaSet: \'gets a pixel color\nXREAL=X0\nYCOMP=Y0\nX0=realPart\nY0=complexPart\nFOR I=0 TO iterations\n\tX2=XREAL*XREAL-YCOMP*YCOMP+X0\n\tYCOMP=2*XREAL*YCOMP+Y0\n\tC=X2*X2+YCOMP*YCOMP\n\tXREAL=X2\n\tIF C>=16 THEN\n\t\tBREAK\n\tENDIF\nNEXT\n \'equation to get a smooth gradient\nS=(I+1-LOG(ABS(LOG(ABS(SQR(C)))))/0.693147)\nCOLORHUE MOD(S*detail,360)\nRETURN');
+		examples.push('Interactive Burning Ship Fractal');
+		examples.push('\'Burning Ship settings\nresolution=16\nzoom=1200\ndetail=25\niterations=30\n\nupdateDrawing=1\nresBackup=resolution\nScreenWidth=1000\nScreenHeight=1000\nxoff=0.4\nyoff=0.33\n\nPRINT "Use the arrow keys to move around"\nPRINT "Hold W/E to zoom"\nPRINT "Hold A/D to change number of iterations"\nPRINT "Hold Q/E to change density"\nPRINT "Press J to generate a mid-resolution render (fast)"\nPRINT "Press K to generate a high-resolution render (slow)"\n\nloop:\nSLEEP 0.01\nIF KeyW=1 THEN\n\tzoom=zoom*1.05\n\tupdateDrawing=1\nENDIF\nIF KeyS=1 THEN\n\tzoom=zoom/1.05\n\tupdateDrawing=1\nENDIF\nIF KeyD=1 THEN\n\titerations=iterations+0.5\n\tupdateDrawing=1\nENDIF\nIF KeyA=1 THEN\n\titerations=iterations-0.5\n\tupdateDrawing=1\nENDIF\nIF UpArrow=1 THEN\n\tyoff=yoff-20/zoom\n\tupdateDrawing=1\nENDIF\nIF DownArrow=1 THEN\n\tyoff=yoff+20/zoom\n\tupdateDrawing=1\nENDIF\nIF LeftArrow=1 THEN\n\txoff=xoff-20/zoom\n\tupdateDrawing=1\nENDIF\nIF RightArrow=1 THEN\n\txoff=xoff+20/zoom\n\tupdateDrawing=1\nENDIF\nIF KeyE=1 THEN\n\tdetail=detail+0.3\n\tupdateDrawing=1\nENDIF\nIF KeyQ=1 THEN\n\tdetail=detail-0.3\n\tupdateDrawing=1\nENDIF\nIF KeyJ=1 THEN\n\tKeyJ=0\n\tTEXTFONT "Times",70\n\tCOLOR 0,0,0,0.8\n\tRECT 0,ScreenHeight/2.25,ScreenWidth,ScreenHeight-ScreenHeight/2.25\n\tCOLOR 1,1,1\n\tDRAWTEXT "Rendering...",ScreenWidth/2,ScreenHeight/2\n\ttemp=resolution\n\tresolution=3\n\tGOSUB draw\n\tupdateDrawing=0\nENDIF\nIF KeyK=1 THEN\n\tKeyK=0\n\tINPUT "Please be patient during the high resolution render\\nType \\"ok\\" to continue:ok",confirm\n\tIF confirm="ok" THEN\n\t\tTEXTFONT "Times",70\n\t\tCOLOR 0,0,0,0.8\n\t\tRECT 0,ScreenHeight/2.25,ScreenWidth,ScreenHeight-ScreenHeight/2.25\n\t\tCOLOR 1,1,1\n\t\tDRAWTEXT "Rendering...",ScreenWidth/2,ScreenHeight/2\n\t\ttemp=resolution\n\t\tresolution=1\n\t\tGOSUB draw\n\t\tupdateDrawing=0\n\tENDIF\nENDIF\nIF updateDrawing=1 THEN\n\tresolution=resBackup\n\tGOSUB draw\n\tupdateDrawing=0\nENDIF\nGOTO loop\n\ndraw:\nSLEEP 0.01\nCLS GFX\nIF iterations<0 THEN\n\titerations=0\nENDIF\nIF detail<0 THEN\n\tdetail=0\nENDIF\nFOR X=0 TO ScreenWidth+resolution STEP resolution\n\tFOR Y=0 TO ScreenHeight+resolution STEP resolution\n\t\tX0=(X-ScreenWidth/2)/zoom+xoff\n\t\tY0=(Y-ScreenHeight/2)/zoom+yoff\n\t\tGOSUB burningShip\n\t\tPOINT X,Y,resolution\n\tNEXT\nNEXT\nRETURN\n\nburningShip: \'gets a pixel color\nXREAL=X0\nYCOMP=Y0\nX0=-2+(XREAL+1.5/zoom/30)*4\nY0=-2+(YCOMP+1/zoom/30)*4\nFOR I=0 TO iterations\n\tX2=XREAL*XREAL-YCOMP*YCOMP+X0\n\tYCOMP=2*ABS(XREAL*YCOMP)+Y0\n\tXREAL=X2\n\tC=X2*X2+YCOMP*YCOMP\n\tIF C>=4 THEN\n\t\tBREAK\n\tENDIF\nNEXT\n\'equation to get a smooth gradient\nS=(I+1-LOG(ABS(LOG(ABS(SQR(C)))))/0.693147)\nCOLORHUE MOD(S*detail,360)\nRETURN');
+		
+		//Redirect console output to HTML logger (console.log)
+		(function (logger){
+			console.old=console.log;
+			console.log=function(){
+				var output="",arg,i;
+				for (i=0;i<arguments.length;i++){
+					arg=arguments[i];
+					if (typeof arg === "object" &&typeof JSON === "object" && typeof JSON.stringify === "function"){
+						output+=JSON.stringify(arg);  
+					}else{
+						output+=arg.replace(/</g,'&#60;').replace(/>/g,'&#62;').replace(/\n/g,"<br>");
+					}
+				}
+				logger.innerHTML+=output+"<hr>";
+				console.old.apply(undefined,arguments);
+			};
+		})(logger);
+		
+		window.onerror=function(msg,url,lineNo,columnNo,error){
+			console.log(msg);
+			console.log("Line "+lineNo+" Column "+columnNo);
+			if(error=="PROGRAM SUCCESSFULLY TERMINATED") print("OK")
+			else print(error);
+			//Clear all timeouts to prevent program from continuing
+			var id = window.setTimeout(function(){},0);
+			while (id--) window.clearTimeout(id);
+			return true;
+		}
+		
+		var session=localStorage.getItem('BASICsession');
+		if(session!=undefined){
+			editor.value=session;
+		}else{
+			loadExample(6);
+			editor.value+='REM "Click the Load Button to see more Demos!"';
+		}
+		var Mouse=-1,MouseX=0,MouseY=0,Touch=-1,TouchX=0,TouchY=0,READPIXELR=0,READPIXELG=0,READPIXELB=0,ColorR=255,ColorG=255,ColorB=0,ColorA=1,BColorR=0,BColorG=0,BColorB=0,BColorA=1,TColorR=0,TColorG=255,TColorB=0,TColorA=1,beepSupportAlert=false,inputVal='';
+		var SpaceKey=0,ShiftKey=0,CtrlKey=0,AltKey=0,EnterKey=0,BackspaceKey=0,EscapeKey=0,UpArrow=0,DownArrow=0,LeftArrow=0,RightArrow=0,KeyA=0,KeyB=0,KeyC=0,KeyD=0,KeyE=0,KeyF=0,KeyG=0,KeyH=0,KeyI=0,KeyJ=0,KeyK=0,KeyL=0,KeyM=0,KeyN=0,KeyO=0,KeyP=0,KeyQ=0,KeyR=0,KeyS=0,KeyT=0,KeyU=0,KeyV=0,KeyW=0,KeyX=0,KeyY=0,KeyZ=0,Key0=0,Key1=0,Key2=0,Key3=0,Key4=0,Key5=0,Key6=0,Key7=0,Key8=0,Key9=0;
+		try{
+			window.AudioContext=window.AudioContext||window.webkitAudioContext;
+			actx=new AudioContext();
+		}catch(e){}
+		
+		//replace all characters with unicode back to ascii
+		function replaceAll(f,r,str,caseInsensitive,wordsOnly){
+			var modifiers='g';
+			if(caseInsensitive) modifiers+='i';
+			var u='';
+			for(var i=0;i<f.length;i++) u+='\\x'+f.charCodeAt(i).toString(16);
+			if(wordsOnly) u='\\b'+u+'\\b';
+			return str.replace(new RegExp(u,modifiers),r);
+		}
+		
+		//replace all occurrences ignoring quotes and comments
+		function jsReplace(f,r,str,caseInsensitive,wordsOnly){
+			var reg1=/'[^\n]+\n/g;
+			var reg2=/(["])(?:\\?[\s\S])*?\1/g;
+			var quotes=str.match(reg2);
+			str=str.replace(reg2,'\u3145');
+			if(f.indexOf('\'')==-1){
+				var comments=str.match(reg1);
+				str=str.replace(reg1,'\u3144');
+			}
+			str=replaceAll(f,r,str,caseInsensitive,wordsOnly);
+			if(f.indexOf('\'')==-1){
+				if(comments!=null) for(var i=0;i<comments.length;i++) str=str.replace('\u3144',comments[i]);
+			}
+			if(quotes!=null) for(var i=0;i<quotes.length;i++) str=str.replace('\u3145',quotes[i]);
+			return str;
+		}
+		
+		document.onkeydown=function(e){
+			var evtobj=window.event?event:e;
+			var key=evtobj.charCode?evtobj.charCode:evtobj.keyCode;
+			if(evtobj.ctrlKey&key==13){
+				compile();
+				return false;
+			}
+			if(evtobj.ctrlKey&key==83){
+				if(evtobj.shiftKey){
+					snapScreenshot();
+				}else{
+					load(document.getElementById('saveTitle').innerText=='Load a File');
+				}
+				return false;
+			}
+			if(evtobj.ctrlKey&key==70){
+				formatEditor();
+				return false;
+			}
+			if(evtobj.ctrlKey&key==66){
+				stop();
+				return false;
+			}
+			if(document.activeElement==editor){
+				var start=editor.selectionStart;
+				var end=editor.selectionEnd;
+				if(key==13){
+					var a=editor.value.substr(0,start).lastIndexOf('\n')+1;
+					var b=editor.value.substr(a).indexOf('\n');
+					if(b==-1) b=editor.value.length;
+					var c=editor.value.substr(a,b);
+					var s='\n';
+					for(var i=0;i<c.length;i++){
+						if(c.charAt(i)!='\t') break;
+						s+='\t';
+					}
+					var startWord=c.toUpperCase();
+					if(c.indexOf(' ')!=-1){
+						startWord=c.substr(0,c.indexOf(' ')).toUpperCase();
+					}
+					var d=editor.value.substr(start+1);
+					if(d.indexOf('\n')!=-1) d=d.substr(0,d.indexOf('\n'));
+					var s2='';
+					for(var i=0;i<d.length;i++){
+						if(d.charAt(i)!='\t') break;
+						s2+='\t';
+					}
+					if(d.indexOf(' ')!=-1) d=d.substr(0,d.indexOf(' ')).toUpperCase();
+					startWord=replaceAll('\t','',startWord);
+					startWord=replaceAll(' ','',startWord).toUpperCase();
+					if(startWord.indexOf('\t')!=-1) startWord=startWord.substr(startWord.indexOf('\t')+1);
+					var addon='';
+					if(startWord=='FOR'){if(s.indexOf(s2)!=-1){addon=s+'NEXT';} s+='\t'}
+					if(startWord=='IF'){if(s.indexOf(s2)!=-1){addon=s+'ENDIF';} s+='\t'}
+					if(startWord=='WHILE'){if(s.indexOf(s2)!=-1){addon=s+'WEND';} s+='\t'}
+					var pos=s.length;
+					if(startWord=='ELSE') pos-=s2.split('\t').length;
+					if(start==1) pos=-1;
+					if(a+b==start) s+=addon;
+					editor.value=editor.value.substr(0,start)+s+editor.value.substr(end);
+					formatEditor();
+					editor.selectionStart=start+pos;
+					editor.selectionEnd=start+pos;
+					return false;
+				}
+				if(evtobj.ctrlKey&key==68){
+					var a=editor.value.substr(0,start).lastIndexOf('\n')+1;
+					var b=editor.value.substr(a).indexOf('\n');
+					if(b==-1) b=editor.value.length;
+					s=editor.value.substr(a,b)+'\n';
+					editor.value=editor.value.substr(0,a)+s+editor.value.substr(a);
+					editor.selectionStart=start+s.length;
+					editor.selectionEnd=start+s.length;
+					return false;
+				}
+				if(key==9){
+					var s='\t';
+					editor.value=editor.value.substr(0,start)+s+editor.value.substr(end);
+					editor.selectionStart=start+s.length;
+					editor.selectionEnd=start+s.length;
+					return false;
+				}
+			}
+			if(evtobj.ctrlKey) CtrlKey=1;
+			if(evtobj.shiftKey) ShiftKey=1;
+			if(evtobj.altKey) AltKey=1;
+			if(key==32) SpaceKey=1;
+			if(key==13) EnterKey=1;
+			if(key==8) BackspaceKey=1;
+			if(key==27) EscapeKey=1;
+			if(key==38){
+				UpArrow=1;
+				if(document.activeElement!=editor) return false;
+			}
+			if(key==40){
+				DownArrow=1;
+				if(document.activeElement!=editor) return false;
+			}
+			if(key==37){
+				LeftArrow=1;
+				if(document.activeElement!=editor) return false;
+			}
+			if(key==39){
+				RightArrow=1;
+				if(document.activeElement!=editor) return false;
+			}
+			if(key>=65&key<=90){
+				eval('Key'+String.fromCharCode(key)+'=1');
+			}
+			if(key>=48&key<=57){
+				eval('Key'+String.fromCharCode(key)+'=1');
+			}
+		}
+		
+		document.onkeyup=function(e){
+			var evtobj=window.event?event:e;
+			var key=evtobj.charCode?evtobj.charCode:evtobj.keyCode;
+			if(evtobj.ctrlKey) CtrlKey=0;
+			if(evtobj.shiftKey) ShiftKey=0;
+			if(evtobj.altKey) AltKey=0;
+			if(key==32) SpaceKey=0;
+			if(key==13) EnterKey=0;
+			if(key==8) BackspaceKey=0;
+			if(key==27) EscapeKey=0;
+			if(key==38) UpArrow=0;
+			if(key==40) DownArrow=0;
+			if(key==37) LeftArrow=0;
+			if(key==39) RightArrow=0;
+			if(key>=65&key<=90){
+				eval('Key'+String.fromCharCode(key)+'=0');
+			}
+			if(key>=48&key<=57){
+				eval('Key'+String.fromCharCode(key)+'=0');
+			}
+		}
+		
+		canvas.onmousemove=function(e){
+			MouseX=e.pageX-canvas.offsetLeft;
+			MouseY=e.pageY-canvas.offsetTop;
+			TouchX=MouseX;
+			TouchY=MouseY;
+		}
+		
+		canvas.onmouseenter=function(e){Touch=0; Mouse=0;}
+		
+		canvas.onmouseleave=function(e){Touch=-1; Mouse=-1;}
+		
+		canvas.onmousedown=function(e){Touch=1; Mouse=1;}
+		
+		canvas.onmouseup=function(e){Touch=0; Mouse=0;}
+		
+		function setWidth(w){
+			if(w>0){
+				ctx.save();
+				ScreenWidth=w;
+				canvas.width=w;
+				canvasBG.width=w;
+				canvasBG.style.marginRight=-w+'px';
+				if(w>20){
+					ConsoleWidth=w-20;
+					terminal.style.width=ConsoleWidth+'px';
+				}
+				ctx.restore();
+				color(ColorR,ColorG,ColorB);
+				bcolor(BColorR,BColorG,BColorB);
+				ctxBG.fillStyle=terminal.style.backgroundColor;
+				ctxBG.fillRect(0,0,ScreenWidth,ScreenHeight);
+			}
+		}
+		
+		function setHeight(h){
+			if(h>0){
+				ctx.save();
+				ScreenHeight=h;
+				canvas.height=h;
+				canvasBG.height=h;
+				ctx.restore();
+				color(ColorR,ColorG,ColorB);
+				bcolor(BColorR,BColorG,BColorB);
+				ctxBG.fillStyle=terminal.style.backgroundColor;
+				ctxBG.fillRect(0,0,ScreenWidth,ScreenHeight);
+			}
+		}
+		
+		function setConsoleWidth(w){
+			if(w>20){
+				ConsoleWidth=w-20;
+				terminal.style.width=ConsoleWidth+'px';
+			}
+		}
+		
+		function setConsoleHeight(h){
+			if(h>0){
+				ConsoleHeight=h;
+				terminal.style.height=ConsoleHeight+'px';
+			}
+		}
+		
+		function print(s,br){
+			if(s===undefined) s='';
+			s=s.toString();
+			if(br!=false) s+='\n';
+			terminal.value+=s;
+			if(document.activeElement!=terminal) terminal.scrollTop=terminal.scrollHeight;
+		}
+		
+		function input(text){
+			var defaultText=inputVal;
+			if(text.indexOf(':')!=-1){
+				defaultText=text.substr(text.lastIndexOf(':')+1);
+				if(defaultText!=''){
+					text=text.substr(0,text.lastIndexOf(':'));
+				}else{
+					defaultText=inputVal;
+				}
+			}
+			var val=prompt(text,defaultText);
+			if(val==null){
+				val=-1;
+			}else{
+				val=val.trim();
+			}
+			inputVal=val;
+			if(val=='') val=defaultText;
+			return val;
+		}
+		
+		function spc(n,c){c=c||' '; var s=''; for(var i=0;i<n;i++) s+=c; return s}
+		
+		function cls(type){
+			if(type==1|type===undefined) ctx.clearRect(0,0,ScreenWidth,ScreenHeight);
+			if(type==2|type===undefined) terminal.value='';
+		}
+		
+		function beep(frequency,duration,offset){
+			try{
+				frequency=frequency||440;
+				offset=offset||0;
+				duration=duration||1;
+				var osc=actx.createOscillator();
+				osc.type=2;
+				osc.connect(actx.destination);
+				osc.frequency.value=frequency;
+				setTimeout(function(){
+					osc.start(0);
+					setTimeout(function(){
+						osc.stop(0);
+					},duration*1000);
+				},offset*1000);
+			}catch(e){if(beepSupportAlert==false){beepSupportAlert=true; alert('BEEP is not supported in this browser.');}}
+		}
+		
+		function val(s){s=Number(s); s=s||0; return s}
+		
+		function upper(s){return s.toUpperCase()}
+		
+		function lower(s){return s.toLowerCase()}
+		
+		function replace(s,a,b){return s.replace(new RegExp(a,'g'),b)}
+		
+		function indexof(s,a){return s.indexOf(a);}
+		
+		function lastindexof(s,a){return s.lastIndexOf(a);}
+		
+		function str(s){s=s||''; return s.toString()}
+		
+		function asc(n){n=Number(n); n=n||0; return String.fromCharCode(n)}
+		
+		function chr(s){s=s.toString(); s=s||''; return s.charCodeAt(0)}
+		
+		function mod(a,b){return a%b}
+		
+		function mid(s,start,length){s=s||''; start=start||0; length=length||s.length; return s.substr(start,length)}
+		
+		function left(s,length){s=s||''; length=length||s.length; return s.substr(0,length)}
+		
+		function right(s,length){s=s||''; length=length||s.length; return s.substr(s.length-length)}
+		
+		function len(s){return s.length}
+		
+		function getCurrentTime(type){
+			switch(type){
+				case 1:
+					return (new Date().getTime());
+					break;
+				case 2:
+					return (new Date().toLocaleDateString());
+					break;
+				case 3:
+					return (new Date().toLocaleTimeString());
+					break;
+				case 4:
+					return (new Date().getFullYear());
+					break;
+				case 5:
+					return (1+new Date().getMonth());
+					break;
+				case 6:
+					var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+					return months[new Date().getMonth()];
+					break;
+				case 7:
+					return (new Date().getDate());
+					break;
+				case 8:
+					return (1+new Date().getDay());
+					break;
+				case 9:
+					var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+					return days[new Date().getDay()];
+					break;
+				case 10:
+					return (new Date().getHours());
+					break;
+				case 11:
+					return (new Date().getHours()%12||12);
+					break;
+				case 12:
+					return (new Date().getMinutes());
+					break;
+				case 13:
+					return (new Date().getSeconds());
+					break;
+				case 14:
+					return (new Date().getMilliseconds());
+					break;
+			}
+		}
+		
+		function circle(x,y,radius,width){
+			if(radius<=0) return;
+			radius=radius||1;
+			ctx.beginPath();
+			ctx.arc(x,y,radius,0,2*Math.PI);
+			if(width===undefined|width<=0){
+				ctx.fill();
+			}else{
+				ctx.lineWidth=width;
+				ctx.stroke();
+			}
+		}
+		
+		function rect(x1,y1,x2,y2,width){
+			ctx.beginPath();
+			ctx.rect(x1,y1,x2-x1,y2-y1);
+			if(width===undefined|width<=0){
+				ctx.fill();
+			}else{
+				ctx.lineWidth=width;
+				ctx.stroke();
+			}
+		}
+		
+		function drawline(x1,y1,x2,y2,width){
+			ctx.beginPath();
+			ctx.moveTo(x1,y1);
+			ctx.lineTo(x2,y2);
+			width=width||1;
+			ctx.lineWidth=width;
+			ctx.stroke();
+		}
+		
+		function setCap(c){
+			if(c==1){
+				ctx.lineCap="round";
+			}else{
+				ctx.lineCap="butt";
+			}
+		}
+		
+		function arc(radius,x,y,startAngle,endAngle,width){
+			startAngle=(startAngle/180)*Math.PI;
+			endAngle=(endAngle/180)*Math.PI;
+			ctx.beginPath();
+			ctx.arc(x,y,radius,startAngle,endAngle,false);
+			if(width===undefined|width<=0){
+				ctx.fill();
+			}else{
+				ctx.lineWidth=width;
+				ctx.stroke();
+			}
+		}
+		
+		function rrect(x1,y1,x2,y2,radius,width){
+			if(radius===undefined|radius<0) radius=0;
+			if(Math.abs(x2-x1)>Math.abs(y2-y1)){
+				if(radius>Math.abs(y2-y1)/2) radius=Math.abs(y2-y1)/2;
+			}else{
+				if(radius>Math.abs(x2-x1)/2) radius=Math.abs(x2-x1)/2;
+			}
+			radius=Math.floor(radius);
+			ctx.beginPath();
+			ctx.moveTo(x1+radius,y1);
+			ctx.lineTo(x2-radius,y1);
+			ctx.arcTo(x2,y1,x2,y1+radius,radius);
+			ctx.lineTo(x2,y2-radius);
+			ctx.arcTo(x2,y2,x2-radius,y2,radius);
+			ctx.lineTo(x1+radius,y2);
+			ctx.arcTo(x1,y2,x1,y2-radius,radius);
+			ctx.lineTo(x1,y1+radius);
+			ctx.arcTo(x1,y1,x1+radius,y1,radius);
+			if(width===undefined|width<=0){
+				ctx.fill();
+			}else{
+				ctx.lineWidth=width;
+				ctx.stroke();
+			}
+		}
+		
+		function triangle(x1,y1,x2,y2,x3,y3,width){
+			ctx.beginPath();
+			ctx.moveTo(x1,y1);
+			ctx.lineTo(x2,y2);
+			ctx.lineTo(x3,y3);
+			ctx.closePath();
+			if(width===undefined|width<=0){
+				ctx.fill();
+			}else{
+				ctx.lineWidth=width;
+				ctx.stroke();
+			}
+		}
+		
+		function textfont(font,style,size){
+			font=font||'normal';
+			style=style||'';
+			size=size||'normal';
+			if(isNaN(Number(font))==false) font+='px';
+			if(isNaN(Number(style))==false) style+='px';
+			if(isNaN(Number(size))==false) size+='px';
+			var s=style+' '+font+' '+size;
+			s=s.trim();
+			ctx.font=s;
+		}
+		
+		function drawtext(str,x,y){
+			x=x||0; y=y||0;
+			ctx.fillText(str,x,y);
+		}
+		
+		function textwidth(str){
+			return ctx.measureText(str).width;
+		}
+		
+		function shape(numPoints,px,py,width){
+			ctx.beginPath();
+			ctx.moveTo(px[0],py[0]);
+			for(var i=1;i<numPoints;i++){
+				ctx.lineTo(px[i],py[i]);
+			}
+			ctx.closePath();
+			if(width===undefined|width<=0){
+				ctx.fill();
+			}else{
+				ctx.lineWidth=width;
+				ctx.stroke();
+			}
+		}
+		
+		function point(x,y,size){
+			size=size||2;
+			ctx.beginPath();
+			ctx.rect(x-(size/2),y-(size/2),size,size);
+			ctx.fill();
+		}
+		
+		function readpixel(x,y){
+			var data=ctx.getImageData(x,y,100,100);
+			var alpha=data.data[3];
+			READPIXELR=Math.round(data.data[0]*(alpha/(255-BColorR)));
+			READPIXELG=Math.round(data.data[1]*(alpha/(255-BColorG)));
+			READPIXELB=Math.round(data.data[2]*(alpha/(255-BColorB)));
+			return 'rgb('+READPIXELR+','+READPIXELG+','+READPIXELB+')';
+		}
+		
+		function colorhue(t,h,s,v,a){
+			h=h||0;s=s||1;v=v||1;
+			var r=0,g=0,b=0;
+			c1=v*s;
+			c2=c1*(1-Math.abs((h/60%2)-1));
+			if(0<=h&h<60){r=c1;g=c2;b=0;}
+			if(60<=h&h<120){r=c2;g=c1;b=0;}
+			if(120<=h&h<180){r=0;g=c1;b=c2;}
+			if(180<=h&h<240){r=0;g=c2;b=c1;}
+			if(240<=h&h<300){r=c2;g=0;b=c1;}
+			if(300<=h&h<=360){r=c1;g=0;b=c2;}
+			r+=v-c1;g+=v-c1;b+=v-c1;
+			if(t==1) color(r,b,g,a);
+			if(t==2) bcolor(r,b,g,a);
+			if(t==3) tcolor(r,b,g,a);
+		}
+		
+		function color(r,g,b,a){
+			if(a>1) a=1;
+			if(a<0) a=0;
+			a=a||1;
+			if(r<=1) r*=255;
+			if(g<=1) g*=255;
+			if(b<=1) b*=255;
+			if(r>255) r=255;
+			if(g>255) g=255;
+			if(b>255) b=255;
+			r=Math.round(r);
+			g=Math.round(g);
+			b=Math.round(b);
+			ColorR=r;
+			ColorG=g;
+			ColorB=b;
+			ColorA=a;
+			ctx.fillStyle='rgba('+r+','+g+','+b+','+a+')';
+			ctx.strokeStyle='rgba('+r+','+g+','+b+','+a+')';
+		}
+		
+		function bcolor(r,g,b,a){
+			if(a>1) a=1;
+			if(a<0) a=0;
+			a=a||1;
+			if(r<=1) r*=255;
+			if(g<=1) g*=255;
+			if(b<=1) b*=255;
+			if(r>255) r=255;
+			if(g>255) g=255;
+			if(b>255) b=255;
+			r=Math.round(r);
+			g=Math.round(g);
+			b=Math.round(b);
+			BColorR=r;
+			BColorG=g;
+			BColorB=b;
+			BColorA=a;
+			ctx.textAlign='center';
+			ctx.textBaseline='middle';
+			setCap(1);
+			ctxBG.fillStyle='rgba('+r+','+g+','+b+','+a+')';
+			ctxBG.strokeStyle='rgba('+r+','+g+','+b+','+a+')';
+			terminal.style.backgroundColor='rgb('+r+','+g+','+b+')';
+			ctxBG.fillRect(0,0,ScreenWidth,ScreenHeight);
+		}
+		
+		function tcolor(r,g,b,a){
+			if(a>1) a=1;
+			if(a<0) a=0;
+			a=a||1;
+			if(r<=1) r*=255;
+			if(g<=1) g*=255;
+			if(b<=1) b*=255;
+			if(r>255) r=255;
+			if(g>255) g=255;
+			if(b>255) b=255;
+			r=Math.round(r);
+			g=Math.round(g);
+			b=Math.round(b);
+			TColorR=r;
+			TColorG=g;
+			TColorB=b;
+			TColorA=a;
+			terminal.style.color='rgba('+r+','+g+','+b+','+a+')';
+		}
+		
+		function load(save){
+			var list=document.getElementById('saveItems');
+			list.innerHTML='';
+			if(save){
+				document.getElementById('saveTitle').innerText='Save Your File';
+			}else{
+				document.getElementById('saveTitle').innerText='Load a File';
+			}
+			var count=0;
+			for(var i=0;i<localStorage.length;i++){
+				var item=localStorage.key(i);
+				if(item.substr(0,6)=='BASIC:'){
+					var itemName=item.substr(6);
+					list.innerHTML+='<td><button id="deleteItem" onclick="deleteItem(\''+item+'\','+save+')">Delete</button></td>';
+					if(save){
+						list.innerHTML+='<td><button id="saveItem" onclick="saveItem(\''+item+'\','+save+')">'+itemName+'</button></td>';
+					}else{
+						list.innerHTML+='<td><button id="loadItem" onclick="loadItem(\''+item+'\')">'+itemName+'</button></td>';
+					}
+					count++;
+				}
+			}
+			if(save){
+				if(count==0){
+					list.innerHTML+='<br><button id="createItem2" onclick="createItem('+save+')">Create a File</button>';
+				}else{
+					list.innerHTML+='<br><button id="createItem" onclick="createItem('+save+')">Create a File</button>';
+				}
+			}else{
+				if(count==0){
+					list.innerHTML+='<br><button id="deleteAllItems2">No Files to Delete</button><br>';
+				}else{
+					list.innerHTML+='<br><button id="deleteAllItems" onclick="deleteAllItems('+save+')">Delete All Saved Files</button><br>';
+				}
+				list.innerHTML+='<td><button id="deleteItem" onclick="downloadCmds()">Download</button></td>';
+				list.innerHTML+='<td><button id="loadItem" onclick="loadExample(0)">'+examples[0]+'</button></td>';
+				for(var i=2;i<examples.length;i+=2){
+					list.innerHTML+='<td><button id="deleteItem" onclick="example('+i+')">Example</button></td>';
+					list.innerHTML+='<td><button id="loadItem" onclick="loadExample('+i+')">'+examples[i]+'</button></td><br>';
+				}
+			}
+			document.getElementById('saveWrapper').style.display='block';
+			logger.innerHTML="<center>Console<center>";
+		}
+		
+		function closeBox(){
+			document.getElementById('saveTitle').innerText='Load a File';
+			document.getElementById('saveWrapper').style.display='none';
+		}
+		
+		function saveItem(item,save){
+			var itemName=item.substr(6);
+			if(confirm('You are about to overwrite the current file '+itemName+'.\nProceed?')){
+				localStorage.setItem(item,editor.value);
+				load(save);
+				alert(itemName+' was successfully saved!');
+				closeBox();
+			}
+		}
+		
+		function loadItem(item){
+			editor.value=localStorage.getItem(item);
+			closeBox();
+			//window.scrollTo(0,document.body.scrollHeight);
+		}
+		
+		function deleteItem(item,save){
+			var itemName=item.substr(6);
+			if(confirm('You are about to delete '+itemName+'.\nProceed?')){
+				localStorage.removeItem(item);
+				load(save);
+				alert(itemName+' was successfully deleted!');
+			}
+		}
+		
+		function deleteAllItems(save){
+			if(confirm('You are about to delete ALL of your saved items!\n(This does not include the examples)\nProceed?')){
+				localStorage.clear();
+				load(save);
+				alert('All items were successfully deleted.');
+			}
+		}
+		
+		function createItem(save){
+			var name=prompt('Give your file a name:');
+			name=name||'';
+			name=name.trim();
+			if(name!=''&name.indexOf('\\')==-1&name.indexOf('>')==-1&name.indexOf('<')==-1){
+				localStorage.setItem('BASIC:'+name,editor.value);
+				load(save);
+				alert(name+' was successfully saved!');
+				closeBox();
+			}else{
+				alert('File name invalid.\nPlease try again.');
+			}
+		}
+		
+		function example(index){
+			alert('A quick preview of this example:\n\n'+examples[index+1]);
+		}
+		
+		function loadExample(index){
+			if(index!=0){editor.value='\nREM "'+examples[index]+' Demo"\n\n'+examples[index+1]+'\n\n'}else{editor.value=examples[index+1]}
+			closeBox();
+			//window.scrollTo(0,document.body.scrollHeight);
+		}
+		
+		function downloadCmds(){
+			var a=document.createElement('a');
+			a.setAttribute('href','data:text/plain;charset=utf-8,'+encodeURIComponent(examples[1]));
+			a.setAttribute('download','BASIC Commands');
+			a.click();
+		}
+		
+		function snapScreenshot(){
+			document.getElementById('screenshotBtn').blur();
+			var a=document.createElement('a');
+			a.setAttribute('href',canvas.toDataURL());
+			a.setAttribute('download','screenshot.png');
+			a.click();
+		}
+		
+		function stop(){
+			localStorage.setItem('BASICsession',editor.value);
+			localStorage.setItem('BASICtemp','2');
+			location.reload();
+		}
+		
+		function compile(){
+			localStorage.setItem('BASICsession',editor.value);
+			localStorage.setItem('BASICtemp','1');
+			location.reload();
+		}
+		
+		function formatEditor(editBreaks){
+			var rawData=editor.value;
+			var fixedData=addTabs(formatBasic(rawData,editBreaks));
+			editor.value=fixedData;
+			localStorage.setItem('BASICsession',editor.value);
+		}
+		
+		function addTabs(s){
+			var lines=s.split('\n'), tabs=0, fixedData='';
+			for(var i=0;i<lines.length;i++){
+				var startWord=lines[i];
+				if(startWord.indexOf(' ')!=-1){
+					startWord=startWord.substr(0,startWord.indexOf(' '));
+				}
+				if(['NEXT','ENDIF','WEND'].indexOf(startWord)!=-1){
+					tabs--;
+				}
+				if(startWord=='ELSE') tabs--;
+				for(var j=0;j<tabs;j++) lines[i]='\t'+lines[i];
+				if(startWord=='ELSE') tabs++;
+				if(['FOR','IF','WHILE'].indexOf(startWord)!=-1){
+					tabs++;
+				}
+				fixedData+=lines[i];
+				if(i!=lines.length-1) fixedData+='\n';
+			}
+			return fixedData;
+		}
+		
+		function formatBasic(rawData,editBreaks){
+			rawData=replaceAll('\r\n','\n',rawData);
+			rawData=replaceAll('\t','',rawData);
+			rawData=jsReplace('\'',' \'',rawData);
+			var fixedData='',l,oldl='',newl,inString=false;
+			for(var i=0;i<rawData.length;i++){
+				oldl=l;
+				l=rawData.charAt(i);
+				if(i==rawData.length-1){
+					newl='';
+				}else{
+					newl=rawData.charAt(i+1);
+				}
+				if(l=='"'){
+					if(inString){inString=false}else{inString=true}
+				}
+				if(l=='\n') inString=false;
+				if(inString){fixedData+=l}else{
+					var pass=true;
+					if(l=='\t') pass=false;
+					if(l==' '&l==oldl) pass=false;
+					if(l=='\n'&oldl==' '){
+						fixedData=fixedData.substr(0,fixedData.length-1);
+					}
+					if(oldl==' '&l=='-'&'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_$'.indexOf(newl)==-1){
+						fixedData=fixedData.substr(0,fixedData.length-1);
+					}
+					if(editBreaks){
+						if(l=='\n'&l==oldl) pass=false;
+						if(l=='\n'&i==rawData.length-1) pass=false;
+					}
+					if(l==' '&('=<>+-,/\\*()^').indexOf(oldl)!=-1) pass=false;
+					if(pass) fixedData+=l;
+				}
+			}
+			fixedData='\n'+fixedData.trim()+'\n\n';
+			fixedData=replaceAll(' \n','\n',fixedData);
+			for(var i=0;i<symbols.length;i++){
+				if(symbols[i]!='-'){
+					fixedData=jsReplace(' '+symbols[i],symbols[i],fixedData);
+				}
+			}
+			fixedData=fixCasing(fixedData);
+			return fixedData;
+		}
+		
+		//perform lots of replacing to format an instance of BASIC into an instance of JavaScript
+		function fixCasing(s){
+			for(var i=0;i<specialWords.length;i++){
+				s=jsReplace(specialWords[i],specialWords[i].toUpperCase(),s,true,true);
+			}
+			s=jsReplace('screenwidth','ScreenWidth',s,true,true);
+			s=jsReplace('screenheight','ScreenHeight',s,true,true);
+			s=jsReplace('consolewidth','ConsoleWidth',s,true,true);
+			s=jsReplace('consoleheight','ConsoleHeight',s,true,true);
+			s=jsReplace('str$(','STR$(',s,true);
+			s=jsReplace('chr$(','CHR$(',s,true);
+			s=jsReplace('upper$(','UPPER$(',s,true);
+			s=jsReplace('lower$(','LOWER$(',s,true);
+			s=jsReplace('replace$(','REPLACE$(',s,true);
+			s=jsReplace('indexof(','INDEXOF(',s,true);
+			s=jsReplace('lastindexof(','LASTINDEXOF(',s,true);
+			s=jsReplace('mid$(','MID$(',s,true);
+			s=jsReplace('left$(','LEFT$(',s,true);
+			s=jsReplace('right$(','RIGHT$(',s,true);
+			s=jsReplace('touch','Touch',s,true,true);
+			s=jsReplace('touchx','TouchX',s,true,true);
+			s=jsReplace('touchy','TouchY',s,true,true);
+			s=jsReplace('mouse','Mouse',s,true,true);
+			s=jsReplace('mousex','MouseX',s,true,true);
+			s=jsReplace('mousey','MouseY',s,true,true);
+			s=jsReplace('colorr','ColorR',s,true,true);
+			s=jsReplace('colorg','ColorG',s,true,true);
+			s=jsReplace('colorb','ColorB',s,true,true);
+			s=jsReplace('colora','ColorA',s,true,true);
+			s=jsReplace('bcolorr','BColorR',s,true,true);
+			s=jsReplace('bcolorg','BColorG',s,true,true);
+			s=jsReplace('bcolorb','BColorB',s,true,true);
+			s=jsReplace('bcolora','BColorA',s,true,true);
+			s=jsReplace('tcolorr','TColorR',s,true,true);
+			s=jsReplace('tcolorg','TColorG',s,true,true);
+			s=jsReplace('tcolorb','TColorB',s,true,true);
+			s=jsReplace('tcolora','TColorA',s,true,true);
+			s=jsReplace('getdate','GetDate',s,true,true);
+			s=jsReplace('gettime','GetTime',s,true,true);
+			s=jsReplace('dateyear','DateYear',s,true,true);
+			s=jsReplace('datemonth','DateMonth',s,true,true);
+			s=jsReplace('datemonthnum','DateMonthNum',s,true,true);
+			s=jsReplace('dateday','DateDay',s,true,true);
+			s=jsReplace('dateweekday','DateWeekDay',s,true,true);
+			s=jsReplace('dateweekdaynum','DateWeekDayNum',s,true,true);
+			s=jsReplace('timehours24','TimeHours24',s,true,true);
+			s=jsReplace('timehours','TimeHours',s,true,true);
+			s=jsReplace('timeminutes','TimeMinutes',s,true,true);
+			s=jsReplace('timeseconds','TimeSeconds',s,true,true);
+			s=jsReplace('timemilliseconds','TimeMilliseconds',s,true,true);
+			s=jsReplace('ctrlkey','CtrlKey',s,true,true);
+			s=jsReplace('shiftkey','ShiftKey',s,true,true);
+			s=jsReplace('altkey','AltKey',s,true,true);
+			s=jsReplace('spacekey','SpaceKey',s,true,true);
+			s=jsReplace('enterkey','EnterKey',s,true,true);
+			s=jsReplace('backspacekey','BackspaceKey',s,true,true);
+			s=jsReplace('escapekey','EscapeKey',s,true,true);
+			s=jsReplace('uparrow','UpArrow',s,true,true);
+			s=jsReplace('downarrow','DownArrow',s,true,true);
+			s=jsReplace('leftarrow','LeftArrow',s,true,true);
+			s=jsReplace('rightarrow','RightArrow',s,true,true);
+			s=jsReplace('keya','KeyA',s,true,true);
+			s=jsReplace('keyb','KeyB',s,true,true);
+			s=jsReplace('keyc','KeyC',s,true,true);
+			s=jsReplace('keyd','KeyD',s,true,true);
+			s=jsReplace('keye','KeyE',s,true,true);
+			s=jsReplace('keyf','KeyF',s,true,true);
+			s=jsReplace('keyg','KeyG',s,true,true);
+			s=jsReplace('keyh','KeyH',s,true,true);
+			s=jsReplace('keyi','KeyI',s,true,true);
+			s=jsReplace('keyj','KeyJ',s,true,true);
+			s=jsReplace('keyk','KeyK',s,true,true);
+			s=jsReplace('keyl','KeyL',s,true,true);
+			s=jsReplace('keym','KeyM',s,true,true);
+			s=jsReplace('keyn','KeyN',s,true,true);
+			s=jsReplace('keyo','KeyO',s,true,true);
+			s=jsReplace('keyp','KeyP',s,true,true);
+			s=jsReplace('keyq','KeyQ',s,true,true);
+			s=jsReplace('keyr','KeyR',s,true,true);
+			s=jsReplace('keys','KeyS',s,true,true);
+			s=jsReplace('keyt','KeyT',s,true,true);
+			s=jsReplace('keyu','KeyU',s,true,true);
+			s=jsReplace('keyv','KeyV',s,true,true);
+			s=jsReplace('keyw','KeyW',s,true,true);
+			s=jsReplace('keyx','KeyX',s,true,true);
+			s=jsReplace('keyy','KeyY',s,true,true);
+			s=jsReplace('keyz','KeyZ',s,true,true);
+			s=jsReplace('key0','Key0',s,true,true);
+			s=jsReplace('key1','Key1',s,true,true);
+			s=jsReplace('key2','Key2',s,true,true);
+			s=jsReplace('key3','Key3',s,true,true);
+			s=jsReplace('key4','Key4',s,true,true);
+			s=jsReplace('key5','Key5',s,true,true);
+			s=jsReplace('key6','Key6',s,true,true);
+			s=jsReplace('key7','Key7',s,true,true);
+			s=jsReplace('key8','Key8',s,true,true);
+			s=jsReplace('key9','Key9',s,true,true);
+			s=jsReplace('break','BREAK',s,true,true);
+			s=jsReplace('continue','CONTINUE',s,true,true);
+			return s;
+		}
+		
+		function convertToJS(){
+			var rawData=editor.value;
+			var rawjs=formatBasic(rawData,true).trim();
+			var firstFunction=true
+			rawjs=jsReplace(' \'','\n\'',rawjs);
+			rawjs=jsReplace('\n\n','\n',rawjs,true);
+			rawjs=jsReplace('ELSE','}else{',rawjs,true,true);
+			rawjs=jsReplace('ENDIF','}',rawjs,true,true);
+			rawjs=jsReplace('END IF','}',rawjs,true);
+			rawjs=jsReplace('NEXT','}',rawjs,true,true);
+			rawjs=jsReplace('WEND','}',rawjs,true,true);
+			rawjs=jsReplace('END','throw "PROGRAM SUCCESSFULLY TERMINATED"',rawjs,true,true);
+			rawjs=jsReplace('CLS','cls()',rawjs,true,true);
+			rawjs=jsReplace('cls() GFX','cls(1)',rawjs,true);
+			rawjs=jsReplace('cls() TTY','cls(2)',rawjs,true);
+			rawjs=jsReplace('PAUSE','ALERT',rawjs,true,true);
+			rawjs=jsReplace('BEGINDRAW','',rawjs,true,true);
+			rawjs=jsReplace('ENDDRAW','',rawjs,true,true);
+			rawjs=jsReplace('LINECAP ON','setCap(1)',rawjs,true);
+			rawjs=jsReplace('LINECAP OFF','setCap(0)',rawjs,true);
+			rawjs=jsReplace('RND','Math.random()',rawjs,true,true);
+			rawjs=jsReplace('BREAK','break',rawjs,true,true);
+			rawjs=jsReplace('CONTINUE','continue',rawjs,true,true);
+			rawjs=jsReplace('PI','Math.PI',rawjs,true,true);
+			rawjs=jsReplace('TICKCOUNT','getCurrentTime(1)',rawjs,true,true);
+			rawjs=jsReplace('GetDate','getCurrentTime(2)',rawjs,true,true);
+			rawjs=jsReplace('GetTime','getCurrentTime(3)',rawjs,true,true);
+			rawjs=jsReplace('DateYear','getCurrentTime(4)',rawjs,true,true);
+			rawjs=jsReplace('DateMonthNum','getCurrentTime(5)',rawjs,true,true);
+			rawjs=jsReplace('DateMonth','getCurrentTime(6)',rawjs,true,true);
+			rawjs=jsReplace('DateDay','getCurrentTime(7)',rawjs,true,true);
+			rawjs=jsReplace('DateWeekDayNum','getCurrentTime(8)',rawjs,true,true);
+			rawjs=jsReplace('DateWeekDay','getCurrentTime(9)',rawjs,true,true);
+			rawjs=jsReplace('TimeHours24','getCurrentTime(10)',rawjs,true,true);
+			rawjs=jsReplace('TimeHours','getCurrentTime(11)',rawjs,true,true);
+			rawjs=jsReplace('TimeMinutes','getCurrentTime(12)',rawjs,true,true);
+			rawjs=jsReplace('TimeSeconds','getCurrentTime(13)',rawjs,true,true);
+			rawjs=jsReplace('TimeMilliseconds','getCurrentTime(14)',rawjs,true,true);
+			rawjs=jsReplace('LEN(','len(',rawjs,true);
+			rawjs=jsReplace('STR$(','str(',rawjs,true);
+			rawjs=jsReplace('VAL(','val(',rawjs,true);
+			rawjs=jsReplace('MID$(','mid(',rawjs,true);
+			rawjs=jsReplace('LEFT$(','left(',rawjs,true);
+			rawjs=jsReplace('RIGHT$(','right(',rawjs,true);
+			rawjs=jsReplace('CHR$(','chr(',rawjs,true);
+			rawjs=jsReplace('UPPER$(','upper(',rawjs,true);
+			rawjs=jsReplace('LOWER$(','lower(',rawjs,true);
+			rawjs=jsReplace('REPLACE$(','replace(',rawjs,true);
+			rawjs=jsReplace('INDEXOF(','indexof(',rawjs,true);
+			rawjs=jsReplace('LASTINDEXOF(','lastindexof(',rawjs,true);
+			var js='',variables=[],labels=[],lines=rawjs.split('\n'),oldi=0
+			var blockDepth=0,addToBlock=[],addToBlockIndex=[];
+			//go through each line, then each character building up a word string, then converting it into JavaScript
+			for(var i=0;i<lines.length;i++){
+				if(lines[i].substr(0,4)=='REM ') continue;
+				if(lines[i].substr(0,1)=='\'') continue;
+				var inString=false,line=lines[i],word='',oldword='',l,oldl='',newl='';
+				var addToLine='';
+				for(var j=0;j<line.length;j++){
+					if(line.charAt(line.length-1)==':'){
+						var label=line.substr(0,line.length-1);
+						line='';
+						if(firstFunction){
+							line=label+'();\n';
+							firstFunction=false;
+						}
+						labels.push(label);
+						line+='function '+label+'(){';
+						addToBlock.push('}');
+						addToBlockIndex.push(blockDepth);
+					}
+					oldl=l;
+					l=line.charAt(j);
+					if(l=='"'){
+						if(inString){inString=false}else{inString=true}
+					}
+					if(j==line.length-1){
+						newl='';
+					}else{
+						newl=line.charAt(j+1);
+					}
+					if(newl=='('){
+						var s=word+l;
+						for(var k=0;k<symbols.length;k++) s=jsReplace(symbols[k],'',s)
+						if(variables.indexOf(s+'=[]')!=-1){
+							var s1=line.match(/\([^\)]+\)/g)[0];
+							var s2=s1;
+							s2=jsReplace('(','[',s2);
+							s2=jsReplace(')','-1]',s2);
+							s2=jsReplace(',','-1][',s2);
+							line=line.replace(s1,s2);
+							newl='[';
+						}
+					}
+					
+					if(line=='RETURN'||line.startsWith('RETURN ')){
+						l='';
+						if(labels.length>1) word=labels[labels.length-2]+'();\nreturn;';
+						else word='';
+						line='';
+					}
+					if(line=='PRINT') line+=' ';
+					if(inString){word+=l}else{
+						if(' <>=,()+-*/%^'.indexOf(l)!=-1|' <>=,()+-*/%^'.indexOf(oldl)!=-1){
+							if(specialWords.indexOf(word.toLowerCase())==-1&specialWords.indexOf(word.toLowerCase()+'$')==-1&labels.indexOf(word.toLowerCase())==-1&['function','setCap','getCurrentTime','break','throw'].indexOf(word)==-1){
+								if(word!=''&'abcdefghijklmnopqrstuvwxyz_$'.indexOf(word.charAt(0).toLowerCase())!=-1){
+									var success=true;
+									for(var k=0;k<word.length;k++){
+										if('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_$'.indexOf(word.charAt(k))==-1) success=false;
+									}
+									var v=word;
+									if(word.charAt(word.length-1)=='$'){
+										v+='=""';
+									}else{
+										v+='=0';
+									}
+									if(success&variables.indexOf(v)==-1&variables.indexOf(word+'=[]')==-1){
+										variables.push(v);
+									}
+								}
+							}
+							switch(word){
+								case 'INT':word='Math.floor'; break;
+								case 'ROUND':word='Math.round'; break;
+								case 'ABS':word='Math.abs'; break;
+								case 'SQR':word='Math.sqrt'; break;
+								case 'POW':word='Math.pow'; break;
+								case 'MOD':word='mod'; break;
+								case 'SIN':word='Math.sin'; break;
+								case 'COS':word='Math.cos'; break;
+								case 'TAN':word='Math.tan'; break;
+								case 'LOG':word='Math.log'; break;
+								case 'ASN':word='Math.asin'; break;
+								case 'ACS':word='Math.acos'; break;
+								case 'ATN':word='Math.atan'; break;
+								case 'ATN2':word='Math.atan2'; break;
+								case 'SPC':word='spc'; break;
+								case 'ASC':word='asc'; break;
+								case 'GOTO':
+									if(l==' ') l='';
+									word=line.substr(5)+'();';
+									line='';
+									if(labels.length>0&&!word.startsWith(labels[labels.length-1])) word+="\nreturn;";
+									word+="\n"
+									break;
+								case 'GOSUB':
+									if(l==' ') l='';
+									word=line.substr(5)+'();';
+									line='';
+									if(labels.length>0&&!word.startsWith(labels[labels.length-1])) word+='clearTimeout('+labels[labels.length-1]+'_Timeout);';
+									word+="\n"
+									break;
+								case 'SLEEP':
+									word=''; if(l==' ') l='';
+									var index=line.indexOf('SLEEP ')+6;
+									if(index==5) index=line.length-1;
+									var time=line.substr(index);
+									line='';
+									if(labels.length>0) word=labels[labels.length-1]+"_Timeout=";
+									word+='setTimeout(function(){\n';
+									addToBlock.push('},(1000*'+time+'));');
+									addToBlockIndex.push(blockDepth);
+									break;
+								case 'IF':
+									word='if('; if(l==' ') l='';
+									line=jsReplace('=','==',line);
+									line=jsReplace('>==','>=',line);
+									line=jsReplace('<==','<=',line);
+									line=jsReplace('<>','!=',line);
+									line=jsReplace(' THEN','){',line,true,true);
+									line=jsReplace('THEN','){',line,true,true);
+									line=jsReplace(' AND ','&',line,true,true);
+									line=jsReplace('AND','&',line,true,true);
+									line=jsReplace(' OR ','|',line,true,true);
+									line=jsReplace('OR','|',line,true,true);
+									break;
+								case 'FOR':
+									line=line.substr(4);
+									if(line.indexOf('=')!=-1){
+										var variable=line.substr(0,line.indexOf('='));
+										line=line.substr(line.indexOf('=')+1);
+										if(line.indexOf(' TO ')!=-1){
+											var fr=line.substr(0,line.indexOf(' TO '));
+											line=line.substr(line.indexOf(' TO ')+4);
+											var index=line.indexOf(' ');
+											if(index==-1) index=line.length;
+											to=line.substr(0,index);
+											line=line.substr(index);
+											if(line.substr(0,6)==' STEP '){
+												var step=line.substr(5).trim();
+											}else{
+												var step='1';
+											}
+											var a='for('+variable+'='+fr+';';
+											var b=variable+"<="+to+";";
+											//var b=fr+'<='+to+'?('+variable+'<='+to+'):('+variable+'>='+to+')';
+											if(step=='1'){
+												c=variable+'++){';
+											}else if(step=='-1'){
+												c=variable+'--){';
+											}else{
+												c=variable+'+='+step+'){';
+											}
+											word=a+b+c+'\n';
+											line='';
+										}
+									}
+									if(l==' ') l='';
+									break;
+								case 'WHILE':
+									word='while('; if(l==' ') l='';
+									line=jsReplace('=','==',line);
+									line=jsReplace('>==','>=',line);
+									line=jsReplace('<==','<=',line);
+									line=jsReplace('<>','!=',line);
+									line=jsReplace('AND','&',line,true,true);
+									line=jsReplace('OR','|',line,true,true);
+									line+='){';
+									break;
+								case 'BEEP':word='beep('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'CIRCLE':word='circle('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'ARC':word='arc('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'POINT':word='point('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'RECT':word='rect('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'LINE':word='drawline('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'RRECT':word='rrect('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'TRIANGLE':word='triangle('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'SHAPE':word='shape('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'TEXTFONT':word='textfont('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'DRAWTEXT':word='drawtext('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'TEXTWIDTH':word='textwidth('; addToLine+=')'; if(l==' ') l=''; break;
+								case 'DIM':
+									word='';
+									var vars=line.substr(4).split('),'),count=0;
+									for(var k=0;k<vars.length;k++){
+										var s=jsReplace(')','',vars[k]);
+										var variable=s.substr(0,s.indexOf('('));
+										s=s.substr(1+s.indexOf('('));
+										var dimensions=s.split(','),str='',varEnd='',ending='';
+										for(var l=0;l<dimensions.length;l++){
+											var num=dimensions[l];
+											count++;
+											index='i'+count;
+											varEnd+='['+index+']'
+											str+='for(var '+index+'=0;'+index+'<'+num+';'+index+'++){';
+											if(l==dimensions.length-1){
+												str+=variable+varEnd+'=';
+												if(variable.charAt(variable.length-1)=='$'){str+='""'}else{str+='0'}
+											}else{
+												str+=variable+varEnd+'=[];';
+											}
+											ending+='}';
+										}
+										str+=ending;
+										word+=str;
+										variables.push(variable+'=[]');
+									}
+									line='';
+									l='';
+									break;
+								case 'INPUT#':l=''; word=''; line=''; break;
+								case 'PRINT#':l=''; word=''; line=''; break;
+								case 'OPEN':l=''; word=''; line=''; break;
+								case 'CLOSE':l=''; word=''; line=''; break;
+								case 'PRINT':
+									if(newl=='#'){l=''; word=''; line=''; break}
+									word='print(';
+									if(line.charAt(line.length-1)==';'){
+										addToLine+=',false';
+										line=line.substr(0,line.length-1);
+									}
+									addToLine+=')';
+									var parentheses=line.match(/\([^\)]+\)/g);
+									line=line.replace(/\([^\)]+\)/g,'\u3147');
+									line=jsReplace(',','+" "+',line);
+									if(parentheses!=null) for(var k=0;k<parentheses.length;k++) line=line.replace('\u3147',parentheses[k]);
+									if(l==' ') l='';
+									break;
+								case 'INPUT':
+									if(newl=='#'){l=''; word=''; line=''; break}
+									var str=line.substr(6);
+									var reg=/(["])(?:\\?[\s\S])*?\1/g;
+									var quotes=str.match(reg);
+									var parts2=str.split(',');
+									str=str.replace(reg,'\u3147');
+									var parts=str.split(',');
+									var string='';
+									var variable='';
+									if(parts.length==1){
+										if(parts[0]=='\u3147'){
+											variable='';
+											string=parts2[0];
+										}else{
+											variable=parts2[0];
+											string='""';
+										}
+									}else{
+										if(parts[0]=='\u3147'){
+											variable=parts2[1];
+											string=parts2[0];
+										}else{
+											variable=parts2[0];
+											string=parts2[1];
+										}
+									}
+									if(variable==''){
+										word='input('+string+')';
+									}else{
+										word=variable+'=input('+string+')';
+									}
+									line='';
+									addToLine+=';';
+									if(l==' ') l='';
+									break;
+								case 'ALERT':
+									if(newl=='#'){l=''; word=''; line=''; break}
+									word='alert(';
+									if(line.charAt(line.length-1)==';'){
+										addToLine+=',false';
+										line=line.substr(0,line.length-1);
+									}
+									addToLine+=')';
+									var parentheses=line.match(/\([^\)]+\)/g);
+									line=line.replace(/\([^\)]+\)/g,'\u3147');
+									line=jsReplace(',','+" "+',line);
+									if(parentheses!=null) for(var k=0;k<parentheses.length;k++) line=line.replace('\u3147',parentheses[k]);
+									if(l==' ') l='';
+									break;
+								case 'READPIXEL':
+									if(l=='('){
+										word='readpixel';
+									}else{
+										word='readpixel(';
+										addToLine+=')';
+										if(l==' ') l='';
+									}
+									break;
+								case 'COLOR':
+									word='color(';
+									addToLine+=')';
+									if(l==' ') l='';
+									break;
+								case 'BCOLOR':
+									word='bcolor(';
+									addToLine+=')';
+									if(l==' ') l='';
+									break;
+								case 'TCOLOR':
+									word='tcolor(';
+									addToLine+=')';
+									if(l==' ') l='';
+									break;
+								case 'COLORHUE':
+									word='colorhue(1,';
+									addToLine+=')';
+									if(l==' ') l='';
+									break;
+								case 'BCOLORHUE':
+									word='colorhue(2,';
+									addToLine+=')';
+									if(l==' ') l='';
+									break;
+								case 'TCOLORHUE':
+									word='colorhue(3,';
+									addToLine+=')';
+									if(l==' ') l='';
+									break;
+								case 'ScreenWidth':
+									if(l=='='&j==11){word='setWidth('; l=''; addToLine+=')'}
+									break;
+								case 'ScreenHeight':
+									if(l=='='&j==12){word='setHeight('; l=''; addToLine+=')'}
+									break;
+								case 'ConsoleWidth':
+									if(l=='='&j==12){word='setConsoleWidth('; l=''; addToLine+=')'}
+									break;
+								case 'ConsoleHeight':
+									if(l=='='&j==13){word='setConsoleHeight('; l=''; addToLine+=')'}
+									break;
+								case 'RETINA':word=''; line=''; break;
+								case 'throw':break;
+							}
+							js+=word;
+							if(word!=' '&word!='') oldword=word;
+							word=l;
+						}else{
+							if(l!=' ') word+=l;
+						}
+					}
+				}
+				//Attempt to resolve nested timeouts, but unsupported in JavaScript.
+				/*if(word.charAt(0)=='}'){
+					while(addToBlockIndex.lastIndexOf(blockDepth+1)!=-1){
+						var index=addToBlockIndex.lastIndexOf(blockDepth+1);
+						word=addToBlock[index]+word;
+						addToBlock.splice(index,1);
+						addToBlockIndex.splice(index,1);
+					}
+				}*/
+				if(word.charAt(0)=='}') blockDepth--;
+				if(word.charAt(word.length-1)=='{') blockDepth++;
+				if(blockDepth<0) blockDepth=0;
+				if(word.charAt(word.length-1)!='{'&word.charAt(0)!='}'&word!='') addToLine+=';';
+				js+=word+addToLine;
+				if(addToLine!=''|word.charAt(0)=='}'|word.charAt(word.length-1)=='{') js+='\n';
+			}
+			while(addToBlockIndex.length>0){
+				var index=addToBlockIndex.length-1;
+				js+=addToBlock[index];
+				addToBlock.splice(index,1);
+				addToBlockIndex.splice(index,1);
+			}
+			if(variables.length>0){
+				js=';\n'+js;
+				for(var i=0;i<variables.length-1;i++) js=', '+variables[i]+js;
+				js='var '+variables[variables.length-1]+js;
+			}
+			js=jsReplace('}for(','}\nfor(',js);
+			if(labels.length>0) console.log('Labels:\t'+labels);
+			console.log('Variables:\t'+variables);
+			console.log('Code Converted to JavaScript: ');
+			var lines=js.split('\n'),jsStr='';
+			for(i=0;i<lines.length;i++){
+				if(i!=0) jsStr+='\n';
+				jsStr+='\t'+(i+1)+'\t\t';
+				jsStr+=lines[i];
+			}
+			console.log(jsStr); //output the JavaScript source code
+			return js;
+		}
+		formatEditor();
+		if(localStorage.getItem('BASICtemp')=='2'){
+			print('BREAK');
+			localStorage.setItem('BASICtemp','0');
+		}
+		if(localStorage.getItem('BASICtemp')=='0'){
+			window.scrollTo(0,document.body.scrollHeight);
+		}
+		if(localStorage.getItem('BASICtemp')=='1'){
+			localStorage.setItem('BASICtemp','0');
+			cls();
+			color(1,1,0,1);
+			bcolor(0,0,0,1);
+			tcolor(0,1,0,1);
+			setTimeout(function(){
+				window.scrollTo(0,130);
+				var obj=document.createElement('script');
+				obj.text=convertToJS();
+				document.body.appendChild(obj);
+			},100);
+		}
+	</script>
+</body>
+</html>
