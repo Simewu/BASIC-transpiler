@@ -175,6 +175,9 @@
 			actx=new AudioContext();
 		}catch(e){}
 		
+		// TODO
+		const SLEEP = f => new Promise(x => setTimeout(x, f * 1000));
+
 		//replace all characters with unicode back to ascii
 		function replaceAll(f,r,str,caseInsensitive,wordsOnly){
 			var modifiers='g';
