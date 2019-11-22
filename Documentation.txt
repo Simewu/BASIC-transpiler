@@ -1,0 +1,406 @@
+List of BASIC commands:
+
+
+To start, I would highly recommend using Google Chrome to run this html file, Chrome was the browser used to test all of the functions.
+
+
+Editor Shortcuts:
+	CTRL+D		Duplicate current line
+	CTRL+S		Open and toggle between save/load screens
+	CTRL+F		Format
+	CTRL+B		Break
+	CTRL+ENTER	Run Program
+
+
+General Commands:
+	var=5
+		Creates a number variable named var with a value of 5
+	var$="5"
+		Creates a string variable named var$ with a value of "5"
+	IF a=b THEN
+		[some code]
+	[ELSE]
+		[some code]
+	ENDIF
+		Run the code inside the if statement if a [is equal to] b
+		=		is equal to
+		<>		is not equal to
+		>		is greater than
+		<		is less than
+		>=		is greater than or equal to
+		<=		is less than or equal to
+	PRINT "Hello World"
+		Sends the string "Hello World" to the text console
+	PRINT "Hello World";
+		Sends the string "Hello World" to the text console but without a line break
+		Example:
+			PRINT "Hello ";
+			PRINT "World"
+		Will return "Hello World"
+	INPUT "What is your name?",nameVar
+		Asks the user what their name is then stores the value they type into nameVar
+			INPUT nameVar
+			Opens a blank input window, whatever the user types gets stores in nameVar
+			(if the user clicks cancel or X, the input will return -1)
+		You can also add a : (colon) to the end of the string followed by a default value
+		Example:
+			INPUT "What is your name?:Anonymous",nameStr
+		Now an input box will pop up with "Anonymous" automatically typed into the input
+		If the user types a blank string (""), it will return "Anonymous" instead of ""
+	ALERT "Hello World"
+		Shows a pop-up displaying the string "Hello World"
+	ScreenWidth
+		Get OR Set the width of the canvas
+	ScreenHeight
+		Get OR Set the height of the canvas
+	ConsoleWidth
+		Get OR Set the width of the text console
+		(must be greater than 20)
+	ConsoleHeight
+		Get OR Set the height of the text console
+	DIM var1(10,10,10),var2(5,8,12)
+		Creates a 10x10x10 array named var1 and a 5x8x12 array named var2
+		All the values in it are initialized to 0
+		(if var was to be var$ then all the values would be initialized to "" since it would be a string array)
+		You can also print out the entire array separated by commas like so:
+			PRINT var1
+		There is no limit as to how many dimensions an array can have. Although I cannot think of a situation where more than 3 is needed.
+	BEEP Frequency[,Duration][,Offset]
+		(BEEP is only supported in some browsers, Google Chrome is recommended)
+		Frequency:
+			C3:	130.81	C4:	261.63	C5:	523.25	C6:	1046.50
+			D3:	146.83	D4:	293.66	D5:	587.33	D6:	1174.66
+			E3:	164.81	E4:	329.63	E5:	659.25	E6:	1318.51
+			F3:	174.61	F4:	349.23	F5:	698.46	F6:	1396.91
+			G3:	196   	G4:	392   	G5:	783.99	G6:	1567.98
+			A3:	220   	A4:	440   	A5:	880   	A6:	1760.00
+			B3:	246.94	B4:	493.88	B5:	987.77	B6:	1975.53
+		Duration:
+			How long (in seconds) you want that beep to play
+			Default=1
+		Offset:
+			The offset (in seconds) before the beep plays
+			Default=0
+
+
+Strings:
+	UPPER$(str)
+		Converts str to UPPERCASE
+	LOWER$(str)
+		Converts str to lowercase
+	STR$(num)
+		Converts num into a string
+		Example:
+			PRINT 5+5
+				Prints "10"
+			PRINT STR$(5)+5
+				Prints "55"
+	VAL(str)
+		Opposite of STR$ command, converts a string into a number
+	LEFT$(str,len)
+		Returns str trimmed down to len length from the left side
+		Example:
+			PRINT LEFT$("Hello World",7)
+				Prints "Hello W"
+	RIGHT$(str,len)
+		Returns str trimmed down to len length from the right side
+		Example:
+			PRINT RIGHT$("Hello World",7)
+				Prints "o World"
+	MID$(str,start,len)
+		Takes str and returns its trimmed length from start to start+len
+		Example:
+			PRINT MID$("Hello World",1,6)
+				Prints "ello W"
+	REPLACE$(str,a,b)
+		Returns str with all occurences of string a replaced with string b
+		a can be a regular expressions
+		b can contain $1,$2,$3,... to match every capturing group in a
+		Surrounding something in parentheses in the regular expression will create a new variable $1
+		For more information on regular expressions, visit https://www.regular-expressions.info/tutorial.html
+		Examples:
+			PRINT REPLACE$("Hello World","l"," L ")
+				Returns "He L  L o Wor L d"
+			PRINT REPLACE$("Hello World","([a-zA-Z])","$1 ")
+				Adds a space after every letter
+				Returns "H e l l o  W o r l d "
+			PRINT REPLACE$("Hello World","([a-zA-Z]+) ([a-zA-Z]+)","$2 $1")
+				Returns "World Hello"
+	INDEXOF(str,a)
+		Returns the index of the first occurence of string a in str
+		Returns -1 if string a was not found in str
+	LASTINDEXOF(str,a)
+		Returns the index of the last occurence of string a in str
+		Returns -1 if string a was not found in str
+	CHR$(str)
+		Converts the first character of str into an ASCII Number
+	ASC(num)
+		Converts an ASCII Number (num) into a character
+	SPC(n[,Character])
+		Character by default is " " (space)
+		Returns a string with n characters in it
+		Example:
+			PRINT SPC(10)
+				Prints "          "
+			PRINT SPC(10,"!")
+				Prints "!!!!!!!!!!"
+	LEN(str)
+		Returns the length of the str
+		(If str is an array, it will return the number of elements)
+	\n
+		Newline character
+	\"
+		Quotation mark character as a string
+	\t
+		Creates a tab indent
+	\\
+		Returns a single backslash
+
+
+Loops:
+	[label]:
+		This is a label, used to mark a position in the code
+		A SLEEP should ALWAYS be directly after a label that is going to be looping, the reason for this being that this BASIC emulator runs so fast that the browser needs some time to process all of the commands on the browser's queue. And a SLEEP is exactly what the browser needs... even if it is SLEEP 0.004 (the fastest possible sleep interval)
+	GOTO [label]
+		Goes back to [label]
+			loop:
+			SLEEP 0.1
+			PRINT "INFINITE LOOP!"
+			GOTO loop
+	GOSUB [label]
+		Temporarily goes to [label] until it reaches RETURN
+			loop:
+			SLEEP 0.1
+			GOSUB sayHI
+			GOTO loop
+			
+			sayHI:
+			PRINT "HI!"
+			RETURN
+			
+	FOR var=a TO b [STEP stepsize]
+		[some code]
+	NEXT
+		Loop through code until a reaches b
+			FOR i=1 TO 100
+				PRINT i;
+			NEXT
+	WHILE [statement]
+		[some code]
+	WEND
+		Loops through code until [statement] returns false
+			WHILE count<100
+				count=count+1
+				PRINT count
+			WEND
+
+
+Graphics:
+	CLS
+		Clear the text console and the canvas
+	CLS GFX
+		Clears only the canvas
+	CLS TTY
+		Clears only the text console
+	COLOR red,blue,green[,alpha]
+		Changes the color used to draw graphics
+		red=	0-1 or 2-255
+		green=	0-1 or 2-255
+		blue=	0-1 or 2-255
+		alpha=	0-1
+		(alpha is transparency and it is optional)
+	BCOLOR red,blue,green[,alpha]
+		Change the background color
+	TCOLOR red,blue,green[,alpha]
+		Change the text color of the console
+	COLORHUE hue[,saturation][,value][,alpha]
+		Changes the color based on HSV instead of RGB
+		hue:		0 to 360
+		saturation:	0 to 1 (Default=1)
+		value:		0 to 1 (Default=1)
+		alpha:		0 to 1 (Default=1) (this is the transparency)
+	BCOLORHUE hue[,saturation][,value][,alpha]
+		Changes the background color based on HSV instead of RGB
+		hue:		0 to 360
+		saturation:	0 to 1 (Default=1)
+		value:		0 to 1 (Default=1)
+		alpha:		0 to 1 (Default=1) (this is the transparency)
+	TCOLORHUE hue[,saturation][,value][,alpha]
+		Changes the console text color based on HSV instead of RGB
+		hue:		0 to 360
+		saturation:	0 to 1 (Default=1)
+		value:		0 to 1 (Default=1)
+		alpha:		0 to 1 (Default=1) (this is the transparency)
+	POINT x,y[,size]
+		Draws a square/pixel onto the screen at the given position
+	CIRCLE x,y[,size][,lineWidth]
+		Draws a circle onto the screen
+		(lineWidth will make it hollow
+	LINE x1,y1,x2,y2[,lineWidth]
+		Draws a line from (x1,y1) to (x2,y2)
+	LINECAP ON/Off
+		Specify whether drawn lines should have rounded edges or not
+		Default=ON
+	ELLIPSE x1,y1,x2,y2[,lineWidth]
+		Draws an ellipse from (x1,y1) to (x2,y2)
+	RECT x1,y1,x2,y2[,lineWidth]
+		Draws a rectangle
+	RRECT x1,y1,x2,y2,radius[,lineWidth]
+		Draws a rounded corner rectangle
+	ARC radius,x,y,startAngle,endAngle[,lineWidth]
+		Draws an arc(semi-circle) at x,y
+	TRIANGLE x1,y1,x2,y2,x3,y3[,lineWidth]
+		Draws a triangle
+	SHAPE numPoints,arrayOfX,arrayOfY[,lineWidth]
+		Draws a custom shape
+	DRAWTEXT "string",x,y
+		Draws a string of text centered at (x,y)
+	TEXTFONT "font"[,"style"][,size]
+		Set the font style to be used with DRAWTEXT
+		"font"=Any font on your computer
+		["style"]=Bold and/or Italic
+		["font"]=Pixel size
+	TEXTWIDTH "string"
+		Measures the width of "string" in its current font style and returns the total width in pixels
+		Example:
+			TEXTFONT "Times",20
+			PRINT TEXTWIDTH "Hello World"
+			TEXTFONT "Times",40
+			PRINT TEXTWIDTH "Hello World"
+		Will return 100.52734375 and 201.0546875
+	Mouse
+		Returns -1 if the cursor is not hovering over the canvas
+		Returns 0 if the cursor is not currently clicking the canvas but is hovering over it
+		Returns 1 if the cursor is currently clicking the canvas
+	MouseX
+		Gets the x position of the cursor
+	MouseY
+		Gets the y position of the cursor
+	Touch
+		Same as Mouse
+	TouchX
+		Same as MouseX
+	TouchY
+		Same as MouseY
+	READPIXEL x,y
+		Get the pixel color at (x,y)
+		Use READPIXELR to get the red
+		Use READPIXELG to get the green
+		Use READPIXELB to get the blue
+
+
+Keys Being Pressed:
+	1 if it is being pressed
+	0 is it is not being pressed
+	Variables include:
+		SpaceKey,ShiftKey,CtrlKey,AltKey,EnterKey,BackspaceKey,EscapeKey
+		UpArrow,DownArrow,LeftArrow,RightArrow
+		Key0,Key1,Key2,Key3, [...] ,Key9
+		KeyA,KeyB,KeyC,KeyD, [...] ,KeyZ
+	Using this method you can check if multiple keys are currently being pressed which can be very handy
+
+
+Math:
+	a*b
+		Returns the product of a and b
+	a/b
+		Returns the quotient of a and b
+	a+b
+		Returns the sum of a and b
+	a-b
+		Returns the difference of a and b
+	a^b
+		Returns a to the power of b
+	a%b
+		Returns the modulus or remainder of a/b
+	MOD(a,b)
+		Same as a%b
+	RND
+		A random number from 0 to 0.9999999999999999
+	PI
+		Returns 3.141592653589793
+	INT(n)
+		Rounds a decimal number down to the nearest whole number
+		INT(0.999)=0
+		INT(1)=1
+	ROUND(n)
+		Rounds a decimal to the nearest whole number
+		ROUND(0.4)=0
+		ROUND(0.5)=1
+	ABS(n)
+		Returns the absolute value of n
+		ABS(5)=5
+		ABS(-5)=5
+	SQR(n)
+		Square root of n
+	POW(a,b)
+		Same as a^b
+	SIN(n)
+		Sine of n
+	COS(n)
+		Cosine of n
+	TAN(n)
+		Tangent of n
+	ASIN(n)
+		Arc sine of n
+	ACOS(n)
+		Arc cosine of n
+	ATN(n)
+		Arc tangent of n
+	ATN2(y,x)
+		Calculate the angle of (x,y) to the positive x axis
+	LOG(n)
+		Returns the natural logarithm (base e) of n
+
+
+Time:
+	SLEEP n
+		Pauses the program for n seconds
+		(The fastest possible SLEEP interval is 0.004 seconds. Anything under that will be converted to 0.004)
+		For now, the SLEEP command does not function properly inside FOR or WHILE loops, it would be best if you just put the sleep inside a label with GOTO label at the end.
+	TICKCOUNT
+		Returns the number of seconds since 1/1/1970
+		You can use this as a checkpoint to time how long a block of code took to run
+		Just subtract the TICKCOUNTs
+	GetDate
+		Returns a string containing the current date in (d/m/yyyy) format
+	GetTime
+		Returns a string containing the current time in (hh:mm:ss AM/PM) format
+	DateYear
+		Returns the current year (yyyy)
+	DateMonth
+		Returns the current month as a string
+	DateMonthNum
+		Returns the current month as a number (1-12)
+	DateDay
+		Returns the current day (1-31)
+	DateWeekDay
+		Returns the current weekday as a string
+	DateWeekDayNum
+		Returns the current weekday as a number (1-7)
+	TimeHours
+		Returns the current hour (1-12)
+	TimeHours24
+		Returns the current hour (0-23)
+	TimeMinutes
+		Returns the current minute (0-59)
+	TimeSeconds
+		Returns the current second (0-59)
+	TimeMilliseconds
+		Returns the current millisecond (0-999)
+
+
+Comments:
+	REM This code will not be read
+	' This code will not be read either
+	Example:
+		WHILE x<>5 'x loops until it equals 5
+			[code block]
+			REM Make sure x eventually equals 5
+			REM To prevent an infinite loop from occurring
+		WEND
+	The above example will completely ignore the comments and run the code.
+
+Be sure to try out the examples to understand this documentation better.
+
+~ Simeon

@@ -1,0 +1,37 @@
+
+REM "Functional Analog Clock Demo"
+
+ScreenWidth=600
+ScreenHeight=600
+ConsoleHeight=15
+BCOLOR 170,170,170
+COLOR 220,220,220
+
+loop:
+SLEEP 1
+CIRCLE 300,300,300
+COLOR 51,51,51
+CIRCLE 300,300,285,30
+TEXTFONT "Times",50
+FOR i=1 TO 12
+	DRAWTEXT i,300+SIN((6-i)*PI/6)*240,300+COS((6-i)*PI/6)*240
+	CIRCLE 300+SIN((6-i)*PI/6)*200,300+COS((6-i)*PI/6)*200,3
+NEXT
+COLOR 30,30,30
+Hour=(TimeHours/12)+(TimeMinutes/720)+(TimeSeconds/43200)
+x=300+SIN((0.5-Hour)*PI*2)*150
+y=300+COS((0.5-Hour)*PI*2)*150
+LINE 300,300,x,y,20
+Min=(TimeMinutes/60)+(TimeSeconds/3600)
+x=300+SIN((0.5-Min)*PI*2)*220
+y=300+COS((0.5-Min)*PI*2)*220
+LINE 300,300,x,y,10
+Sec=(TimeSeconds/60)
+x=300+SIN((0.5-Sec)*PI*2)*240
+y=300+COS((0.5-Sec)*PI*2)*240
+x2=300+SIN((1-Sec)*PI*2)*70
+y2=300+COS((1-Sec)*PI*2)*70
+LINE x,y,x2,y2,3
+COLOR 220,220,220
+CIRCLE 300,300,5
+GOTO loop
