@@ -22,18 +22,16 @@ Interactive Mandelbrot Fractal
 Interactive Julia Set Fractal
 Interactive Burning Ship Fractal
 ```
-### This application is hosted at http://simewu.com/BASIC-transpiler.
+### This application is hosted at
+https://simewu.github.io/BASIC-transpiler
+
+and
+
+http://simewu.com/BASIC-transpiler.
+
 
 ## Screenshots
 ![](/screenshots/1.png)
 ![](/screenshots/2.png)
 ![](/screenshots/3.png)
 ![](/screenshots/4.png)
-
-### This application is hosted at
-
-https://simewu.github.io/BASIC-transpiler
-
-and
-
-http://simewu.com/BASIC-transpiler.
