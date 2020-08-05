@@ -30,4 +30,10 @@ Interactive Burning Ship Fractal
 ![](/screenshots/3.png)
 ![](/screenshots/4.png)
 
-### This application is hosted at http://simewu.com/BASIC-transpiler.
+### This application is hosted at
+
+https://simewu.github.io/BASIC-transpiler
+
+and
+
+http://simewu.com/BASIC-transpiler.
