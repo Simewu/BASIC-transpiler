@@ -1,0 +1,153 @@
+REM 
+REM Crazy Balls
+REM
+REM iPhone 5 / iOS 6.1b3 / miB 3.4.2
+
+'screen area
+scw = ScreenWidth
+sch = ScreenHeight
+csw = scw/2
+csh = sch/2
+
+DIM x(7),y(7),z(7),xa(7),ya(7)
+DIM trix(3),triy(3)
+
+FOR a=1 TO 7
+READ x(a),y(a),z(a),xa(a),ya(a)
+NEXT a
+
+scr=650
+
+loop: 
+BEGINDRAW
+CLS gfx
+mm=mm+.05
+scr=scr-3
+GOSUB bg
+GOSUB ci
+GOSUB scroll
+GOSUB detect
+ENDDRAW 
+GOTO loop
+END
+
+bg:
+red=200*SIN(mm/2)
+grn=200*SIN(mm/3)
+blu=200*SIN(mm/4)
+COLOR red,grn,blu
+'triangle 
+trix(1)=0
+triy(1)=0
+trix(2)=csw
+triy(2)=0
+trix(3)=csw
+triy(3)=csh
+SHAPE 3, trix, triy
+COLOR red,0,blu
+'triangle 
+trix(1)=0
+triy(1)=0
+trix(2)=0
+triy(2)=csh
+trix(3)=csw
+triy(3)=csh
+SHAPE 3, trix, triy
+COLOR 0,0,blu
+'triangle 
+trix(1)=scw
+triy(1)=0
+trix(2)=csw
+triy(2)=0
+trix(3)=csw
+triy(3)=csh
+SHAPE 3, trix, triy
+COLOR 0,grn,0
+'triangle 
+trix(1)=scw
+triy(1)=0
+trix(2)=scw
+triy(2)=csh
+trix(3)=csw
+triy(3)=csh
+SHAPE 3, trix, triy
+COLOR red,0,0
+'triangle 
+trix(1)=0
+triy(1)=sch
+trix(2)=0
+triy(2)=csh
+trix(3)=csw
+triy(3)=csh
+SHAPE 3, trix, triy
+COLOR 0,0,blu
+'triangle 
+trix(1)=0
+triy(1)=sch
+trix(2)=csw
+triy(2)=sch
+trix(3)=csw
+triy(3)=csh
+SHAPE 3, trix, triy
+COLOR 0,grn,0
+'triangle 
+trix(1)=scw
+triy(1)=sch
+trix(2)=csw
+triy(2)=sch
+trix(3)=csw
+triy(3)=csh
+SHAPE 3, trix, triy
+COLOR red,0,0
+'triangle 
+trix(1)=scw
+triy(1)=sch
+trix(2)=scw
+triy(2)=csh
+trix(3)=csw
+triy(3)=csh
+SHAPE 3, trix, triy
+RETURN
+
+ci:
+FOR a=1 TO 7
+COLOR 240,200,255
+CIRCLE x(a),y(a),z(a),0
+x(a)=x(a)+xa(a)
+y(a)=y(a)+ya(a)
+IF x(a)>scw-z(a) THEN
+xa(a)=-xa(a)
+END IF 
+IF x(a)<0+z(a) THEN
+xa(a)=-xa(a)
+END IF 
+IF y(a)>(sch-z(a))-20 THEN
+ya(a)=-ya(a)
+END IF 
+IF y(a)<0+z(a) THEN
+ya(a)=-ya(a)
+END IF
+NEXT a
+RETURN
+
+scroll:
+COLOR 200,200,255
+RECT 0,sch-20, scw,sch,0
+COLOR 0,0,0
+DRAWTEXT "miSoft Basic is a challenge!",scr,sch-20
+RETURN
+
+detect:
+IF scr<-200 THEN
+scr=scw
+END IF 
+RETURN
+
+balls:
+DATA 20,20,5,2,2
+DATA 20,20,7,3,3
+DATA 20,20,9,4,4
+DATA 20,20,11,5,5
+DATA 20,20,13,6,6
+DATA 20,20,15,7,7
+DATA 20,20,17,8,8

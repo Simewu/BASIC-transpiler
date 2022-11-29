@@ -1,0 +1,442 @@
+'Welcome to the Line Runner Pro!
+'by SimeonW
+'
+REM This game never uses RND, instead it uses an artificial random called Pseudo Random, so that each level stays the same when played again
+'
+REM •Long tap to Long Jump
+REM •Short tap to Short Jump
+REM •Avoid Spikes
+REM •Avoid Falling
+REM •It gets Harder as you Progress
+REM •Some Levels must be played in a different color scheme
+REM •Each World has 9 Unique Levels
+REM •After Completing a Level, Progress will be Saved, and will Resume next time the Game is Ran
+'
+REM •For Cheaters
+REM (progress wont SAVE if you cheat)
+'world=1
+'level=1
+'
+REM •Every Game Seed is different
+gameSeed=0
+'
+'
+GOSUB start
+GOSUB init
+loop:
+BEGINDRAW
+CLS
+frames=frames+1
+jumping=1
+FOR i=1 TO spikes
+    GOSUB spikes
+NEXT
+FOR i=1 TO lines
+    GOSUB lines
+NEXT
+IF Touch=1 AND jumping=0 THEN
+    posy=posy-(jumpHeight+ABS(soffy(lastLandOn)))
+    vely=-jumpHeight
+ENDIF
+IF Touch=0 AND jumping=1 THEN
+    vely=vely+gravity*3
+ENDIF
+GOSUB move
+GOSUB draw
+GOSUB drawWords
+ENDDRAW
+GOTO loop
+'
+rand:
+'pseudo random
+a=1140671485
+c=12820163
+newVal=MOD((oldVal*a+c+num+(gameSeed*1000)),(2^24))
+rand=newVal/(2^24)
+oldVal=newVal
+RETURN
+'
+lines:
+LINE x(i),y(i),x(i)+length(i),y(i),sw/50
+IF soffx(i)<>0 THEN
+    COLOR 0.7-r,0.7-g,0.7--b
+    LINE x(i),y(i),x(i)+length(i),y(i),sw/250
+    COLOR r,g,b
+ENDIF
+GOSUB collision
+x(i)=(x(i)-speed)+soffx(i)
+y(i)=(y(i)+soffy(i))
+IF frames<>1 THEN
+    IF flagx<=sw THEN
+        IF x(i)+length(i)>flagx+1 THEN
+            length(i)=(length(i)+ABS(flagx-length(i)))/2
+        ENDIF
+    ENDIF
+ENDIF
+IF x(i)+length(i)<=0 OR x(i)>sw THEN
+    IF flagx>sw THEN
+        soffx(i)=0
+        x(i)=sw
+        GOSUB rand
+        y(i)=(sw/10)+rand*(sh-(2*sw/10))
+        y(i)=INT(y(i)/(sw/10))*(sw/10)
+        GOSUB rand
+        length(i)=minLength+rand*maxLength
+        GOSUB rand
+        IF INT(1+rand*7)=7 THEN
+            GOSUB rand
+            soffy(i)=INT((-1+rand*2)*3)*(speed/5)
+            IF soffy(i)=ABS(soffy(i)) THEN
+                y(i)=(y(i)+0)/2
+            ELSE
+                y(i)=(y(i)+sh)/2
+            ENDIF
+            y(i)=INT(y(i)/(sw/20))*(sw/20)
+        ENDIF
+        GOSUB rand
+        IF INT(1+rand*30)=30 THEN
+            GOSUB rand
+            x(i)=-length(i)
+            soffx(i)=speed+INT(2+rand*4)
+        ENDIF
+    ENDIF
+ENDIF
+spikeAllowed=0
+IF x(i)+length(i)>=sw+spikeSize AND soffx(i)<=speed THEN
+    spikeAllowed=1
+ENDIF
+IF x(i)<=-spikeSize AND soffx(i)>speed THEN
+    spikeAllowed=1
+ENDIF
+IF spikeAllowed=1 THEN
+    GOSUB rand
+    IF INT(1+rand*spikeRarity)=spikeRarity AND spikes<maxSpikes AND soffx(i)<=speed THEN
+        spikes=spikes+1
+        GOSUB rand
+        spikex(spikes)=sw+speed+spikeSize
+        spikeAllowed=1
+        spikey(spikes)=y(i)-spikeSize
+        spikeParent(spikes)=i
+        GOSUB rand
+        FOR e=1 TO spikes-1
+            IF spikex(e)>=spikex(spikes)-spikeSize AND spikex(e)<=spikex(spikes)+spikeSize AND spikey(e)>=spikey(spikes)-spikeSize AND spikey(e)<=spikey(spikes)+(spikeSize*2) THEN
+                spikeAllowed=0
+            ENDIF
+        NEXT
+        IF spikeAllowed=0 THEN
+            spikes=spikes-1
+        ENDIF
+    ENDIF
+ENDIF
+RETURN
+'
+spikes:
+removeSpike=0
+IF spikeParent(i)<>0 THEN
+    IF spikex(i)<-spikeSize AND soffx(spikeParent(i))<=speed THEN
+        removeSpike=1
+    ENDIF
+    IF spikex(i)<=sw+spikeSize AND soffx(spikeParent(i))>speed THEN
+        removeSpike=1
+    ENDIF
+ENDIF
+IF removeSpike=1 THEN
+    FOR ii=i TO spikes-1
+        spikex(ii)=spikex(ii+1)
+        spikey(ii)=spikey(ii+1)
+        spikeParent(ii)=spikeParent(ii+1)
+    NEXT
+    spikes=spikes-1
+ENDIF
+spikex(i)=spikex(i)-speed
+IF SQR(((spikex(i)-headx)^2)+((spikey(i)-heady)^2))<=(size/2.4)+spikeSize/1.5 OR SQR(((spikex(i)-torsox)^2)+((spikey(i)-torsoy)^2))<=spikeSize+(size/2) THEN
+    GOSUB die
+ENDIF
+trix(1)=spikex(i)-spikeSize
+triy(1)=spikey(i)+spikeSize
+trix(2)=spikex(i)+spikeSize
+triy(2)=spikey(i)+spikeSize
+trix(3)=spikex(i)
+triy(3)=spikey(i)-spikeSize/2
+SHAPE 3,trix,triy
+IF spikeParent(i)<>0 THEN
+    spikex(i)=spikex(i)+soffx(spikeParent(i))
+    spikey(i)=spikey(i)+soffy(spikeParent(i))
+ENDIF
+RETURN
+'
+collision:
+highestLine=1
+IF jumping=0 AND lastLandOn<>0 AND i<>lastLandOn THEN
+    IF y(i)<=y(lastLandOn) THEN
+        highestLine=0
+    ENDIF
+ENDIF
+IF highestLine=1 THEN
+    IF posx>=x(i)-(sw/30) AND posx<=(x(i)+length(i))+(sw/30) THEN
+        IF max<>0 THEN
+            IF y(max)>=y(i) AND y(i)>=posy+size THEN
+                max=i
+            ENDIF
+        ELSE
+            IF y(i)>=posy+size THEN
+                max=i
+            ENDIF
+        ENDIF
+        IF posy<=y(i)-(sw/35) OR posy+vely<=y(i)-(sw/35) THEN
+            IF posy+vely>=y(i)-(sw/25) OR posy>=y(i)-(sw/18) THEN
+                vely=0
+                posy=((y(i)-(sw/25))+soffy(i))+vely
+                jumping=0
+                lastLand=posy
+                lastLandOn=i
+            ENDIF
+        ENDIF
+    ENDIF
+ENDIF
+RETURN
+'
+move:
+IF posy>=sh+(sw/30) THEN
+    GOSUB die
+ENDIF
+IF posy+size/1.5<=0 THEN
+    posy=-size/1.5
+ENDIF
+IF jumping=1 THEN
+    vely=vely+gravity
+ENDIF
+posx=sw/3
+posy=posy+vely
+dist=(dist+(speed/30))
+RETURN
+'
+drawWords:
+COLOR r/1.3,g/1.3,b/1.3
+IF gameSeed<>0 THEN
+    TEXTFONT "Courier New",sw/25
+    DRAWTEXT "Game Seed:"+STR$(gameSeed),sw/2.5,sh/17
+ENDIF
+TEXTFONT "Courier New","Bold",sw/12
+DRAWTEXT "World "+STR$(world)+"-"+STR$(level),sw/3.5,sh/150
+TEXTFONT "Courier","Bold",sw/25
+DRAWTEXT "Distance Traveled: "+STR$(INT(dist))+"ft/"+STR$(INT(goal))+"ft",sw/6,sh/1.04
+TEXTFONT "Courier New","Bold",sw/25
+DRAWTEXT "(Level "+STR$(num)+")",sw/1.35,sh/35
+TEXTFONT "Courier New","Bold",sw/25
+IF q=1 THEN
+    IF MOD(INT(frames/12),2)=0 THEN
+        COLOR 0.5-r,g,b
+    ELSE
+        COLOR (0.5-r+2)/3,(g+2)/3,(b+2)/3
+    ENDIF
+    DRAWTEXT "CHEAT MODE",sw/80,sh/35
+ENDIF
+COLOR r,g,b
+RETURN
+'
+draw:
+size=sw/35
+IF max<>0 THEN 'shadow
+    alt=ABS(posy-y(max))/(sh/2)
+    COLOR 1-r,1-g,1-b,1-alt
+    ELLIPSE (posx-size*1.25)-(alt*size*8),(y(max)-size/4)-soffy(max),(posx+size*1.25)+(alt*size*8),(y(max)+size/5)-soffy(max)
+    max=0
+ENDIF
+IF jumping=0 THEN
+    headx=posx
+    heady=(posy-size*3)-ABS(0.5+SIN(dist*2))*size/5
+    torsox=headx
+    torsoy=heady+size*2
+    leg1x=torsox+COS((dist/2.5)*speed)*size*1.3
+    leg1y=torsoy+size*2+SIN((dist/2.5)*speed)*size/3
+    leg2x=torsox+COS(PI+(dist/2.5)*speed)*size*1.3
+    leg2y=torsoy+size*2+SIN(PI+(dist/2.5)*speed)*size/3
+    arm1x=(torsox+COS((dist/3.5)*speed)*size*1.1)
+    arm1y=(torsoy+size*2+SIN((dist/3.5)*speed)*size/3)-size*2
+    arm2x=(torsox+COS(PI+(dist/3.5)*speed)*size*1.1)
+    arm2y=(torsoy+size*2+SIN(PI+(dist/3.5)*speed)*size/3)-size*2
+    j=0
+ELSE
+    j=j+1
+    headx=posx-SIN(j/40)*size
+    heady=(posy-size*2)-COS(j/40)*size
+    torsox=headx+SIN(j/30)*size/2
+    torsoy=heady+(size*2)+COS(j/30)*size/2
+    leg1x=torsox+COS(PI/3-j/40)*size*1.5
+    leg1y=torsoy+SIN(PI/3-j/40)*size*1.5
+    leg2x=torsox+COS(PI/2+j/40)*size*1.5
+    leg2y=torsoy+SIN(PI/2+j/40)*size*1.5
+    arm1x=(torsox+COS((vely/10))*size*1.2)
+    arm1y=(torsoy+size*1.5+SIN((vely/10))*size/3)-size*2.5
+    arm2x=(torsox-COS((vely/10))*size*1.2)
+    arm2y=(torsoy+size*1.5+SIN((vely/10))*size/3)-size*2.5
+ENDIF
+flagx=(((1-dist/goal)*sw)*speed*1.333)+sw/3
+IF flagx<=sw THEN
+    flagy=((flagy*INT(speed/1.5))+posy)/(1+INT(speed/1.5))
+    COLOR 0,0.3,1
+    TRIANGLE flagx,flagy,flagx,flagy+size*4,flagx-size*5,flagy+size*2
+    COLOR 1-r,1-g,1-b
+    TRIANGLE flagx,flagy,flagx,flagy+size*4,flagx-size,flagy+size*2
+    COLOR 0,0.3,1
+    LINE flagx-size/6,flagy,flagx-size/6,sh,size/8
+    LINE flagx+size/6,flagy,flagx+size/6,sh,size/8
+    CIRCLE flagx,flagy,size/13
+    LINE flagx-size,sh,flagx+size,sh,size
+ENDIF
+COLOR r,g,b
+LINE headx,heady,torsox,torsoy,size/3
+LINE torsox,torsoy,leg1x,leg1y,size/3
+LINE torsox,torsoy,leg2x,leg2y,size/3
+LINE (torsox+headx*2)/3,(torsoy+heady*2)/3,arm1x,arm1y,size/3
+LINE (torsox+headx*2)/3,(torsoy+heady*2)/3,arm2x,arm2y,size/3
+COLOR 1-r,1-g,1-b
+CIRCLE headx,heady,size/1.3
+COLOR r,g,b
+CIRCLE headx,heady,size/1.3,size/3
+IF dist>=goal THEN
+    dist=goal
+    ENDDRAW
+    WHILE Touch>0
+    WEND
+    PRINT
+    PRINT "You beat World "+STR$(world)+"-"+STR$(level)
+    IF q=0 THEN
+        PRINT "PROGRESS SAVED"
+    ENDIF
+    level=level+1
+    IF level>9 THEN
+        world=world+INT(level/9)
+        level=MOD(level+9,9)
+    ENDIF
+    IF q=0 THEN
+        OPEN "Line Runner Pro" FOR OUTPUT AS #1
+        PRINT #1,world
+        PRINT #1,level
+        CLOSE #1
+    ENDIF
+    PAUSE "Tap to go to the Next Level"
+    FOR i=1 TO 40
+        COLOR 1,1,1,0.1
+        RECT 0,0,sw,sh
+        SLEEP 0.01
+    NEXT
+    GOSUB init
+    BEGINDRAW
+ENDIF
+RETURN
+'
+die:
+ENDDRAW
+FOR i=1 TO 25
+    COLOR r,g,b,0.1
+    RECT 0,0,sw,sh
+    SLEEP 0.01
+NEXT
+COLOR r,g,b
+RECT 0,0,sw,sh
+SLEEP 0.5
+FOR i=1 TO 25
+    COLOR 1-r,1-g,1-b,0.1
+    RECT 0,0,sw,sh
+    SLEEP 0.01
+NEXT
+BEGINDRAW
+GOSUB init
+RETURN
+'
+start:
+RETINA off
+OPEN "Line Runner Pro" FOR INPUT AS #1
+IF world<>0 OR level<>0 THEN
+    q=INT((sw/21)^a)
+ELSE
+    INPUT #1,world
+    INPUT #1,level
+    q=a*INT(sw/21)
+ENDIF
+CLOSE #1
+RETURN
+'
+init:
+ENDIF
+level=INT(ABS(level))
+world=INT(ABS(world))
+gameSeed=INT(ABS(gameSeed))
+IF level=0 THEN
+    level=1
+ENDIF
+IF world=0 THEN
+    world=1
+ENDIF
+IF level>9 THEN
+    world=world+INT(level/9)
+    level=MOD(level+9,9)
+ENDIF
+oldVal=327680 'Restarts Random
+num=((world-1)*9)+level
+sw=ScreenWidth
+sh=ScreenHeight
+lines=6
+gravity=0.23
+speed=(sw/60)+(num/7)
+goal=INT((50*(speed/3))/25)*25
+jumpHeight=sh/65
+minLength=sw/5
+maxLength=sw
+maxSpikes=10
+spikeRarity=INT(50/(num/3))
+DIM x(lines),y(lines)
+DIM length(lines),soffy(lines),soffx(lines)
+DIM spikex(maxSpikes),spikey(maxSpikes),spikeParent(maxSpikes)
+spikes=0
+FOR i=1 TO lines
+    GOSUB rand
+    x(i)=rand*sw
+    GOSUB rand
+    y(i)=(sw/25)+rand*(sh-(2*sw/25))
+    y(i)=INT(y(i)/(sw/25))*(sw/25)
+    GOSUB rand
+    length(i)=minLength+rand*maxLength
+NEXT
+spikeSize=sw/30
+posx=sw/3
+posy=-sw/30
+vely=0
+dist=1
+IF MOD(num,3)=0 THEN
+    r=1
+    g=1
+    b=1
+ELSE
+    r=0
+    g=0
+    b=0
+ENDIF
+GOSUB rand
+IF INT(1+rand*5)=4 THEN
+    GOSUB rand
+    r=INT(rand*3)/3
+    GOSUB rand
+    g=INT(rand*3)/3
+    GOSUB rand
+    b=INT(rand*3)/3
+ENDIF
+IF r=0.5 AND g=0.5 AND b=0.5 THEN
+    GOSUB rand
+    r=INT(rand*3)/3
+    GOSUB rand
+    g=INT(rand*3)/3
+    GOSUB rand
+    b=INT(rand*3)/3
+ENDIF
+DIM trix(3),triy(3)
+COLOR r,g,b
+BCOLOR 1-r,1-g,1-b
+TCOLOR 1,0.3,0
+j=0
+max=0
+frames=0
+flagy=sh
+RETURN

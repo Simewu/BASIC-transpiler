@@ -1,0 +1,148 @@
+REM
+REM Mystery Cave
+REM
+REM iPhone 5 / iOS 6.1b3 / miSoft 3.4.2
+REM
+'note: I have a bug in my poly calculations. 
+'I'll try to fix it and optimize the code.
+'My tutorials got deleted from the 
+'harddrive. I'll rewrite them and post my 
+'monthly articals shortly. I should be 
+'home soon. 
+'email any contrabutions to:
+'sam@barukh.com
+'Enjoy!
+
+REM *** INIT STUFF
+scw = ScreenWidth
+sch = ScreenHeight
+csw = scw/2
+csh = sch/2
+q=120
+DIM cs(720),sn(720)
+DIM px(q),py(q),pz(q),tx(q),ty(q),tz(q),i(10)
+DIM ttx(3),tty(3) 
+s=400
+he=450 ' HEIGHTS
+su=-150 ' SURFACE
+
+REM *** GENERATE VERTEX
+FOR y=-s TO s STEP s/5
+FOR x=-s TO s STEP s/5
+px(a)=x
+py(a)=y*1.5
+pz(a)=su+he/2+(RND*he)
+a=a+1
+NEXT x
+NEXT y
+
+REM *** CALCULATE SINE TABLE
+FOR ang=1 TO 720
+cs(ang)=COS(ang*PI/360)
+sn(ang)=SIN(ang*PI/360)
+NEXT ang
+
+REM *** INIT SCREEN
+
+loop:
+ang=180+COS(mm/2)*75 ' ROTATE CAMERA ANGLE
+mm=mm+.1
+
+REM TRANSFORM POINTS
+FOR p=1 TO q
+px(p)=px(p)+24 ' 24 = FLY SPEED
+IF px(p)>s THEN
+px(p)=px(p)-s*2-50
+pz(p)=su+he/2+(RND*he)
+END IF 
+newy=cs(ang)*py(p)+sn(ang)*pz(p)
+newz=cs(ang)*pz(p)-sn(ang)*py(p)
+newx=cs(ang)*px(p)+sn(ang)*newz
+newz=cs(ang)*newz-sn(ang)*px(p)+s
+tx(p)=csw+newx*csw/newz
+ty(p)=csh+newy*csh/newz
+tz(p)=newz
+NEXT p
+
+REM SORT FACES & DRAWING ORDER
+t=0
+FOR a=110 TO 120
+IF px(a) < t THEN
+t= px(a)
+END IF 
+'t=min(t,px(a))
+IF t=px(a) THEN
+mx=a
+END IF 
+NEXT a
+FOR b=1 TO 10
+i(b)=mx+b
+IF i(b)>120 THEN
+i(b)=i(b)-11
+END IF 
+NEXT b
+
+REM DRAW ALL
+BEGINDRAW
+CLS gfx
+FOR b=1 TO 8
+FOR c=0 TO 8
+ss=i(b)-c*11
+se=i(b)-(c+1)*11
+es=i(b+1)-c*11
+ee=i(b+1)-(c+1)*11
+'PRINT ss,se,ee,es
+IF ss <1 THEN
+ss = 1
+END IF 
+IF se <1 THEN
+se = 1
+END IF 
+IF ee <1 THEN
+ee = 1
+END IF 
+IF es <1 THEN
+es = 1
+END IF 
+cc=255-(tz(ss)+tz(se)+tz(ee)+tz(es))/12
+dd=COS(b/8)*cc
+
+COLOR cc,dd,cc,80
+'fill triangle tx(ss),ty(ss) TO tx(se),ty(se) TO tx(ee),ty(ee)
+ttx(1)=tx(ss)
+tty(1)=ty(ss)
+ttx(2)=tx(se)
+tty(2)=ty(se)
+ttx(3)=tx(ee)
+tty(3)=ty(ee)
+SHAPE 3, ttx, tty
+'fill triangle tx(ss),ty(ss) TO tx(es),ty(es) TO tx(ee),ty(ee)
+ttx(1)=tx(ss)
+tty(1)=ty(ss)
+ttx(2)=tx(es)
+tty(2)=ty(es)
+ttx(3)=tx(ee)
+tty(3)=ty(ee)
+SHAPE 3, ttx, tty
+COLOR dd,cc,dd,80
+'fill triangle scw-tx(ss),sch-ty(ss) TO scw-tx(se),sch-ty(se) TO scw-tx(ee),sch-ty(ee)
+ttx(1)=scw-tx(ss)
+tty(1)=sch-ty(ss) 
+ttx(2)=scw-tx(se)
+tty(2)=sch-ty(se)
+ttx(3)=scw-tx(ee)
+tty(3)=sch-ty(ee)
+SHAPE 3, ttx, tty
+'fill triangle scw-tx(ss),sch-ty(ss) TO scw-tx(es),sch-ty(es) TO scw-tx(ee),sch-ty(ee)
+ttx(1)=scw-tx(ss)
+tty(1)=sch-ty(ss) 
+ttx(2)=scw-tx(es)
+tty(2)=sch-ty(es)
+ttx(3)=scw-tx(ee)
+tty(3)=sch-ty(ee)
+SHAPE 3, ttx, tty
+NEXT c
+NEXT b
+ENDDRAW
+'BCOLOR 0,0,0
+GOTO loop

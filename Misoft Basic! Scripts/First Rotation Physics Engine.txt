@@ -1,0 +1,129 @@
+fingerGravity=5
+Gravity=10
+airResistance=1
+Size=25
+SpinSize=1
+lines=5
+Friction=0.8
+Elasticy=0.5
+Mass=2
+SmallMass=1
+
+
+r=1
+g=1
+b=1
+DIM spin(lines),rotatex(lines),rotatey(lines)
+FOR i=1 TO lines STEP 1
+    spin(i)=spinBkup+((Size*2*PI)*(lines*20))/360/lines
+    spinBkup=spin(i)
+NEXT
+sw=ScreenWidth
+sh=ScreenHeight
+posx=sw/2
+posy=sh/2
+
+
+
+
+loop:
+BEGINDRAW
+CLS
+
+GOSUB Gravity
+GOSUB Movement
+GOSUB WallCollision
+GOSUB Draw
+GOSUB Spinner
+ENDDRAW
+GOTO loop
+
+
+
+
+
+Gravity:
+IF Touch=0 THEN
+    anglex=anglex+(AccelX*Gravity)/Mass/airResistance
+    angley=angley+(AccelY*Gravity)/Mass/airResistance
+ENDIF
+gravx=AccelX
+gravy=AccelY
+IF Touch=1 THEN
+    tanglex=posx-TouchX
+    tangley=posy-TouchY
+    gravx=tanglex/sw
+    gravy=tangley/sh
+    tLength=SQR((tanglex^2)+(tangley^2))
+    anglex=anglex-tanglex/Mass/tLength*fingerGravity
+    angley=angley-tangley/Mass/tLength*fingerGravity
+ENDIF 
+RETURN
+
+
+
+
+
+Movement:
+oldx=posx
+oldy=posy
+posx=posx+anglex
+posy=posy+angley
+RETURN
+
+
+
+WallCollision:
+IF posy<=0+Size THEN
+    posy=0+Size
+    angley=(0-angley)*Elasticy/Friction
+    REM Top Wall
+ENDIF
+IF posy>=sh-Size THEN
+    posy=sh-Size
+    angley=(0-angley)*Elasticy/Friction
+    REM Bottom Wall
+ENDIF
+IF posx<=0+Size THEN
+    posx=0+Size
+    anglex=(0-anglex)*Elasticy/Friction
+    REM Left Wall
+ENDIF
+IF posx>=sw-Size THEN
+    posx=sw-Size
+    anglex=(0-anglex)*Elasticy/Friction
+    REM Right Wall
+ENDIF
+RETURN
+
+
+
+Spinner:
+SmallBallDx=posx-rotatex(1)
+SmallBallDy=posy-rotatey(1)
+SmallBallAnglex=SmallBallDx/sw
+SmallBallAngley=SmallBallDy/sh
+FOR i=1 TO lines STEP 1
+    posx=posx-ABS(SmallBallDx)*SmallMass*gravx/(sw*SmallMass)
+    posy=posy-ABS(SmallBallDy)*SmallMass*gravy/(sh*SmallMass)
+    IF (posx+sw/2)/2>=(posy+(sh/2)-(sh-sw)*1.5)/2 THEN
+        spin(i)=spin(i)-(((oldx+oldy)/2)-((posx+posy)/2))/Size
+    ENDIF
+    IF (posx+sw/2)/2<=(posy+(sh/2)-(sh-sw)*1.5)/2 THEN
+        spin(i)=spin(i)+(((oldx+oldy)/2)-((posx+posy)/2))/Size
+    ENDIF
+    rotatex(i)=SIN(spin(i))*Size+posx
+    rotatey(i)=COS(spin(i))*Size+posy
+    COLOR 0,0,0
+    LINE rotatex(i),rotatey(i),posx,posy,SpinSize
+    CIRCLE rotatex(1),rotatey(1),5
+NEXT
+RETURN
+
+
+
+Draw:
+COLOR r,g,b
+CIRCLE posx,posy,Size
+COLOR 0,0,0
+RETURN

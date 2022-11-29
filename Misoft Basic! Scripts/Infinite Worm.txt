@@ -1,0 +1,82 @@
+length=15
+size=5
+speed=3
+
+BCOLOR 1,1,1
+DIM x(length),y(length)
+DIM oldx(length),oldy(length)
+DIM xbkup(length),ybkup(length)
+PAUSE ""
+IF Touch=1 THEN
+    mode=1
+    tx=TouchX
+    ty=TouchY
+    FOR i=1 TO length STEP 1
+        x(i)=tx
+        y(i)=ty
+        oldx(i)=tx
+        oldy(i)=ty
+        xbkup(i)=tx
+        ybkup(i)=ty
+        posx=tx
+        posy=ty
+    NEXT
+ENDIF
+
+loop:
+BEGINDRAW
+CLS
+IF mode=1 THEN
+    IF Touch=1 THEN
+        tx=TouchX
+        ty=TouchY
+    ENDIF
+    dx = posx-tx
+    dy = posy-ty
+    dist=SQR(dx^2+dy^2)
+    posxbkup=posx
+    posybkup=posy
+    posx=posx-dx/ScreenWidth*dist/speed
+    posy=posy-dy/ScreenHeight*dist/speed
+ENDIF
+IF Touch=2 THEN
+    IF mode=1 THEN
+        mode=2
+    ELSE 
+        IF mode=2 THEN
+            mode=1
+        ENDIF
+    ENDIF
+    SLEEP 0.1
+ENDIF
+IF mode=2 THEN
+    IF Touch=1 THEN
+        LINE ScreenWidth/2,0,ScreenWidth/2,ScreenHeight,2
+        IF TouchX<=ScreenWidth/2 THEN
+            spin=(TouchY/ScreenHeight)
+        ENDIF 
+        IF TouchX>=ScreenWidth/2 THEN
+            turn=(TouchY/ScreenHeight)*10
+        ENDIF 
+    ENDIF
+    ii=ii+spin
+    posx=SIN(ii)*ScreenWidth/turn+ScreenWidth/2
+    posy=COS(ii)*ScreenHeight/turn+ScreenHeight/2
+ENDIF 
+
+
+FOR i=1 TO length-1 STEP 1
+    oldx(i+1)=x(i)
+    oldy(i+1)=y(i)
+    oldx(1)=posx
+    oldy(1)=posy
+    xbkup(i)=x(i)
+    ybkup(i)=y(i)
+    x(i)=oldx(i)
+    y(i)=oldy(i)
+    COLOR 1-(i/length),1-(i/length),1-(i/length),1-(i/length)
+    LINE x(i),y(i),xbkup(i),ybkup(i),(length-i)*size
+    CIRCLE x(i),y(i),((length-i)*size)/2
+NEXT 
+ENDDRAW
+GOTO loop

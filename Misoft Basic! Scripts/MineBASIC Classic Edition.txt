@@ -1,0 +1,605 @@
+' MineBASIC Classic Edition
+' biomes: 
+' 0 - grass
+' 1 - trees
+' 2 - Small mountain
+' 3 - lake
+' 9 - Your house
+' Note - Type in 4723 on Game mode
+' selection to activate Debug Mode.
+menu:
+CLS
+PRINT "MineBASIC"
+PRINT "1 - Start"
+PRINT "2 - Help"
+PRINT "3 - Options"
+PRINT "4 - Exit"
+INPUT m
+IF m<1 OR m>4 THEN
+CLS
+PRINT "That's not a selectable option."
+SLEEP 1.5
+CLS
+GOTO menu
+ENDIF 
+IF m=1 THEN
+CLS
+GOTO startgame
+ENDIF 
+IF m=2 THEN
+CLS
+hmode=0
+GOTO help
+ENDIF 
+IF m=3 THEN
+CLS
+GOTO option
+ENDIF 
+IF m=4 THEN
+CLS
+PRINT "Thanks for playing NarfWaffle's MineBASIC - Classic Edition!"
+SLEEP 1.5
+END
+ENDIF
+
+startgame:
+CLS
+PRINT "Load world? Y/N"
+INPUT a$
+a$=UPPER$(a$)
+IF a$="Y" THEN
+GOSUB loadgame
+GOTO gameloop
+ELSE
+ENDIF
+csize: 
+tool=1
+CLS
+PRINT "Map Size"
+PRINT "1: Tiny - 10 x 10"
+PRINT "2: Small - 20 x 20"
+PRINT "3: Medium - 50 x 50"
+PRINT "4: Large - 100 x 100"
+PRINT "5: Gargantuan - 150 x 150"
+INPUT ms
+GOSUB vmapsize
+gmode:
+CLS
+PRINT "Game Mode"
+PRINT "1: Creative"
+PRINT "2: Survival"
+INPUT gm
+IF gm>4723 OR gm<4723 THEN
+GOSUB vmode
+ENDIF 
+GOTO genmap
+
+vmapsize:
+IF ms<1 OR ms>5 THEN
+CLS
+PRINT "That's not a selectable option!"
+SLEEP 1.5
+CLS
+GOTO startgame
+ENDIF
+RETURN
+
+vmode:
+IF gm<1 OR gm>2 THEN 
+CLS
+PRINT "That's not a selectable option!"
+SLEEP 1.5
+CLS
+GOTO gmode
+ENDIF
+RETURN
+
+help:
+CLS
+PRINT "Help"
+PRINT "1: Different commands"
+PRINT "2: Items you can craft"
+PRINT "3: Exit"
+INPUT a
+GOSUB vhelp
+IF a=1 THEN
+GOTO help1
+ELSE
+IF a=2 THEN
+GOTO help2
+ELSE 
+IF a=3 THEN
+IF hmode=0 THEN
+GOTO menu
+ELSE
+GOTO gameloop
+ENDIF
+ENDIF 
+ENDIF 
+ENDIF
+ENDIF
+
+help1:
+CLS
+PRINT "Menu - Exit to main menu."
+PRINT "Help - Access help menu."
+PRINT "Save - Save current world."
+PRINT "Load - Load your saved world."
+PRINT "Craft - Brings up crafting menu. See 'List of Craftable Items' for more details."
+PRINT "I - Displays items in inventory."
+PRINT "Go [cardinal direction] - Move. Cardinal directions are north, south, east, and west."
+PRINT "Position - Displays position (x, y)."
+PRINT "Warp [Creative mode only] - Teleport (x, y)."
+PRINT "Punch tree - If in a forest, punch down trees and gain 5-8 bark."
+PRINT "Plant sapling - If you have saplings and you are in a grassland, plant a sapling and turn the grassland into a forest."
+PRINT "Build house - If you have crafted a house, build it here."
+PRINT "Enter house - If there is a house here, go inside of it."
+PAUSE "Press anywhere to return to the help menu."
+GOTO help
+
+help2:
+CLS
+PRINT "Things to craft:"
+PRINT "Planks - Used to craft other items."
+PRINT "Sticks - Used to craft other items as well."
+PRINT "Doors - Used to build houses."
+PRINT "Houses - Used as a place for beds, furniture, etc."
+PRINT "Axes - Used to chop down trees 2x as fast as punching them."
+PAUSE "Press anywhere to return to the help menu."
+GOTO help
+
+vhelp:
+IF a<1 OR a>3 THEN
+PRINT "That's not a selectable answer!"
+SLEEP 1.5
+GOTO help
+ENDIF
+RETURN
+
+option:
+PAUSE "Not ready yet."
+GOTO menu
+
+genmap:
+CLS
+PRINT "Creating Map..."
+IF ms=1 THEN
+DIM gmap(10,10)
+map=10
+ENDIF
+IF ms=2 THEN
+DIM gmap(20,20)
+map=20
+ENDIF
+IF ms=3 THEN
+DIM gmap(50,50)
+map=50
+ENDIF
+IF ms=4 THEN
+map=100
+DIM gmap(100,100)
+ENDIF
+IF ms=5 THEN
+map=150
+DIM gmap(150,150)
+ENDIF
+CLS
+PRINT "Generating World..."
+FOR y=1 TO map
+FOR x=1 TO map
+b=RND*4
+b=INT(b)
+gmap(x,y)=b
+NEXT x
+NEXT y
+CLS
+PRINT "Randomizing player spawn..."
+px=RND*map
+py=RND*map
+px=INT(px)
+py=INT(py)
+IF px=0 THEN
+px=1
+ENDIF
+IF py=0 THEN
+py=1
+ENDIF
+DIM axedur(3)
+PRINT "Done."
+GOTO gameloop
+
+gameloop:
+cb=gmap(px,py)
+IF gm=1 OR gm=4723 THEN
+GOSUB blkfill
+ENDIF 
+CLS 
+item$=""
+mob$=""
+GOSUB returnbiome
+GOSUB returnitem
+GOSUB returnmob
+PRINT biome$
+IF LEN(item$)>0 THEN
+PRINT item$
+ENDIF
+IF LEN(mob$)>0 THEN
+PRINT mob$
+ENDIF 
+INPUT cmd$
+GOSUB returncmd
+GOTO gameloop
+
+returnbiome:
+IF cb=0 THEN
+biome$="You are in a grassland."
+ENDIF
+IF cb=1 THEN
+biome$="You are in a forest."
+item$="There are trees here."
+ENDIF
+IF cb=2 THEN
+biome$="There's a mountain here!"
+ENDIF 
+IF cb=3 THEN
+biome$="You're in a grassland, but.."
+item$="There's a lake here."
+ENDIF
+IF cb=9 THEN
+biome$="There's a house here."
+ENDIF 
+RETURN
+
+returnitem:
+RETURN
+
+returnmob:
+RETURN
+
+RETURN
+
+blkfill:
+bark=99999
+planks=99999
+sticks=99999
+saplings=99999
+doors=99999
+houses=99999
+axes=1
+RETURN
+
+returncmd:
+IF axes=0 THEN
+axes=1
+ba=1
+ENDIF 
+IF axedur(axes)=0 AND axes>0 THEN
+axes=axes-1
+ENDIF
+IF ba=1 THEN
+axes=0
+ba=0
+ENDIF 
+cmd$=UPPER$(cmd$)
+IF cmd$="POSITION" THEN
+PRINT px,", ",py
+PAUSE "Press anywhere to return to the game"
+ENDIF
+IF cmd$="MAPSIZE" AND gm=4723 THEN
+PRINT map
+PAUSE 
+ENDIF 
+IF cmd$="PUNCH TREE" THEN
+IF gmap(px,py)=1 THEN
+IF axes>0 THEN
+tool=2
+ELSE
+tool=1
+ENDIF 
+b=RND*3
+b=INT(b)
+b=b+5
+bark=bark+b
+saplingc=RND*8
+saplingc=INT(saplingc)
+IF saplingc=0 THEN
+saplingc=1
+ENDIF
+IF saplingc=1 THEN
+saplings=saplings+1
+ENDIF 
+GOSUB destroy
+gmap(px,py)=0
+ENDIF
+ENDIF
+IF cmd$="I" THEN
+GOSUB printinv
+ENDIF 
+IF gm=1 OR gm=4723 THEN
+IF cmd$="WARP" THEN
+GOSUB warpcmd
+ENDIF
+ENDIF
+IF cmd$="HELP" THEN
+hmode=1
+GOTO help
+ENDIF 
+IF cmd$="GO NORTH" THEN 
+IF py>1 THEN
+py=py-1
+ENDIF
+ENDIF
+IF cmd$="GO SOUTH" THEN
+IF py<map THEN
+py=py+1
+ENDIF
+ENDIF
+IF cmd$="GO WEST" THEN
+IF px>1 THEN
+px=px-1
+ENDIF
+ENDIF
+IF cmd$="GO EAST" THEN
+IF px<map THEN
+px=px+1
+ENDIF
+ENDIF
+IF cmd$="CRAFT" THEN
+GOSUB craft
+ENDIF
+IF cmd$="SAVE" THEN
+GOTO savegame
+ENDIF 
+IF cmd$="LOAD" THEN
+GOTO loadgame
+ENDIF
+IF cmd$="PLANT SAPLING" AND saplings>0 AND gmap(px,py)=0 THEN
+saplings=saplings-1
+gmap(px,py)=1
+ENDIF
+IF cmd$="BUILD HOUSE" AND houses>0 THEN
+gmap(px,py)=9
+houses=houses-1
+ENDIF
+IF cmd$="ENTER HOUSE" THEN
+GOSUB enterhouse
+ENDIF 
+IF cmd$="MENU" THEN
+GOTO menu
+ENDIF 
+RETURN
+
+enterhouse:
+CLS
+IF gmap(px,py)=9 THEN
+GOSUB ehouse
+ELSE
+PRINT "There's not a house here."
+SLEEP 1.5
+ENDIF 
+RETURN
+
+ehouse:
+PRINT "You are in a house."
+PRINT "There's nothing here."
+PAUSE "Press anywhere to leave your house."
+RETURN
+
+printinv:
+CLS
+PRINT "Inventory:"
+IF bark>0 THEN
+PRINT "Tree Bark - ",bark
+ENDIF
+IF planks>0 THEN
+PRINT "Planks - ",planks
+ENDIF
+IF sticks>0 THEN
+PRINT "Sticks - ",sticks
+ENDIF
+IF saplings>0 THEN
+PRINT "Saplings - ",saplings
+ENDIF
+IF doors>0 THEN
+PRINT "Doors -",doors
+ENDIF
+IF houses>0 THEN
+PRINT "Houses -",houses
+ENDIF
+IF axes>0 THEN
+FOR i=1 TO axes
+PRINT "Axe -"axedur(i),"Hits left"
+NEXT
+ENDIF 
+PAUSE "Press anywhere to return to the game."
+RETURN
+
+craft:
+CLS
+PRINT "What do you want to craft?"
+INPUT c$
+c$=UPPER$(c$)
+IF c$="PLANKS" THEN
+IF bark>0 THEN
+bark=bark-1
+planks=planks+4
+PRINT "You now have",planks,"wood planks."
+ELSE
+GOTO cerror
+ENDIF
+ENDIF 
+IF c$="STICKS" THEN
+IF planks>1 THEN
+planks=planks-2
+sticks=sticks+4
+PRINT "You now have",sticks,"sticks."
+ELSE
+GOTO cerror
+ENDIF
+ENDIF
+IF c$="DOOR" THEN
+IF planks>5 THEN
+planks=planks-6
+doors=doors+1
+PRINT "You now have",doors,"doors."
+ELSE
+GOTO cerror
+ENDIF
+ENDIF
+IF c$="HOUSE" THEN
+IF planks>79 AND doors>0 THEN
+planks=planks-80
+doors=doors-1
+houses=houses+1
+PRINT "You now have",houses,"houses."
+ELSE 
+GOTO cerror
+ENDIF
+ENDIF
+IF c$="AXE" THEN
+IF planks>2 AND sticks>1 AND axes<3 THEN
+planks=planks-3
+sticks=sticks-2
+axes=axes+1
+axedur(axes)=35
+PRINT "You now have",axes,"axes."
+ELSE
+IF axes>2 THEN
+CLS
+PRINT "You have too many axes!"
+SLEEP 1.5
+GOTO gameloop
+ELSE
+GOTO cerror
+ENDIF 
+ENDIF
+ENDIF 
+PRINT "Craft more? Y/N"
+INPUT a$
+a$=UPPER$(a$)
+IF a$="Y" THEN
+GOTO craft
+ENDIF 
+RETURN
+
+cerror:
+CLS
+PRINT "You don't have enough crafting ingredients!"
+SLEEP 1.5
+GOTO gameloop
+
+warpcmd:
+PRINT "X Coordinate?"
+INPUT x
+PRINT "Y Coordinate?"
+INPUT y
+PRINT "You will warp to "x,",",y,". OK? Y/N"
+INPUT a$
+a$=UPPER$(a$)
+IF a$="Y" THEN
+px=x
+py=y
+RETURN
+ELSE
+GOTO gameloop
+ENDIF 
+RETURN
+
+destroy:
+CLS
+IF tool=2 THEN
+axedur(axes)=axedur(axes)-1
+ENDIF 
+PRINT "Destroying. . ."
+SLEEP 1/tool
+RETURN
+
+loadgame:
+DIM axedur(4)
+CLS
+OPEN "mbsave" FOR INPUT AS #1
+PRINT "Restoring data..."
+INPUT #1, map
+IF map=0 THEN
+GOTO loaderror
+ENDIF 
+PRINT "Restored map size: ",map
+INPUT #1, gm
+PRINT "Restored game mode: ",gm
+INPUT #1, px
+PRINT "Restored x coordinate: ",px
+INPUT #1, py
+PRINT "Restored y coordinate: ",py
+PRINT "Restoring map..."
+DIM gmap(map,map)
+FOR y=1 TO map
+FOR x=1 TO map
+INPUT #1, gmap(x,y)
+NEXT x
+NEXT y
+CLOSE #1
+OPEN "mbitems" FOR INPUT AS #1
+PRINT "Restoring items..."
+INPUT #1, bark
+INPUT #1, planks
+INPUT #1, sticks
+INPUT #1, saplings
+INPUT #1, doors
+INPUT #1, houses
+INPUT #1, axes
+FOR i=1 TO 3
+INPUT #1, axedur(i)
+NEXT 
+CLOSE #1
+CLS
+PRINT "Succesfully loaded game save."
+SLEEP 1.5
+GOTO gameloop
+
+savegame:
+CLS
+PRINT "Would you like to save? Y/N"
+INPUT s$
+s$=UPPER$(s$)
+IF s$="Y" THEN
+GOTO saveg
+ELSE
+GOTO gameloop
+ENDIF
+
+saveg:
+CLS
+PRINT "Saving World Data..."
+OPEN "mbsave" FOR OUTPUT AS #1
+PRINT #1, map
+PRINT #1, gm
+PRINT #1, px
+PRINT #1, py
+FOR y=1 TO map
+FOR x=1 TO map
+PRINT #1, gmap(x,y)
+NEXT x
+NEXT y
+CLOSE #1
+OPEN "mbitems" FOR OUTPUT AS #1
+PRINT #1, bark
+PRINT #1, planks
+PRINT #1, sticks
+PRINT #1, saplings
+PRINT #1, doors
+PRINT #1, houses
+PRINT #1, axes
+FOR i=1 TO 3
+PRINT #1, axedur(i)
+NEXT 
+PRINT "Saved."
+CLOSE #1
+SLEEP 1.5
+GOTO gameloop
+
+loaderror:
+CLS
+PRINT "No MineBASIC save file was found."
+SLEEP 1.5
+GOTO csize
+Punker

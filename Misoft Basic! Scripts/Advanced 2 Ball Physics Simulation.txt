@@ -1,0 +1,214 @@
+'Also, turn the Push variable below negative for a really cool black hole effect
+Push=10
+Gravity=10
+airResistance=1
+
+ballSize1=25
+Friction1=0.8
+Elasticy1=0.5
+Mass1=2
+
+ballSize2=45
+Friction2=1
+Elasticy2=0.4
+Mass2=1
+
+r1=1
+r2=0.7
+g1=0.7
+g2=0.7
+b1=0.7
+b2=1
+sw=ScreenWidth
+sh=ScreenHeight
+posx1=sw1.5
+posy1=sh4
+posx2=sw4
+posy2=sh1.5
+
+
+
+
+loop
+BEGINDRAW
+CLS tty
+GOSUB Interact
+GOSUB Gravity
+GOSUB Movement
+GOSUB Measuring
+GOSUB wallCollision
+GOSUB ballCollision
+GOSUB Draw
+ENDDRAW
+GOTO loop
+
+
+
+
+
+Gravity
+IF Touch=0 THEN
+    anglex1=anglex1+(AccelXGravity)Mass1airResistance
+    angley1=angley1+(AccelYGravity)Mass1airResistance
+    anglex2=anglex2+(AccelXGravity)Mass2airResistance
+    angley2=angley2+(AccelYGravity)Mass2airResistance
+ENDIF
+IF Touch=1 THEN
+    tanglex1=posx1-TouchX
+    tangley1=posy1-TouchY
+    tanglex2=posx2-TouchX
+    tangley2=posy2-TouchY
+    tLength1=SQR((tanglex1^2)+(tangley1^2))
+    tLength2=SQR((tanglex2^2)+(tangley2^2))
+    anglex1=anglex1-tanglex1Mass2tLength1Gravity
+    angley1=angley1-tangley1Mass2tLength1Gravity
+    anglex2=anglex2-tanglex2Mass1tLength2Gravity
+    angley2=angley2-tangley2Mass1tLength2Gravity
+ENDIF 
+RETURN
+
+
+
+
+
+Movement
+oldx1=posx1
+oldy1=posy1
+oldx2=posx2
+oldy2=posy2
+posx1=posx1+anglex1
+posy1=posy1+angley1
+posx2=posx2+anglex2
+posy2=posy2+angley2
+RETURN
+
+
+
+
+Measuring
+anglex=posx2-posx1
+angley=posy2-posy1
+length=SQR((anglex^2)+(angley^2))
+ballAnglex1=oldx1-posx1
+ballAngley1=oldy1-posy1
+ballAnglex2=oldx2-posx2
+ballAngley2=oldy2-posy2
+ballLength1=SQR((ballAnglex1^2)+(ballAngley1^2))
+ballLength2=SQR((ballAnglex2^2)+(ballAngley2^2))
+RETURN
+
+
+
+wallCollision
+IF posy1=0+ballSize1 THEN
+    posy1=0+ballSize1
+    angley1=(0-angley1)Elasticy1Friction1
+    REM Top Wall
+ENDIF
+IF posy1=sh-ballSize1 THEN
+    posy1=sh-ballSize1
+    angley1=(0-angley1)Elasticy1Friction1
+    REM Bottom Wall
+ENDIF
+IF posx1=0+ballSize1 THEN
+    posx1=0+ballSize1
+    anglex1=(0-anglex1)Elasticy1Friction1
+    REM Left Wall
+ENDIF
+IF posx1=sw-ballSize1 THEN
+    posx1=sw-ballSize1
+    anglex1=(0-anglex1)Elasticy1Friction1
+    REM Right Wall
+ENDIF
+IF posy2=0+ballSize2 THEN
+    posy2=0+ballSize2
+    angley2=(0-angley2)Elasticy2Friction2
+    REM Top Wall
+ENDIF
+IF posy2=sh-ballSize2 THEN
+    posy2=sh-ballSize2
+    angley2=(0-angley2)Elasticy2Friction2
+    REM Bottom Wall
+ENDIF
+IF posx2=0+ballSize2 THEN
+    posx2=0+ballSize2
+    anglex2=(0-anglex2)Elasticy2Friction2
+    REM Left Wall
+ENDIF
+IF posx2=sw-ballSize2 THEN
+    posx2=sw-ballSize2
+    anglex2=(0-anglex2)Elasticy2Friction2
+    REM Right Wall
+ENDIF
+RETURN
+
+
+
+
+
+ballCollision
+IF length=(ballSize1+ballSize2) THEN
+    anglex1=anglex1+anglexMass2LengthPush
+    angley1=angley1-angleyMass2LengthPush
+    anglex2=anglex2+anglexMass1LengthPush
+    angley2=angley2+angleyMass1LengthPush
+ENDIF 
+RETURN
+
+
+
+
+
+Draw
+COLOR r2,g2,b2
+CIRCLE posx2,posy2,ballSize2
+COLOR r21.5,g21.5,b2
+CIRCLE (oldx2+posx2)2,(oldy2+posy2)2,ballSize22
+COLOR r1,g1,b1
+CIRCLE posx1,posy1,ballSize1
+COLOR r1,g11.5,b11.5
+CIRCLE (oldx1+posx1)2,(oldy1+posy1)2,ballSize12
+RETURN
+
+
+
+
+
+Interact
+IF Touch=2 THEN
+    x1bkup=x1
+    y1bkup=y1
+    x2bkup=x2
+    y2bkup=y2
+    IF TouchX=TouchX2 THEN
+        x1=TouchX
+        x2=TouchX2
+    ENDIF
+    IF TouchY=TouchY2 THEN
+        y1=TouchY
+        y2=TouchY2
+    ENDIF 
+    IF TouchX=TouchX2 THEN
+        x1=TouchX2
+        x2=TouchX
+    ENDIF
+    IF TouchY=TouchY2 THEN
+        y1=TouchY2
+        y2=TouchY
+    ENDIF 
+    SLEEP 0.001
+ENDIF
+IF Touch=1 THEN
+    x1=TouchX+(x1bkup2)
+    x2=TouchX-(x2bkup2)
+    y1=TouchY+(y1bkup2)
+    y2=TouchY-(y2bkup2)
+ENDIF 
+COLOR 0,0,0
+RECT x1,y1,x2,sh
+RECT x1,0,x2,y2
+RECT 0,0,x2,sh
+RECT x1,0,sw,sh
+COLOR 1,1,1
+RECT x1,y1,x2,y2,1
+RETURN

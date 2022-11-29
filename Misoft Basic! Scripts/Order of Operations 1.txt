@@ -1,0 +1,185 @@
+REM This calculator will take an equation string and parse it to find its value, it follows the order of operations and supports unlimited parenthesis, it also has precise error handling and function support
+REM You may use + - * / ^ % ( ) sqr(n) sin(n) cos(n) tan(n) sec(n) csc(n) cot(n) mod(n1,n2) log(n) pi e rand(n1[,n2])
+REM The cool thing about this calculator is its extremely easy to add functions, all you do is go to the solve subroutine (at the bottom) and create another if statement
+
+
+'*******************************
+e$="1+2*(3^2-4)+5"
+'*******************************
+
+
+BCOLOR 1,1,1
+TCOLOR 0,0,0
+GOSUB splitTokens
+GOSUB toPolishNotation
+GOSUB solve
+FOR i=1 TO 10
+    PRINT
+NEXT
+PRINT "Equation:",equ$
+PRINT "Answer:",ans$
+GOSUB handleErrors
+FOR i=1 TO 10
+    PRINT
+NEXT
+END
+
+splitTokens:
+e$=UPPER$(e$)
+DIM token$(LEN(e$))
+tokens=0
+FOR i=1 TO LEN(e$)
+    l$=MID$(e$,i,1)
+    IF l$="." OR l$=STR$(VAL(l$)) OR LOWER$(l$)<>UPPER$(l$) THEN
+        a$=a$+l$
+    ELSE
+        IF a$="" AND l$="-" THEN
+            a$=a$+l$
+        ELSE
+            IF a$<>"" THEN
+                IF VAL(a$)<>0 THEN
+                    a$=STR$(VAL(a$))
+                ENDIF
+                tokens=tokens+1
+                token$(tokens)=a$
+                equ$=equ$+a$
+            ENDIF
+            tokens=tokens+1
+            token$(tokens)=l$
+            equ$=equ$+l$
+            a$=""
+        ENDIF
+    ENDIF
+NEXT
+IF a$<>"" THEN
+    IF VAL(a$)<>0 THEN
+        a$=STR$(VAL(a$))
+    ENDIF
+    tokens=tokens+1
+    token$(tokens)=a$
+    equ$=equ$+a$
+ENDIF
+RETURN
+
+toPolishNotation:
+DIM stack$(tokens)
+stackLen=0
+DIM polish$(tokens)
+polishLen=0
+WHILE tokens>0
+    t$=token$(1)
+    FOR i=2 TO tokens
+        token$(i-1)=token$(i)
+    NEXT
+    tokens=tokens-1
+    IF t$=STR$(VAL(t$)) THEN
+        polishLen=polishLen+1
+        polish$(polishLen)=t$
+    ENDIF
+    IF LOWER$(t$)<>UPPER$(t$) THEN
+        stackLen=stackLen+1
+        stack$(stackLen)=t$
+    ENDIF
+    IF t$="," THEN
+        done=0
+        WHILE done=0
+            done=1
+            IF stackLen<=0 THEN
+                errorCode=1
+            ELSE
+                IF stack$(stackLen)<>"(" THEN
+                    polishLen=polishLen+1
+                    polish$(polishLen)=stack$(stackLen)
+                    stackLen=stackLen-1
+                    done=0
+                ENDIF
+            ENDIF
+        WEND
+    ENDIF
+    IF t$="+" OR t$="-" OR t$="*" OR t$="/" OR t$="^" OR t$="%" THEN
+        tPrecedence=0
+        IF t$="+" OR t$="-" THEN
+            tPrecedence=1
+        ENDIF
+        IF t$="*" OR t$="/" THEN
+            tPrecedence=2
+        ENDIF
+        IF t$="^" THEN
+            tPrecedence=3
+        ENDIF
+        done=0
+        WHILE done=0 AND stackLen>0
+            a$=stack$(stackLen)
+            done=1
+            IF a$="+" OR a$="-" OR a$="*" OR a$="/" OR a$="^" OR a$="%" THEN
+                aPrecedence=0
+                IF a$="+" OR a$="-" THEN
+                    aPrecedence=1
+                ENDIF
+                IF a$="*" OR a$="/" THEN
+                    aPrecedence=2
+                ENDIF
+                IF a$="^" THEN
+                    aPrecedence=3
+                ENDIF
+                IF t$="-" OR t$="/" THEN
+                    IF tPrecedence<=aPrecedence THEN
+                        done=0
+                    ENDIF
+                ELSE
+                    IF tPrecedence<aPrecedence THEN
+                        done=0
+                    ENDIF
+                ENDIF
+            ENDIF
+            IF done=0 THEN
+                polishLen=polishLen+1
+                polish$(polishLen)=a$
+                stackLen=stackLen-1
+            ENDIF
+        WEND
+        stackLen=stackLen+1
+        stack$(stackLen)=t$
+    ENDIF
+    IF t$="(" THEN
+        stackLen=stackLen+1
+        stack$(stackLen)=t$
+    ENDIF
+    IF t$=")" THEN
+        done=0
+        WHILE done=0
+            done=1
+            IF stackLen<=0 THEN
+                errorCode=2
+            ELSE
+                IF stack$(stackLen)<>"(" THEN
+                    polishLen=polishLen+1
+                    polish$(polishLen)=stack$(stackLen)
+                    stackLen=stackLen-1
+                    done=0
+                ENDIF
+            ENDIF
+        WEND
+        IF stackLen>0 THEN
+            stackLen=stackLen-1
+        ENDIF
+        IF stackLen>0 THEN
+            IF LOWER$(stack$(stackLen))<>UPPER$(stack$(stackLen)) THEN
+                polishLen=polishLen+1
+                polish$(polishLen)=stack$(stackLen)
+                stackLen=stackLen-1
+            ENDIF
+        ENDIF
+    ENDIF
+WEND
+WHILE stackLen>0
+    IF stack$(stackLen)="(" OR stack$(stackLen)=")" THEN
+        errorCode=2
+        stackLen=stackLen-1
+    ELSE
+        polishLen=polishLen+1
+        polish$(polishLen)=stack$(stackLen)
+        stackLen=stackLen-1
+    ENDIF
+WEND
+RETURN

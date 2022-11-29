@@ -1,0 +1,88 @@
+sizex=3
+sizey=3
+factors=1
+round=1
+auto$="A"
+width=ScreenWidth
+height=ScreenWidth
+start:
+
+INPUT "Type the speed of the first line: ",speed1
+INPUT "Type the speed of the first line: ",speed2
+speed1=speed1/100
+speed2=speed2/100
+CLS
+
+loop:
+BEGINDRAW
+CLS tty
+IF Touch=2 THEN
+    ENDDRAW
+    SLEEP 0.1
+    PRINT "Round: ",round
+    PRINT
+    PRINT "Speed 1: ", speed1
+    PRINT "Speed 2: ",speed2
+    
+    INPUT "Auto Tap(A) or No Auto(a) ",auto$
+    IF auto$="end" THEN
+        END
+    ENDIF 
+    IF auto$="up" THEN
+        speed1=speed1*10
+        speed2=speed2*10
+        auto$="a"
+    ENDIF 
+    IF auto$="down" THEN
+        speed1=speed1/10
+        speed2=speed2/10
+        auto$="a"
+    ENDIF 
+    IF auto$="A" THEN
+        PRINT "Full Auto Selected"
+        SLEEP 0.5
+    ENDIF 
+    BEGINDRAW 
+ENDIF
+
+round=round+1
+sizex=sizex-0.0
+sizey=sizey-0.0
+
+i=i+speed1
+ii=ii+speed2
+oldx1=posx1
+oldx2=posx2
+oldy1=posy1
+oldy2=posy2
+posx1=SIN(i)*width+width/2
+posy1=COS(i)*height+height/2
+posx2=SIN(ii)*width/sizex+width/2
+posy2=COS(ii)*height/sizey+height/2
+
+IF round=1 THEN
+    oldx1=posx1
+    oldx2=posx2
+    oldy1=posy1
+    oldy2=posy2
+ENDIF
+
+IF round=(90*factors) THEN
+    CLS tty
+    factors=factors+1
+    IF auto$="a" THEN
+        'PRINT STR$(round)
+        PAUSE ""
+    ENDIF
+ENDIF
+
+COLOR 1,1,1,0.3
+LINE posx1,posy1,posx2,posy2
+
+COLOR 0,0,0
+LINE posx1,posy1,oldx1,oldy1
+'COLOR 0,0,1,1
+'LINE posx2,posy2,oldx2,oldy2
+
+ENDDRAW
+GOTO loop

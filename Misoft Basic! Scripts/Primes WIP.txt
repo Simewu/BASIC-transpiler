@@ -1,0 +1,76 @@
+n=1
+num=0.5
+loop:
+num=0.5
+WHILE VAL(STR$(num))<>INT(num)
+    num=1/((2+INT(SQR(n))/n)%2)
+    n=n+2
+WEND
+PRINT n,num,n/num
+PAUSE ""
+WHILE Touch<>0
+WEND
+GOTO loop
+
+
+num=100
+DIM com(num)
+FOR i=3 TO SQR(num)
+    IF com(i)=0 THEN
+        FOR j=i*2 TO num STEP i+(2+j/i)%2*i
+            com(j)=1
+        NEXT
+    ENDIF
+NEXT
+
+PRINT
+IF num>=2 THEN
+    PRINT "2, ";
+ENDIF
+FOR i=3 TO num STEP 2
+    IF com(i)=0 THEN
+        c=c+1
+        PRINT i,", ";
+    ENDIF
+NEXT
+PRINT
+PRINT "count",c
+
+
+
+
+END
+
+num=2000
+value=1
+FOR n=1 TO 100
+    value=MOD(2*n+value,2)
+    value=value*2
+    PRINT n,value
+    PAUSE ""
+    WHILE Touch=1
+    WEND
+NEXT
+END
+
+
+
+
+DIM com(num)
+sm=num^.5
+FOR i=3 TO sm
+    IF com(i)=0 THEN
+        FOR j=i*2 TO num STEP i+i*(((j+i)/i)%2=0)
+            PRINT "*",i,j
+            com(j)=1
+        NEXT
+    ENDIF
+NEXT
+IF num>=2 THEN
+    PRINT "2, ";
+ENDIF
+FOR i=3 TO num STEP 2
+    IF com(i)=0 THEN
+        PRINT i", ";
+    ENDIF
+NEXT

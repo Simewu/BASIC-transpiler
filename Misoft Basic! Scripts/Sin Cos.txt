@@ -1,0 +1,13 @@
+size=1
+loop:
+BEGINDRAW
+speedx=50000
+speedy=5
+lengthx=10
+lengthy=100
+i=i+0.01
+x=SIN(i*speedx)*lengthx
+y=COS(i*speedy)*lengthy
+CIRCLE x+ScreenWidth/2,y+ScreenHeight/2,size
+ENDDRAW
+GOTO loop

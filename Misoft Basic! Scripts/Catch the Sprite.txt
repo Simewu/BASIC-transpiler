@@ -1,0 +1,99 @@
+REM Sprite Test
+m$="D4#,16,E4,16,D4,16,E4,16,G4,16,,A4,16,G4,8,C4,8,,G3,16,G3#,16,A3,16,G3#,16,A3,16,C5,16,,D4,16,C4,8,A3,8,,A3,8,G3,8,,G3,8,G4,8,,G3,8,,G4,16,,16,G3,8,G4,8,F4,8G4,16,F4,8,G4,8,D4,8"
+
+BCOLOR 0,0,0
+COLOR 0,0,0
+TCOLOR 240,0,0
+i=1
+a=0
+X1a=22
+Y1=348
+X2a=70
+Y2=360
+d=12          ' beam speed
+h=10          ' bonus counter
+
+ACCELCALIBRATE
+X = 11+RND*240
+LOADSPRITE 1, "Test Sprite"
+
+CLS
+PRINT
+PRINT
+PRINT "                      Catch  The  Sprite "
+FOR b = 1 TO 4
+    DRAWSPRITE 1, 100,130,b*0.75
+    SLEEP 0.7
+    CLS gfx
+NEXT b
+SLEEP 1
+CLS
+PRINT "Round: "+STR$(a)
+PRINT "Bonus: " h
+
+loop:
+SLEEP 0.01
+BEGINDRAW
+RECT X, (i-1)*10,X+57,70+(i-1)*10
+DRAWSPRITE 1, X,1+(i)*10,0.9
+i = i+1
+
+' Collision
+IF (X-X1a)  > -14 AND (X-X1a) < 31 AND ABS((11+i*10)-(Y1-25)) < 10 THEN
+    h=h+2
+    PLAY 1, "c5,16"
+    SLEEP 0.8
+    PLAY 1
+    RECT X, (i-1)*10,X+57,70+(i-1)*10
+    i=40
+END IF
+
+' End of screen  or round
+IF i = 40 THEN
+    RECT X, (i-1)*10,X+57,70+(i-1)*10
+    i= 0
+    X = 11+RND*240
+    a=a+1
+    h=h-1
+    IF h<0 THEN
+        CLS
+        PRINT 
+        PRINT 
+        PRINT "                             Game 0ver"
+        PRINT
+        PRINT
+        SLEEP 2.3
+        PLAY 2,m$
+        END
+    END IF
+    CLS tty
+    PRINT "Round: " STR$(a)  
+    PRINT  "Bonus: " STR$(h)
+END IF
+
+' Beam move
+X1a=X1a+AccelX*d
+X2a=X2a+AccelX*d
+IF X1a < 0 THEN
+    X1a = 0
+    X2a = 48
+END IF
+IF X2a > 320 THEN
+    X2a = 320
+    X1a = 272
+END IF
+
+RECT X1a-10,Y1,X2a+10,Y2
+
+IF h>20 THEN
+    COLOR 200,200,0
+ELSE
+    COLOR 200,0,0
+END IF
+RECT X1a,Y1,X2a,Y2
+
+COLOR 0,0,0
+
+ENDDRAW
+
+GOTO loop

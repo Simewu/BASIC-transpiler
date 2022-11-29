@@ -1,0 +1,291 @@
+'I'm surprised how easy it was to implement an infinite world and still have it run fast
+
+REM Tap to jump, longer taps make bigger jumps, if you hold your finger too long your frog will automatically jump
+
+REM If you fall in water, you will respawn to the closest floating surface near you
+
+REM When in the air, tap with 2 fingers to teleport to a random location
+
+GOSUB init
+loop:
+IF Touch=0 AND inWater<>-1 THEN
+    BEGINDRAW
+    CLS
+    PRINT "Frog Coordinates:"+SPC(12)+"("+STR$(INT(10*totalDistx/240)/10)+"ft, "+STR$(INT(10*totalDisty/240)/10)+"ft)"
+    GOSUB draw
+    ENDDRAW
+    PAUSE ""
+ENDIF
+height=2
+WHILE Touch<>0 AND height<=60
+    BEGINDRAW
+    height=height+1.5
+    tx=newtx
+    ty=newty
+    newtx=TouchX
+    newty=TouchY
+    dx=tx-x
+    dy=ty-z
+    dist=SQR((dx*dx)+(dy*dy))
+    oldanglex=anglex
+    oldangley=angley
+    anglex=((dx/dist)+(oldanglex*smoothTurn))/(1+smoothTurn)
+    angley=((dy/dist)+(oldangley*smoothTurn))/(1+smoothTurn)
+    CLS gfx
+    GOSUB draw
+    ENDDRAW
+WEND
+inWater=1
+c=c+ABS(height/3)
+jumpanglex=anglex
+jumpangley=angley
+resetLayout=0
+FOR i=0 TO PI STEP 0.035+(2/height)
+    BEGINDRAW
+    IF resetLayout=0 AND Touch=2 THEN
+        resetLayout=1
+    ENDIF
+    IF x<=sw/3 THEN
+        distanceOffx=distanceOffx+(jumpanglex*6)
+        x=sw/3
+    ENDIF
+    IF x>=sw-sw/3 THEN
+        distanceOffx=distanceOffx+(jumpanglex*6)
+        x=sw-sw/3
+    ENDIF
+    IF z<=sh/3 THEN
+        distanceOffy=distanceOffy+(jumpangley*6)
+        z=sh/3
+    ENDIF
+    IF z>=sh-sh/3 THEN
+        distanceOffy=distanceOffy+(jumpangley*6)
+        z=sh-sh/3
+    ENDIF
+    totalDistx=totalDistx+(jumpanglex*6)
+    totalDisty=totalDisty-(jumpangley*6)
+    CLS gfx
+    GOSUB draw
+    x=x+jumpanglex*6
+    y=20+ABS(SIN(i))*height
+    z=z+jumpangley*6
+    ENDDRAW
+NEXT
+IF resetLayout=1 THEN
+    FOR i=1 TO 5
+        BEGINDRAW
+        CLS gfx
+        GOSUB draw
+        COLOR 1,1,1,i/5
+        RECT 0,0,sw,sh
+        ENDDRAW
+    NEXT
+    FOR i=1 TO lilypads
+        lilypadr(i)=50+RND*50
+        lilypadx(i)=-lilypadr(i)+RND*(sw+lilypadr(i))
+        lilypady(i)=-lilypadr(i)+RND*(sh+lilypadr(i))
+    NEXT
+    totalDistx=(-1+RND*2)*totalDistx*4
+    totalDisty=(-1+RND*2)*totalDisty*4
+    FOR i=1 TO 30
+        BEGINDRAW
+        CLS gfx
+        GOSUB draw
+        COLOR 1,1,1,1-(i/30)
+        RECT 0,0,sw,sh
+        ENDDRAW
+    NEXT
+ENDIF
+closestLilypad=1
+closestLilypadDist=sw*sh
+closestLilypadAx=0
+closestLilypadAy=0
+FOR j=1 TO lilypads
+    ldx=lilypadx(j)-x
+    ldy=lilypady(j)-z
+    ldist=SQR((ldx*ldx)+(ldy*ldy))
+    IF ldist<closestLilypadDist THEN
+        closestLilypad=j
+        closestLilypadDist=ldist
+        closestLilypadAx=ldx/ldist
+        closestLilypadAy=ldy/ldist
+    ENDIF
+    IF ldist<=lilypadr(j)+10 THEN
+        inWater=0
+        onLilypad(j)=1
+    ELSE
+        onLilypad(j)=0
+    ENDIF
+NEXT
+IF inWater=1 THEN
+    FOR i=1 TO 10
+        BEGINDRAW
+        CLS gfx
+        GOSUB draw
+        COLOR 0,0,0,i/10
+        RECT 0,0,sw,sh
+        ENDDRAW
+    NEXT
+    oldx=x
+    oldz=z
+    x=lilypadx(closestLilypad)-(closestLilypadAx*(lilypadr(closestLilypad)-10))
+    z=lilypady(closestLilypad)-(closestLilypadAy*(lilypadr(closestLilypad)-10))
+    totalDistx=totalDistx-(oldx-x)
+    totalDisty=totalDisty-(z-oldz)
+    onLilypad(closestLilypad)=1
+    inWater=0
+    FOR i=1 TO 10
+        BEGINDRAW
+        CLS gfx
+        GOSUB draw
+        COLOR 0,0,0,1-(i/10)
+        RECT 0,0,sw,sh
+        ENDDRAW
+    NEXT
+ENDIF
+IF x<=sw/3 THEN
+    distanceOffx=distanceOffx+(x-(sw/3))
+    x=sw/3
+ENDIF
+IF x>=sw-sw/3 THEN
+    distanceOffx=distanceOffx+(x-(sw-sw/3))
+    x=sw-sw/3
+ENDIF
+IF z<=sh/3 THEN
+    distanceOffy=distanceOffy+(z-(sh/3))
+    z=sh/3
+ENDIF
+IF z>=sh-sh/3 THEN
+    distanceOffy=distanceOffy+(z-(sh-sh/3))
+    z=sh-sh/3
+ENDIF
+GOTO loop
+
+init:
+RETINA off
+LOCKORIENTATION
+sw=ScreenWidth
+sh=ScreenHeight
+x=sw/2
+y=20
+z=sh/1.5
+anglex=0
+angley=-1
+c=RND*360
+hue=210
+saturation=1
+value=0.2
+GOSUB HSVtoRGB
+BCOLOR r,g,b
+TCOLOR 1,1,1
+distanceOff=0
+GOSUB draw
+lilypads=6
+DIM lilypadx(lilypads),lilypady(lilypads),lilypadr(lilypads),onLilypad(lilypads)
+FOR i=1 TO lilypads
+    lilypadr(i)=50+RND*50
+    lilypadx(i)=-lilypadr(i)+RND*(sw+lilypadr(i))
+    lilypady(i)=-lilypadr(i)+RND*(sh+lilypadr(i))
+NEXT
+inWater=-1
+smoothTurn=1.2
+RETURN
+
+draw:
+GOSUB drawLilypads
+hue=c%360
+saturation=0.5-(y/(105+20)/2)
+value=1
+GOSUB HSVtoRGB
+COLOR r,g,b
+CIRCLE x,z,y
+CIRCLE x+(anglex*y/3),z+(angley*y/3),y/1.2
+COLOR 0,0,0,0.5+SIN(i)/6
+LINE x-(anglex*y/1.5),z-(angley*y/1.5),x+(anglex*y/1.2),z+(angley*y/1.2),y/1.5
+RETURN
+
+drawLilypads:
+hue=100
+saturation=0.5
+value=0.6
+GOSUB HSVtoRGB
+COLOR r,g,b,0.95
+FOR j=1 TO lilypads
+    lilypadx(j)=lilypadx(j)-distanceOffx
+    lilypady(j)=lilypady(j)-distanceOffy
+    IF lilypadx(j)>sw+lilypadr(j) THEN
+        lilypadr(j)=50+RND*50
+        lilypadx(j)=-lilypadr(j)
+        lilypady(j)=RND*sh
+    ENDIF
+    IF lilypadx(j)<-lilypadr(j) THEN
+        lilypadr(j)=50+RND*50
+        lilypadx(j)=sw+lilypadr(j)
+        lilypady(j)=RND*sh
+    ENDIF
+    IF lilypady(j)>sh+lilypadr(j) THEN
+        lilypadr(j)=50+RND*50
+        lilypady(j)=-lilypadr(j)
+        lilypadx(j)=RND*sw
+    ENDIF
+    IF lilypady(j)<-lilypadr(j) THEN
+        lilypadr(j)=50+RND*50
+        lilypady(j)=sh+lilypadr(j)
+        lilypadx(j)=RND*sw
+    ENDIF
+    IF inWater=0 AND onLilypad(j)=1 THEN
+        hue=100
+        saturation=0.5
+        value=0.55
+        GOSUB HSVtoRGB
+        COLOR r,g,b,0.95
+        CIRCLE lilypadx(j),lilypady(j),lilypadr(j)-2
+        hue=100
+        saturation=0.5
+        value=0.6
+        GOSUB HSVtoRGB
+        COLOR r,g,b,0.95
+    ELSE
+        CIRCLE lilypadx(j),lilypady(j),lilypadr(j)
+    ENDIF
+NEXT
+distanceOffx=0
+distanceOffy=0
+RETURN
+
+HSVtoRGB:
+c1=value*saturation
+c2=c1*(1-ABS(MOD(hue/60,2)-1))
+IF 0<=hue AND hue<60 THEN
+    r=c1
+    g=c2
+    b=0
+ENDIF
+IF 60<=hue AND hue<120 THEN
+    r=c2
+    g=c1
+    b=0
+ENDIF
+IF 120<=hue AND hue<180 THEN
+    r=0
+    g=c1
+    b=c2
+ENDIF
+IF 180<=hue AND hue<240 THEN
+    r=0
+    g=c2
+    b=c1
+ENDIF
+IF 240<=hue AND hue<300 THEN
+    r=c2
+    g=0
+    b=c1
+ENDIF
+IF 300<=hue AND hue<=360 THEN
+    r=c1
+    g=0
+    b=c2
+ENDIF
+r=r+(value-c1)
+g=g+(value-c1)
+b=b+(value-c1)
+RETURN

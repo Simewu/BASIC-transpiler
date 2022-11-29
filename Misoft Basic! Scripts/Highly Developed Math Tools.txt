@@ -1,0 +1,429 @@
+TCOLOR 1,1,1
+menu:
+ENDIF
+PRINT "HIGHLY DEVELOPED MATH TOOLS MENU"
+PRINT "1 = Factor Finder"
+PRINT "2 = Common Factors and GCF Finder"
+PRINT "3 = LCM Finder"
+PRINT "4 = Scientific Calculator"
+INPUT "",menu
+CLS tty
+IF menu=1 THEN
+    GOTO factors
+ENDIF
+IF menu=2 THEN
+    GOSUB commonFactors
+ENDIF
+IF menu=3 THEN
+    GOTO lcm
+ENDIF
+IF menu=4 THEN
+    bkup$="=0"
+    bkup1$="=0"
+    bkup2$="=0"
+    bkup3$="=0"
+    GOTO calc
+ENDIF
+IF menu<1 OR menu>4 THEN
+    GOTO menu
+ENDIF
+
+
+lcm:
+ENDIF
+PRINT "LCM FINDER by SimeonW"
+PRINT
+s$=""
+PRINT "Enter an Array of Numbers"
+PRINT "(Separated by Commas, Spaces, or Colons)"
+INPUT "",s$
+IF s$="" THEN
+    CLS tty
+    GOTO menu
+ENDIF
+CLS tty
+DIM n(LEN(s$))
+max=0
+largestNum=0
+last=0
+FOR i=1 TO LEN(s$)
+    IF MID$(s$,i,1)="," OR MID$(s$,i,1)=" " OR MID$(s$,i,1)=":" THEN
+        max=max+1
+        n(max)=VAL(MID$(s$,(last+1),i-(last+1)))
+        IF n(max)=0 THEN 'removes if = to 0
+            max=max-1
+        ENDIF
+        IF n(max)>=largestNum THEN
+            largestNum=n(max)
+        ENDIF
+        last=i
+    ENDIF
+NEXT
+max=max+1
+n(max)=VAL(MID$(s$,(last+1),i-(last+1)))
+IF n(max)>=largestNum THEN
+    largestNum=n(max)
+ENDIF
+'String conversion to numbers has finnished
+'Calculation time
+LCM=largestNum
+PRINT "Calculating..."
+done=0
+WHILE done=0
+    fail=0
+    FOR i=1 TO max
+        IF LCM/n(i)<>INT(LCM/n(i)) THEN
+            fail=1
+        ENDIF
+    NEXT
+    IF fail=0 THEN
+        done=1
+    ELSE
+        LCM=LCM+largestNum
+    ENDIF
+WEND
+CLS tty
+PRINT "Number Array:"
+PRINT "     ";
+FOR i=max TO 1 STEP -1
+    PRINT STR$(n(i));
+    IF i<>1 THEN
+        IF i=2 THEN
+            PRINT " and ";
+        ELSE
+            PRINT ", ";
+        ENDIF
+    ENDIF
+NEXT
+PRINT
+PRINT "Least Common Multiple:"
+PRINT "     "+STR$(LCM)
+PRINT
+PRINT "Proof:"
+PRINT "(All the outputs below are whole numbers)"
+FOR i=max TO 1 STEP -1
+    PRINT "     "+STR$(LCM)+" / "+STR$(n(i))+" = "+STR$(LCM/n(i))
+NEXT
+PRINT
+PRINT "Tap to Restart..."
+PAUSE ""
+CLS tty
+GOTO lcm
+
+
+factors:
+ENDIF
+PRINT "FACTOR FINDER by SimeonW"
+PRINT
+INPUT "Type a number: ",num
+IF num=0 THEN
+    CLS tty
+    GOTO menu
+ENDIF
+CLS tty
+PRINT "Factors for ",num ":"
+i=0
+ii=0
+factors=0
+done=0
+WHILE done=0
+    i=i+1
+    IF i>=num/i THEN
+        'Determines when to stop
+        factors=factors*2
+        done=1
+    ENDIF
+    IF num/i=INT(num/i) THEN
+        'finds the factors
+        ii=i 
+        factors=factors+1
+        IF num/i=i THEN
+            'detects perfect square numbers
+            PRINT num/i " *",i " =",num " (Perfect Square Number)"
+        ELSE
+            PRINT num/i " *",i " =",num
+        ENDIF
+    ENDIF
+WEND
+IF factors<=2 AND num<>1 THEN
+    PRINT "(", num " is a Prime Number )"
+ELSE 
+    PRINT "There are ",factors " factors of ",num
+ENDIF 
+PRINT 
+PAUSE "Tap to restart..."
+CLS tty
+GOTO factors
+
+commonFactors:
+ENDIF
+PRINT "COMMON FACTORS AND GCF FINDER"
+PRINT "by SimeonW"
+PRINT
+s$=""
+PRINT "Enter an Array of Number"
+PRINT "(Separated by Commas, Spaces, or Colons)"
+INPUT "",s$
+IF s$="" THEN
+    CLS tty
+    GOTO menu
+ENDIF
+CLS tty
+DIM n(LEN(s$))
+max=0
+largestNum=0
+last=0
+FOR i=1 TO LEN(s$)
+    IF MID$(s$,i,1)="," OR MID$(s$,i,1)=" " OR MID$(s$,i,1)=":" THEN
+        max=max+1
+        n(max)=VAL(MID$(s$,(last+1),i-(last+1)))
+        IF n(max)=0 THEN 'removes if = to 0
+            max=max-1
+        ENDIF
+        IF n(max)>=largestNum THEN
+            largestNum=n(max)
+        ENDIF
+        last=i
+    ENDIF
+NEXT
+max=max+1
+n(max)=VAL(MID$(s$,(last+1),i-(last+1)))
+IF n(max)>=largestNum THEN
+    largestNum=n(max)
+ENDIF
+
+DIM firstSet(largestNum),secondSet(largestNum)
+FOR i=1 TO max
+    PRINT "Factors for "+STR$(n(i))+":"
+    a=0
+    b=0
+    factors=0
+    maxFactors=0
+    done=0
+    count=0
+    WHILE done=0
+        a=a+1
+        IF n(i)/a=INT(n(i)/a) THEN
+            b=a
+            factors=factors+1
+            IF factors>=maxFactors THEN
+                maxFactors=factors
+            ENDIF
+            IF i=1 THEN
+                firstSet(factors)=a
+            ELSE
+                FOR ii=1 TO maxFactors
+                    IF a=firstSet(ii) THEN
+                        count=count+1
+                        secondSet(count)=firstSet(ii)
+                    ENDIF
+                NEXT
+                FOR ii=1 TO count
+                    firstSet(ii)=secondSet(ii)
+                NEXT
+                FOR ii=count+1 TO maxFactors
+                    'firstSet(ii)=0
+                    'secondSet(ii)=0
+                NEXT
+            ENDIF
+            IF a=n(i) THEN
+                PRINT a;
+            ELSE
+                PRINT STR$(a)+", ";
+            ENDIF
+        ENDIF
+        IF b=n(i) THEN
+            done=1
+        ENDIF
+    WEND
+    PRINT
+NEXT
+PRINT
+PRINT "Common Factors:"
+FOR i=1 TO count
+    PRINT secondSet(i);
+    IF i<count THEN
+        PRINT ", ";
+    ELSE
+        PRINT
+        PRINT
+        gcf=secondSet(i)
+        PRINT "GCF =",gcf
+        IF gcf=1 THEN
+            PRINT "These Numbers are Already Simplified"
+        ELSE
+            FOR ii=1 TO max
+                PRINT STR$(n(ii))+"   --->   "+STR$(n(ii)/gcf)
+            NEXT
+        ENDIF
+    ENDIF
+NEXT
+PRINT
+PAUSE "Tap to Restart"
+CLS tty
+GOTO commonFactors
+
+calc:
+ans=0
+last=0
+lastsymbol$=""
+nums=0
+PRINT "Scientific Calculator by SimeonW"
+PRINT "Type 'help' for help"
+PRINT
+PRINT bkup3$
+PRINT bkup2$
+PRINT bkup1$
+PRINT bkup$
+ENDDRAW
+INPUT "",e$
+IF e$="" THEN
+    CLS tty
+    GOTO menu
+ENDIF
+BEGINDRAW
+IF UPPER$(e$)="HELP" THEN
+    ENDDRAW
+    CLS tty
+    PRINT "Scientific Calculator Help"
+    PRINT "help = Open Help Screen"
+    PRINT "cls = Clear the Memory"
+    PRINT
+    PRINT "Supported Symbols:"
+    PRINT "+ = Addition"
+    PRINT "- = Subtaction"
+    PRINT "* = Multiplication"
+    PRINT "/ = Division"
+    PRINT "% = Remainder"
+    PRINT "^ = Power"
+    PRINT "^0.5 = Square Root"
+    PRINT
+    PRINT "2+3*2 is the same as (2+3)*2 which is 12"
+    PAUSE ""
+    BEGINDRAW
+ELSE
+    CLS tty
+    PRINT e$;
+    FOR i=1 TO LEN(e$)
+        IF MID$(e$,i,1)="+" THEN
+            num=VAL(MID$(e$,(last+1),i-(last+1)))
+            ans=ans+num
+            last=i
+            lastsymbol$="+"
+            nums=nums+1
+            IF nums=1 THEN
+                ans=num
+            ENDIF
+        ENDIF
+        IF MID$(e$,i,1)="-" THEN
+            num=VAL(MID$(e$,(last+1),i-(last+1)))
+            ans=ans-num
+            last=i
+            lastsymbol$="-"
+            nums=nums+1
+            IF nums=1 THEN
+                ans=num
+            ENDIF
+        ENDIF
+        IF MID$(e$,i,1)="*" THEN
+            num=VAL(MID$(e$,(last+1),i-(last+1)))
+            ans=ans*num
+            last=i
+            lastsymbol$="*"
+            nums=nums+1
+            IF nums=1 THEN
+                ans=num
+            ENDIF
+        ENDIF
+        IF MID$(e$,i,1)="/" THEN
+            num=VAL(MID$(e$,(last+1),i-(last+1)))
+            ans=ans/num
+            last=i
+            lastsymbol$="/"
+            nums=nums+1
+            IF nums=1 THEN
+                ans=num
+            ENDIF
+        ENDIF
+        IF MID$(e$,i,1)="^" THEN
+            num=VAL(MID$(e$,(last+1),i-(last+1)))
+            ans=ans^num
+            last=i
+            lastsymbol$="^"
+            nums=nums+1
+            IF nums=1 THEN
+                ans=num
+            ENDIF
+        ENDIF
+        IF MID$(e$,i,1)="%" THEN
+            num=VAL(MID$(e$,(last+1),i-(last+1)))
+            ans=MOD(ans,num)
+            last=i
+            lastsymbol$="%"
+            nums=nums+1
+            IF nums=1 THEN
+                ans=num
+            ENDIF
+        ENDIF
+    NEXT
+    IF lastsymbol$="+" THEN
+        num=VAL(MID$(e$,(last+1),i-(last+1)))
+        ans=ans+num
+        nums=nums+1
+        IF nums=1 THEN
+            ans=num
+        ENDIF
+    ENDIF
+    IF lastsymbol$="-" THEN
+        num=VAL(MID$(e$,(last+1),i-(last+1)))
+        ans=ans-num
+        nums=nums+1
+        IF nums=1 THEN
+            ans=num
+        ENDIF
+    ENDIF
+    IF lastsymbol$="*" THEN
+        num=VAL(MID$(e$,(last+1),i-(last+1)))
+        ans=ans*num
+        nums=nums+1
+        IF nums=1 THEN
+            ans=num
+        ENDIF
+    ENDIF
+    IF lastsymbol$="/" THEN
+        num=VAL(MID$(e$,(last+1),i-(last+1)))
+        ans=ans/num
+        nums=nums+1
+        IF nums=1 THEN
+            ans=num
+        ENDIF
+    ENDIF
+    IF lastsymbol$="^" THEN
+        num=VAL(MID$(e$,(last+1),i-(last+1)))
+        ans=ans^num
+        nums=nums+1
+        IF nums=1 THEN
+            ans=num
+        ENDIF
+    ENDIF
+    IF lastsymbol$="%" THEN
+        num=VAL(MID$(e$,(last+1),i-(last+1)))
+        ans=MOD(ans,num)
+        nums=nums+1
+        IF nums=1 THEN
+            ans=num
+        ENDIF
+    ENDIF
+    CLS tty
+    bkup3$=bkup2$
+    bkup2$=bkup1$
+    bkup1$=bkup$
+    bkup$=e$+" = "+STR$(ans)
+ENDIF
+IF UPPER$(e$)="CLS" THEN
+    bkup$="=0"
+    bkup1$="=0"
+    bkup2$="=0"
+    bkup3$="=0"
+ENDIF
+GOTO calc

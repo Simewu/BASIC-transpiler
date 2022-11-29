@@ -1,0 +1,75 @@
+REM
+REM lorenz equations (butterfly effect)
+REM 
+
+DIM xa(3)
+DIM ya(3)
+DIM za(3)
+
+xa(1)=3.051522
+xa(2)=3.051522
+ya(1)=1.592542
+ya(2)=1.582542
+za(1)=15.62388
+za(2)=15.62388
+
+BCOLOR 0,0,0
+CLS
+
+c1=0.292893
+dt=0.02
+a=5
+b=15
+c=1
+
+loop:
+BEGINDRAW
+'CLS gfx ' if you want it to look like a chase
+FOR i=1 TO 2
+x=xa(i)
+y=ya(i)
+z=za(i)
+x1=x-a*x*dt+a*y*dt
+y1=y+b*x*dt-y*dt-z*x*dt
+z1=z-c*z*dt+x*y*dt
+x=x1
+y=y1
+z=z1
+xd=y-x*c1
+yd=z+x*c1
+
+IF (i=2) THEN
+cl=128
+GOSUB draw
+ELSE
+cl = 255
+GOSUB draw
+END IF 
+
+xa(i)=x
+ya(i)=y
+za(i)=z
+NEXT i
+ENDDRAW 
+GOTO loop
+
+'draws a shiny ball
+draw: '(xd,yd,cl)
+'local i1,j1,c,c1,c2,d1,d2,i,k
+
+c1=19.3
+c2=320.0
+d1=11.0
+d2=392.0
+k=7
+
+i1=c1*xd+c2
+j1=-d1*yd+d2
+
+FOR ii=127 TO 255 STEP 16
+c=0.09*(7-k)
+COLOR cl,ii,ii
+CIRCLE i1+c,j1+c,k,0
+k=k-1
+NEXT ii
+RETURN

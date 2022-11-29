@@ -1,0 +1,259 @@
+brickGrid=15
+speed=1 'adjust for faster/slower devices
+
+REM Note to add: To launch the ball, do a quick tap, the ball will only launch if the paddle DOESNT move then your tapping
+
+sw=ScreenWidth
+sh=ScreenHeight
+RETINA on
+SLEEP 0.1
+brickSize=sw/brickGrid
+brickSizeY=(sw/2)/(brickGrid)
+brickGap=brickSizeY/15
+DIM x1(brickGrid,brickGrid),x2(brickGrid,brickGrid),y1(brickGrid,brickGrid),y2(brickGrid,brickGrid),brickx(brickGrid,brickGrid),bricky(brickGrid,brickGrid),check(brickGrid,brickGrid)
+FOR j=1 TO brickGrid
+    BEGINDRAW
+    FOR i=1 TO brickGrid
+        x=i*brickSize-brickSize/2
+        y=j*brickSizeY-brickSizeY/2
+        x1(i,j)=x-brickSize/2
+        y1(i,j)=y-brickSizeY/2
+        x2(i,j)=x+brickSize/2
+        y2(i,j)=y+brickSizeY/2
+        brickx(i,j)=x
+        bricky(i,j)=y
+        check(i,j)=1
+        COLOR 1,1,1
+        IF j=brickGrid THEN
+            COLOR 0.7,0.7,0.7
+        ENDIF
+        RECT x1(i,j),y1(i,j),x2(i,j),y2(i,j)
+        COLOR 0,0,0
+        RECT x-brickSize/2,y-brickSizeY/2,x+brickSize/2,y+brickSizeY/2,brickGap
+    NEXT
+    ENDDRAW
+NEXT
+BEGINDRAW
+paddleSpeed=(27/brickGrid)/speed '***Set paddles speed
+paddleThickness=brickSizeY/4
+paddlex=sw/2
+paddley=sh-paddleThickness/2
+paddleSize=brickSize '***Set paddle size
+paddlex1=paddlex-paddleSize/2
+paddlex2=paddlex+paddleSize/2
+paddley1=paddley-paddleThickness/2
+paddley2=paddley+paddleThickness/2
+COLOR 1,1,1
+RECT paddlex1,paddley1,paddlex2,paddley2
+ballspeed=(25/brickGrid)/speed '*** Set ball's speed
+ballsize=paddleThickness/2
+ballx=sw/2
+bally=paddley1-ballsize
+CIRCLE ballx,bally,ballsize
+ENDDRAW
+'Initalization finnished
+'Game starting
+ballWaiting=1
+loop:
+BEGINDRAW
+GOSUB movePaddle
+GOSUB moveBall
+GOSUB wallCollision
+GOSUB brickCollision
+GOSUB drawPaddle
+GOSUB drawBall
+ENDDRAW
+GOTO loop
+
+
+movePaddle:
+IF Touch=1 THEN
+    holding=holding+1
+    IF holding=1 THEN
+        paddleRemained=1
+    ENDIF
+    tx=TouchX
+    ty=TouchY
+    IF tx>paddlex2 THEN
+        paddlex=paddlex+paddleSpeed
+        paddleRemained=0
+    ENDIF
+    IF tx<paddlex1 THEN
+        paddlex=paddlex-paddleSpeed
+        paddleRemained=0
+    ENDIF
+    IF paddlex+paddleSize/2>=sw THEN
+        paddlex=sw-paddleSize/2
+    ENDIF
+    IF paddlex-paddleSize/2<=0 THEN
+        paddlex=paddleSize/2
+    ENDIF
+    oldpaddlex1=paddlex1
+    oldpaddlex2=paddlex2
+    oldpaddley1=paddley1
+    oldpaddley2=paddley2
+    paddlex1=paddlex-paddleSize/2
+    paddlex2=paddlex+paddleSize/2
+    paddley1=paddley-paddleThickness/2
+    paddley2=paddley+paddleThickness/2
+ENDIF
+IF Touch=0 THEN
+    holding=0
+    IF paddleRemained=1 THEN 'if user taps but doesnt move paddle
+        IF ballWaiting=1 THEN
+            ballWaiting=0 'launch ball
+            velx=(-1+RND*2)*ballspeed
+            vely=-ballspeed
+        ENDIF
+        paddleRemained=0
+    ENDIF
+ENDIF
+RETURN
+
+
+moveBall:
+IF ballWaiting=1 THEN
+    oldballx=ballx
+    oldbally=bally
+    ballx=paddlex
+    bally=paddley1-ballsize
+ELSE
+    oldballx=ballx
+    oldbally=bally
+    ballx=ballx+velx
+    bally=bally+vely
+ENDIF
+RETURN
+
+
+wallCollision:
+IF ballx>=sw-ballsize/2 THEN
+    velx=-velx
+    ballx=sw-ballsize/2
+ENDIF
+IF ballx<=ballsize/2 THEN
+    velx=-velx
+    ballx=ballsize/2
+ENDIF
+IF bally<=ballsize/2 THEN
+    vely=-vely
+    bally=ballsize/2
+ENDIF
+IF bally>=sh-ballsize/2 THEN
+    IF ballx+ballsize/2>=paddlex1 AND ballx-ballsize/2<=paddlex2 THEN
+        vely=-vely
+        velx=velx+(5*(ballx-paddlex)/paddleSize)
+        bally=paddley1-ballsize/2
+    ELSE
+        ballWaiting=1
+        paddlex=sw/2
+        oldpaddlex1=paddlex1
+        oldpaddley1=paddley1
+        oldpaddlex2=paddlex2
+        oldpaddley2=paddley2
+        paddlex1=paddlex-paddleSize/2
+        paddlex2=paddlex+paddleSize/2
+        paddley1=paddley-paddleThickness/2
+        paddley2=paddley+paddleThickness/2
+        GOSUB drawPaddle
+        GOSUB drawBall
+    ENDIF
+ENDIF
+IF bally>=paddley1-ballsize/2 THEN
+    IF ballx+ballsize/2>=paddlex1 AND ballx-ballsize/2<=paddlex2 THEN
+        vely=-vely
+        velx=velx+(5*(ballx-paddlex)/paddleSize)
+        bally=paddley1-ballsize/2
+        SLEEP 0.1
+        CLS tty
+    ENDIF
+ENDIF
+RETURN
+
+
+brickCollision:
+xi=INT(ballx/brickSize)+1
+yi=INT(bally/brickSize*2)+1
+IF xi>=brickGrid THEN
+    xi=brickGrid
+ENDIF
+IF yi>=brickGrid THEN
+    yi=brickGrid
+ENDIF
+IF bally-ballsize+1<=sh/2 THEN
+    IF ballx+velx<=x2(xi,yi)+(ballsize*1.2) AND ballx+velx>=x1(xi,yi)-(ballsize*1.2) AND bally+vely<=y2(xi,yi)+(ballsize*1.2) AND bally+vely>=y1(xi,yi)-(ballsize*1.2) THEN
+        IF check(xi,yi)=1 THEN
+            check(xi,yi)=0
+            READPIXEL brickx(xi,yi),bricky(xi,yi)
+            brickDistX=((x1(xi,yi)-ballx)+(x2(xi,yi)-ballx))/brickSize
+            brickDistY=((y1(xi,yi)-bally)+(y2(xi,yi)-bally))/brickSizeY
+            'Determine what side of the brick the ball hit
+            IF ABS(brickDistX)>=ABS(brickDistY) THEN
+                'The ball hit a y wall, not x
+                velx=-velx
+                COLOR 0,0,0
+                RECT x1(xi,yi),y1(xi,yi),x2(xi,yi),y2(xi,yi)
+                IF ReadPixelR=179 AND ReadPixelG=179 AND ReadPixelB=179 THEN
+                    COLOR 1,1,1
+                    RECT x1(xi,yi),y1(xi,yi),x2(xi,yi),y2(xi,yi)
+                    COLOR 0,0,0
+                    RECT x1(xi,yi),y1(xi,yi),x2(xi,yi),y2(xi,yi),brickGap
+                    check(xi,yi)=1
+                ENDIF
+            ELSE
+                'The ball hit an x wall, not y
+                vely=-vely
+                COLOR 0,0,0
+                RECT x1(xi,yi),y1(xi,yi),x2(xi,yi),y2(xi,yi)
+                IF ReadPixelR=179 AND ReadPixelG=179 AND ReadPixelB=179 THEN
+                    COLOR 1,1,1
+                    RECT x1(xi,yi),y1(xi,yi),x2(xi,yi),y2(xi,yi)
+                    COLOR 0,0,0
+                    RECT x1(xi,yi),y1(xi,yi),x2(xi,yi),y2(xi,yi),brickGap
+                    check(xi,yi)=1
+                ENDIF
+            ENDIF
+            IF ABS(brickDistX)=ABS(brickDistY) THEN
+                'rare situation where the ball hits a perfect corner of a brick
+                velx=velx
+                vely=-vely
+            ENDIF
+        ENDIF
+    ENDIF
+ENDIF
+RETURN
+
+
+drawBricks:
+FOR i=1 TO brickGrid
+    FOR j=1 TO brickGrid
+        x=i*brickSize-brickSize/2
+        y=j*brickSizeY-brickSizeY/2
+        x1(i,j)=x-brickSize/2
+        y1(i,j)=y-brickSizeY/2
+        x2(i,j)=x+brickSize/2
+        y2(i,j)=y+brickSizeY/2
+        COLOR 1,1,1
+        RECT x1(i,j),y1(i,j),x2(i,j),y2(i,j)
+        COLOR 0,0,0
+        RECT x-brickSize/2,y-brickSizeY/2,x+brickSize/2,y+brickSizeY/2,brickGap
+    NEXT
+NEXT
+RETURN
+
+
+drawPaddle:
+COLOR 0,0,0
+RECT oldpaddlex1-1,oldpaddley1-1,oldpaddlex2+1,oldpaddley2+1
+COLOR 1,1,1
+RECT paddlex1,paddley1,paddlex2,paddley2
+ballsize=paddleThickness
+RETURN
+
+
+drawBall:
+COLOR 0,0,0
+CIRCLE oldballx,oldbally,ballsize+1
+COLOR 1,1,1
+CIRCLE ballx,bally,ballsize
+RETURN

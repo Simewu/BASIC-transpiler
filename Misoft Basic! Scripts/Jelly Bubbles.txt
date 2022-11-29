@@ -1,0 +1,186 @@
+REM
+REM Jelly Star bubble
+REM iOS 6 / iPhone 5 / 3.4.2
+REM
+REM change ftriangle to triangle
+REM in the tricirc sub to get a cool efx.
+REM enjoy
+
+'screen area
+scw=ScreenWidth
+sch= ScreenHeight
+csw = scw/2
+csh = sch/2
+
+mx=9
+numbub=23
+speed=.4 ' larger the # the faster. .4 to 4
+DIM xf(mx)
+DIM xx(mx)
+DIM yy(mx)
+DIM xd(mx)
+DIM yd(mx)
+DIM sa(mx)
+DIM gr(mx)
+DIM cl(mx)
+DIM ga(mx)
+
+DIM bbx(numbub)
+DIM bby(numbub)
+DIM bbs(numbub)
+
+FOR a=1 TO numbub
+bbx(a)=50+(RND*scw)
+bby(a)=100+(RND*sch)
+bbs(a)=2+(RND*3)
+NEXT a
+
+xad=40
+FOR a=1 TO mx
+xf(a)=INT(1+(RND*2))
+sa(a)=0
+xx(a)=xad
+yy(a)=100
+xd(a)=12
+yd(a)=12
+gr(a)=(RND*1)
+ga(a)=.1+(RND*speed)
+cl(a)=50+(RND*255)
+xad=xad+scw/mx
+NEXT a
+
+quality=15 ' try 150 gor triangles
+REM quality control! 1=highest up TO 120
+
+
+'Precalculate Sine data for a massive circle!!
+
+DIM x(720)
+DIM y(720)
+FOR a=1 TO 720
+x(a)=(800*SIN(a*(PI/180)))
+y(a)=(800*COS(a*(PI/180)))
+NEXT a
+
+p=1
+scnt=0
+
+loop:
+BEGINDRAW
+CLS gfx
+COLOR 70+10*SIN(smt/4),30,80
+GOSUB stars
+GOSUB star
+COLOR 10,60,140
+
+'border
+RECT 0,0 , scw,0,60
+RECT 0,0 , scw,sch,60
+
+COLOR 255,255,255
+DRAWTEXT "-= STARS =-",csw-35,7
+
+stp=stp+2
+IF stp>=120 THEN
+stp=0
+END IF
+ENDDRAW
+GOTO loop
+
+
+' Draw the bubbles
+
+stars:
+FOR a=1 TO numbub
+COLOR 135,135,100+(bbs(a)*8)
+
+RECT bbx(a),bby(a) , bbx(a)+bbs(a),bby(a)+bbs(a)
+bby(a)=bby(a)-bbs(a)
+bbx(a)=bbx(a)+-2+(RND*4)
+IF bby(a)<50 THEN
+bby(a)=bby(a)+sch
+END IF
+IF bbx(a)<50 THEN
+bbx(a)=50
+END IF
+IF bbx(a)>scw-70 THEN
+bbx(a)=scw-70
+END IF
+NEXT a
+RETURN
+
+star:
+smt=smt+.2
+FOR aa=1 TO mx
+xdiv=xd(aa)+sa(aa)*SIN(smt+aa)
+ydiv=yd(aa)+sa(aa)*COS(smt+aa/5)
+xo=xx(aa)
+yo=yy(aa)
+
+IF xf(aa)=1 THEN
+xx(aa)=xx(aa)-2
+END IF
+IF xf(aa)=2 THEN
+xx(aa)=xx(aa)+2
+END IF
+IF sa(aa)>0 THEN
+sa(aa)=sa(aa)-.1
+END IF
+yy(aa)=yy(aa)+gr(aa)
+gr(aa)=gr(aa)+ga(aa)
+IF yy(aa)>440 THEN
+gr(aa)=-gr(aa)+ga(aa)
+sa(aa)=6
+END IF
+IF xx(aa)>scw THEN
+xf(aa)=1
+END IF
+IF xx(aa)<0 THEN
+xf(aa)=2
+END IF
+COLOR cl(aa),50+(50*SIN(smt/2)),50+(50*SIN(smt)/3)
+GOSUB tricirc
+NEXT aa
+RETURN
+
+'This is all it is...
+
+tricirc:
+FOR a=1+stp TO 120+stp STEP quality
+'fill triangle (x(a)/xdiv)+xo,(y(a)/ydiv)+yo TO (x(a+120)/xdiv)+xo,(y(a+120)/ydiv)+yo TO (x(a+240)/xdiv)+xo,(y(a+240)/ydiv)+yo
+x1=(x(a)/xdiv)+xo
+y1=(y(a)/ydiv)+yo
+x2=(x(a+120)/xdiv)+xo
+y2=(y(a+120)/ydiv)+yo
+x3=(x(a+240)/xdiv)+xo
+y3=(y(a+240)/ydiv)+yo
+GOSUB ftriangle
+NEXT a
+RETURN
+
+'Triangle
+
+'outline
+triangle:
+DIM xs(3),ys(3)
+xs(1)=x1
+ys(1)=y1
+xs(2)=x2
+ys(2)=y2
+xs(3)=x3
+ys(3)=y3
+SHAPE 3, xs, ys,1
+RETURN
+
+'fill
+ftriangle:
+DIM xs(3),ys(3)
+xs(1)=x1
+ys(1)=y1
+xs(2)=x2
+ys(2)=y2
+xs(3)=x3
+ys(3)=y3
+
+SHAPE 3,xs,ys
+RETURN

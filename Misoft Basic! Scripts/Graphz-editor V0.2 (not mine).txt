@@ -1,0 +1,199 @@
+'I dont know IF you like this more OR NOT but i just thought this was cool enough TO share :D
+'I added some stuff, heres what I added:
+
+'BallXBackup=BallX
+'BallYBackup=BallY
+
+'then I added this:
+
+'CIRCLE BallX,BallY,BallR
+'LINE BallX,BallY,BallXBackup,BallYBackup,BallR*2
+
+
+
+
+REM Graphz-editor V0.1
+REM Plz notify me if you see any bugs or
+REM Feature requests.
+OPEN "GE" FOR INPUT AS #1
+
+INPUT #1, r$
+IF r$ = "1" THEN
+    CLOSE #1
+    GOTO skip 
+ELSE
+    OPEN "GE" FOR OUTPUT AS #2
+    PRINT #2, "1"
+    CLOSE #2
+ENDIF
+PAUSE "Touch to continue through tips"
+PAUSE "Use ''NEW'' to clear the image. "
+SLEEP 0.5
+PAUSE "Use ''SIZE'' to change the brush size. "
+SLEEP 0.5
+PAUSE "Use ''CLR'' to change the brush color"
+SLEEP 0.5
+PAUSE "Use ''RSR'' to enter eraser mode. "
+SLEEP 0.5
+PAUSE "Use ''BGCLR'' to change background color. "
+SLEEP 0.5
+PAUSE "Use ''PICK'' to pick a color of a touched pixel. "
+SLEEP 0.5
+PAUSE "Use sleep button + home button to take a screen-shot of your image. "
+SLEEP 0.5
+PAUSE "Swipe your finger slowly to draw normally, swipe fast to draw in circles. "
+SLEEP 0.5
+skip:
+PAUSE "Running version V0.1 of Graphz-editor"
+SLEEP 0.1
+start:
+CLS
+sw = ScreenWidth
+sh = ScreenHeight
+BallX = ScreenWidth/2
+BallY = ScreenHeight/2
+BallR = 10
+Speed = 10
+TEXTFONT "arial",18
+COLOR 255,255,255
+BCOLOR 0,0,0
+scr = 255
+scg = 255
+scb = 255
+
+loop:
+COLOR scr,scg,scb
+IF rs = 1 THEN
+    SLEEP 0.1
+    COLOR scr,scg,scb
+    DRAWTEXT "Click here to stop. ",0,sh-50,sw,sh
+    COLOR BColorR,BColorG,BColorB
+    tch:
+    IF Touch = 1 THEN
+        IF TouchY > sh-70 THEN
+            rs = 0
+            COLOR BColorR,BColorG,BColorB
+            RECT 0,sh-70,sw,sh
+            COLOR scr,scg,scb
+            GOTO loop
+        ELSE
+            GOTO beginloop
+        ENDIF
+    ELSE
+        GOTO tch
+    ENDIF 
+    GOTO beginloop
+ELSE
+    GOTO beginloop
+ENDIF
+
+beginloop:
+rndr = 0+RND*255
+rndg = 0+RND*255
+rndb = 0+RND*255
+RECT 20,60,sw-20,sh-60,1
+RECT sw - 60,sh-60,sw-20,sh-10,1
+RECT 20,sh-60,70,sh-10,1
+RECT 80,sh-60,130,sh-10,1
+RECT 140,sh-60,190,sh-10,1
+RECT 200,sh-60,250,sh-10,1
+RECT 20,60,70,10,1
+DRAWTEXT "bgclr",sw-50,sh-50,sw-10,sh-20
+DRAWTEXT "rsr", 210,sh-50,240,sh-20
+DRAWTEXT "size",87,sh-50,120,sh-10
+DRAWTEXT "new", 30,sh-50,120,sh-20
+DRAWTEXT "clr",150,sh-50,180,sh-10
+DRAWTEXT "pick", 30,20,120,20
+
+BallXBackup=BallX
+BallYBackup=BallY
+
+BallX = TouchX
+BallY = TouchY
+
+IF BallX < 30 THEN
+    BallX = 30
+END IF
+IF BallX > ScreenWidth - 30 THEN
+    BallX = ScreenWidth - 30
+END IF
+IF BallY < 70 THEN
+    BallY = 70
+END IF
+IF BallY > ScreenHeight - 70 THEN
+END IF
+IF Touch=1 THEN
+    IF TouchX>10 AND TouchX<sw-10 AND TouchY>10 AND TouchY<sh-70 AND TouchY>70 THEN
+        CIRCLE BallX,BallY,BallR
+        LINE BallX,BallY,BallXBackup,BallYBackup,BallR*2
+    ENDIF
+    IF TouchX > sw-50 THEN
+        IF TouchY > sh-50 THEN
+            ACCELCALIBRATE
+        ELSE
+        ENDIF
+    ENDIF
+    IF TouchX < 50 THEN
+        IF TouchY > sh-50 THEN
+            GOTO start
+        ENDIF
+    ENDIF
+    IF TouchX > 80 AND TouchX < 130 THEN
+        IF TouchY > sh-50 THEN
+            IF BallR = 10 THEN
+                BallR = 20
+                SLEEP 0.1
+                GOTO loop
+            ENDIF
+            IF BallR = 20 THEN
+                BallR = 5
+                SLEEP 0.1
+                GOTO loop
+            ENDIF
+            IF BallR = 5 THEN
+                SLEEP 0.1
+                BallR = 10
+                GOTO loop
+            ENDIF
+        ENDIF
+    ENDIF
+    IF TouchX > 140 AND TouchX < 190 THEN
+        IF TouchY > sh-50 THEN
+            scr = rndr
+            scg = rndg
+            scb = rndb
+            SLEEP 0.1
+        ENDIF
+    ENDIF
+    IF TouchX > 210 AND TouchX<240 AND TouchY>sh-50 AND TouchY<sh-20 THEN
+        IF rs = 1 THEN
+            rs = 0         
+        ENDIF
+        IF rs = 0 THEN
+            rs = 1
+        ENDIF
+    ENDIF
+    IF TouchX > sw-50 AND TouchY > sh-50 THEN
+        BCOLOR rndr,rndg,rndb
+        SLEEP 0.1
+    ENDIF
+    IF TouchX > 30 AND TouchX < 90 AND TouchY < 60 THEN
+        SLEEP 0.1
+        wait:
+        IF Touch = 1 THEN
+            READPIXEL TouchX,TouchY
+            scr = ReadPixelR
+            scg = ReadPixelG
+            scb = ReadPixelB
+            SLEEP 0.1
+        ELSE
+            GOTO wait
+        ENDIF
+    ENDIF
+ELSE
+    GOTO loop
+ENDIF
+
+
+SLEEP 0.000001
+GOTO loop

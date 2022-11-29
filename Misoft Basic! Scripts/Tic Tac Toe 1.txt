@@ -1,0 +1,780 @@
+PRINT "Leave blank for you to go first or type c for computer to go first"
+INPUT "Who goes first?: ",first$
+IF UPPER$(first$)="c" THEN
+    firstplayer$="computer"
+ENDIF
+CLS
+choice$="blank"
+sw=ScreenWidth
+sh=ScreenWidth
+cutx=sw/3
+cuty=sh/3
+BCOLOR 0,0,0
+TCOLOR 1,1,1
+PRINT "Welcome to Tic Tac!"
+
+
+
+
+
+
+
+choice:
+
+topleft$="blank"
+top$="blank"
+topright$="blank"
+l$="blank"
+middle$="blank"
+r$="blank"
+bottomleft$="blank"
+bottom$="blank"
+bottomright$="blank"
+INPUT "Are you X or O? ",choice$
+choice$=UPPER$(choice$)
+IF choice$="X" OR choice$="O" THEN
+ELSE
+    CLS tty
+    PRINT "Welcome to Tic Tac Toe!"
+    xo=INT(RND*2)
+    IF xo=1 THEN
+        PRINT "Randomly selected to X"
+        SLEEP 1
+        choice$="X"
+    ENDIF
+    IF xo=0 THEN
+        PRINT "Randomly selected to O"
+        SLEEP 1
+        choice$="O"
+    ENDIF
+ENDIF
+IF choice$="X" THEN
+    opposite$="O"
+ENDIF
+IF choice$="O" THEN
+    opposite$="X"
+ENDIF
+
+
+
+loop:
+BEGINDRAW
+CLS
+BCOLOR 0,0,0
+
+REM*************Start of game
+IF topleft$+top$+topright$+l$+middle$+r$+bottomleft$+bottom$+bottomright$="blankblankblankblankblankblankblankblankblank" THEN
+    IF firstplayer$="computer" THEN
+        middle$=opposite$
+    ENDIF
+ELSE
+ENDIF
+
+
+
+
+
+
+IF Touch=1 THEN
+    hold:
+    xbkup=tx
+    ybkup=ty
+    IF Touch=0 THEN
+        round=round+1
+        tx=xbkup
+        ty=ybkup
+        CIRCLE tx,ty,5
+        GOTO unhold
+    ENDIF
+    tx=TouchX
+    ty=TouchY
+    COLOR 1,1,1
+    LINE xbkup,ybkup,tx,ty,1
+    GOTO hold
+ENDIF
+unhold:
+
+
+
+
+REM *************Assign Positions
+IF tx<>0 AND ty<>0 THEN
+
+
+    TCOLOR 1,1,1
+    PRINT "Round: ",round
+    'PRINT
+    'PRINT topleft$"        ",top$"        ",topright$
+    'PRINT l$,"        ",middle$"        ",r$
+    'PRINT bottomleft$"        ",bottom$"        ",bottomright$
+    'PRINT
+
+
+    IF tx<=cutx AND ty<=cuty THEN
+        REM topleft
+        topleft$=choice$
+    ENDIF
+    IF tx>=cutx AND tx<=cutx*2 AND ty<=cuty THEN
+        REM top
+        top$=choice$
+    ENDIF
+    IF tx>=cutx*2 AND ty<=cuty THEN
+        REM topright
+        topright$=choice$
+    ENDIF
+    IF tx>=cutx AND tx<=cutx*2 AND ty>=cuty AND ty<=cuty*2 THEN
+        REM middle
+        middle$=choice$
+    ENDIF
+    IF tx<=cutx AND ty>=cuty AND ty<=cuty*2 THEN
+        REM left
+        l$=choice$
+    ENDIF
+    IF tx>=cutx*2 AND ty>=cuty AND ty<=cuty*2 THEN
+        REM right
+        r$=choice$
+    ENDIF
+    IF tx>=cutx AND tx<=cutx*2 AND ty>=cuty*2  THEN
+        REM bottom
+        bottom$=choice$
+    ENDIF
+    IF tx<=cutx AND ty>=cuty*2  THEN
+        REM bottomleft
+        bottomleft$=choice$
+    ENDIF
+    IF tx>=cutx*2 AND ty>=cuty*2  THEN
+        REM bottomright
+        bottomright$=choice$
+    ENDIF
+ENDIF
+ENDIF
+
+
+
+REM *************Draw Grid
+COLOR 1,1,1
+LINE cutx,0,cutx,sh,5
+LINE cutx*2,0,cutx*2,sh,5
+LINE 0,cuty,sw,cuty,5
+LINE 0,cuty*2,sw,cuty*2,5
+RECT 0,0,sw,sh,10
+COLOR 0,0,0
+LINE 0,ScreenWidth+2.5,ScreenWidth,ScreenWidth+2.5,5
+
+GOSUB draw
+GOSUB computerTurn
+ENDDRAW
+GOTO loop
+
+
+
+
+
+
+
+
+REM *************Draw Xs and Os
+draw:
+COLOR 1,1,1
+IF topleft$="X" THEN
+    LINE 0,0,cutx,cuty,5
+    LINE 0,cuty,cutx,0,5
+ENDIF
+IF middle$="X" THEN
+    LINE cutx,cutx,cutx*2,cuty*2,5
+    LINE cuty,cuty*2,cutx*2,cuty,5
+ENDIF
+IF bottomright$="X" THEN
+    REM middle
+    LINE cutx*2,cutx*2,cutx*3,cuty*3,5
+    LINE cuty*2,cuty*3,cutx*3,cuty*2,5
+ENDIF
+IF topright$="X" THEN
+    LINE cutx*2,0,cutx*3,cuty,5
+    LINE cutx*3,0,cutx*2,cuty,5
+ENDIF
+IF bottomleft$="X" THEN
+    LINE 0,cuty*2,cutx,cuty*3,5
+    LINE cuty,cuty*2,0,cuty*3,5
+ENDIF
+IF top$="X" THEN
+    LINE cutx,0,cutx*2,cuty,5
+    LINE cutx,cuty,cutx*2,0,5
+ENDIF
+IF bottom$="X" THEN
+    LINE cutx,cuty*2,cutx*2,cuty*3,5
+    LINE cutx,cuty*3,cutx*2,cuty*2,5
+ENDIF
+IF l$="X" THEN
+    LINE 0,cuty,cutx,cuty*2,5
+    LINE 0,cuty*2,cutx,cuty,5
+ENDIF
+IF r$="X" THEN
+    LINE cutx*2,cuty,cutx*3,cuty*2,5
+    LINE cutx*2,cuty*2,cutx*3,cuty,5
+ENDIF
+
+
+
+COLOR 1,1,1
+IF topleft$="O" THEN
+    ELLIPSE 0,0,cutx,cuty,5
+ENDIF
+IF middle$="O" THEN
+    ELLIPSE cutx,cutx,cutx*2,cuty*2,5
+ENDIF
+IF bottomright$="O" THEN
+    ELLIPSE cutx*2,cutx*2,cutx*3,cuty*3,5
+ENDIF
+IF topright$="O" THEN
+    ELLIPSE cutx*2,0,cutx*3,cuty,5
+ENDIF
+IF bottomleft$="O" THEN
+    ELLIPSE 0,cuty*2,cutx,cuty*3,5
+ENDIF
+IF top$="O" THEN
+    ELLIPSE cutx,0,cutx*2,cuty,5
+ENDIF
+IF bottom$="O" THEN
+    ELLIPSE cutx,cuty*2,cutx*2,cuty*3,5
+ENDIF
+IF l$="O" THEN
+    ELLIPSE 0,cuty,cutx,cuty*2,5
+ENDIF
+IF r$="O" THEN
+    ELLIPSE cutx*2,cuty,cutx*3,cuty*2,5
+ENDIF
+RETURN
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+computerTurn:
+match=0
+IF topleft$="X" AND top$="X" THEN
+    IF topright$="blank" THEN
+        topright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topleft$="O" AND top$="O" THEN
+    IF topright$="blank" THEN
+        topright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topleft$="X" AND topright$="X" THEN
+    IF top$="blank" THEN
+        top$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topleft$="O" AND topright$="O" THEN
+    IF top$="blank" THEN
+        top$=opposite$       
+        match=1
+    ENDIF
+ENDIF
+IF topright$="X" AND top$="X" THEN
+    IF topleft$="blank" THEN
+        topleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topright$="O" AND top$="O" THEN
+    IF topleft$="blank" THEN
+        topleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF l$="X" AND middle$="X" THEN
+    IF r$="blank" THEN
+        r$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF l$="O" AND middle$="O" THEN
+    IF r$="blank" THEN
+        r$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF l$="X" AND r$="X" THEN
+    IF middle$="blank" THEN
+        middle$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF l$="O" AND r$="O" THEN
+    IF middle$="blank" THEN
+        middle$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF r$="X" AND middle$="X" THEN
+    IF l$="blank" THEN
+        l$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF r$="O" AND middle$="O" THEN
+    IF l$="blank" THEN
+        l$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="X" AND bottom$="X" THEN
+    IF bottomright$="blank" THEN
+        bottomright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="O" AND bottom$="O" THEN
+    IF bottomright$="blank" THEN
+        bottomright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomright$="X" AND bottom$="X" THEN
+    IF bottomleft$="blank" THEN
+        bottomleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomright$="O" AND bottom$="O" THEN
+    IF bottomleft$="blank" THEN
+        bottomleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="X" AND bottomright$="X" THEN
+    IF bottom$="blank" THEN
+        bottom$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="O" AND bottomright$="O" THEN
+    IF bottom$="blank" THEN
+        bottom$=opposite$
+        match=1
+    ENDIF
+ENDIF
+
+IF topleft$="X" AND l$="X" THEN
+    IF bottomleft$="blank" THEN
+        bottomleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topleft$="O" AND l$="O" THEN
+    IF bottomleft$="blank" THEN
+        bottomleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topleft$="X" AND bottomleft$="X" THEN
+    IF l$="blank" THEN
+        l$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topleft$="O" AND bottomleft$="O" THEN
+    IF l$="blank" THEN
+        l$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="X" AND l$="X" THEN
+    IF topleft$="blank" THEN
+        topleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="O" AND l$="O" THEN
+    IF topleft$="blank" THEN
+        topleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottom$="X" AND middle$="X" THEN
+    IF top$="blank" THEN
+        top$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottom$="O" AND middle$="O" THEN
+    IF top$="blank" THEN
+        top$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottom$="X" AND top$="X" THEN
+    IF middle$="blank" THEN
+        middle$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottom$="O" AND top$="O" THEN
+    IF middle$="blank" THEN
+        middle$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF middle$="X" AND top$="X" THEN
+    IF bottom$="blank" THEN
+        bottom$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF middle$="O" AND top$="O" THEN
+    IF bottom$="blank" THEN
+        bottom$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topright$="X" AND r$="X" THEN
+    IF bottomright$="blank" THEN
+        bottomright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topright$="O" AND r$="O" THEN
+    IF bottomright$="blank" THEN
+        bottomright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topright$="X" AND bottomright$="X" THEN
+    IF r$="blank" THEN
+        r$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topright$="O" AND bottomright$="O" THEN
+    IF r$="blank" THEN
+        r$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomright$="X" AND r$="X" THEN
+    IF topright$="blank" THEN
+        topright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomright$="O" AND r$="O" THEN
+    IF topright$="blank" THEN
+        topright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+
+IF topleft$="X" AND middle$="X" THEN
+    IF bottomright$="blank" THEN
+        bottomright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topleft$="O" AND middle$="O" THEN
+    IF bottomright$="blank" THEN
+        bottomright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topleft$="X" AND bottomright$="X" THEN
+    IF middle$="blank" THEN
+        middle$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF topleft$="O" AND bottomright$="O" THEN
+    IF middle$="blank" THEN
+        middle$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF middle$="X" AND bottomright$="X" THEN
+    IF topleft$="blank" THEN
+        topleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF middle$="O" AND bottomright$="O" THEN
+    IF topleft$="blank" THEN
+        topleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="X" AND middle$="X" THEN
+    IF topright$="blank" THEN
+        topright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="O" AND middle$="O" THEN
+    IF topright$="blank" THEN
+        topright$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="X" AND topright$="X" THEN
+    IF middle$="blank" THEN
+        middle$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF bottomleft$="O" AND topright$="O" THEN
+    IF middle$="blank" THEN
+        middle$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF middle$="X" AND topright$="X" THEN
+    IF bottomleft$="blank" THEN
+        bottomleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF middle$="O" AND topright$="O" THEN
+    IF bottomleft$="blank" THEN
+        bottomleft$=opposite$
+        match=1
+    ENDIF
+ENDIF
+IF match=0 THEN
+    GOSUB winCheck
+ENDIF
+IF match=1 THEN
+    GOSUB computerRND
+ENDIF
+RETURN
+
+
+
+
+
+
+
+
+
+
+
+winCheck:
+IF topleft$="X" AND top$="X" AND topright$="X" THEN
+    COLOR 1,0,0
+    LINE 0,cuty/2,cutx*3,cuty/2,10
+    GOTO Xwon
+ENDIF
+IF l$="X" AND middle$="X" AND r$="X" THEN
+    COLOR 1,0,0
+    LINE 0,cuty*1.5,cutx*3,cuty*1.5,10
+    GOTO Xwon
+ENDIF
+IF bottomleft$="X" AND bottom$="X" AND bottomright$="X" THEN
+    COLOR 1,0,0
+    LINE 0,cuty*2.5,cutx*3,cuty*2.5,10
+    GOTO Xwon
+ENDIF
+IF topleft$="X" AND l$="X" AND bottomleft$="X" THEN
+    COLOR 1,0,0
+    LINE cutx/2,0,cutx/2,cuty*3,10
+    GOTO Xwon
+ENDIF
+IF top$="X" AND middle$="X" AND bottom$="X" THEN
+    COLOR 1,0,0
+    LINE cutx*1.5,0,cutx*1.5,cuty*3,10
+    GOTO Xwon
+ENDIF
+IF topright$="X" AND r$="X" AND bottomright$="X" THEN
+    COLOR 1,0,0
+    LINE cutx/2.5,0,cutx/2.5,cuty*3,10
+    GOTO Xwon
+ENDIF
+IF topleft$="X" AND middle$="X" AND bottomright$="X" THEN
+    COLOR 1,0,0
+    LINE 0,0,cutx*3,cuty*3,10
+    GOTO Xwon
+ENDIF
+IF bottomleft$="X" AND middle$="X" AND topright$="X" THEN
+    COLOR 1,0,0
+    LINE 0,cuty*3,cutx*3,0,10
+    GOTO Xwon
+ENDIF
+
+
+IF topleft$="O" AND top$="O" AND topright$="O" THEN
+    COLOR 1,0,0
+    LINE 0,cuty/2,cutx*3,cuty/2,10
+    GOTO Owon
+ENDIF
+IF l$="O" AND middle$="O" AND r$="O" THEN
+    COLOR 1,0,0
+    LINE 0,cuty*1.5,cutx*3,cuty*1.5,10
+    GOTO Owon
+ENDIF
+IF bottomleft$="O" AND bottom$="O" AND bottomright$="O" THEN
+    COLOR 1,0,0
+    LINE 0,cuty*2.5,cutx*3,cuty*2.5,10
+    GOTO Owon
+ENDIF
+IF topleft$="O" AND l$="O" AND bottomleft$="O" THEN
+    COLOR 1,0,0
+    LINE cutx/2,0,cutx/2,cuty*3,10
+    GOTO Owon
+ENDIF
+IF top$="O" AND middle$="O" AND bottom$="O" THEN
+    COLOR 1,0,0
+    LINE cutx*1.5,0,cutx*1.5,cuty*3,10
+    GOTO Owon
+ENDIF
+IF topright$="O" AND r$="O" AND bottomright$="O" THEN
+    COLOR 1,0,0
+    LINE cutx/2.5,0,cutx/2.5,cuty*3,10
+    GOTO Owon
+ENDIF
+IF topleft$="O" AND middle$="O" AND bottomright$="O" THEN
+    COLOR 1,0,0
+    LINE 0,0,cutx*3,cuty*3,10
+    GOTO Owon
+ENDIF
+IF bottomleft$="O" AND middle$="O" AND topright$="O" THEN
+    COLOR 1,0,0
+    LINE 0,cuty*3,cutx*3,0,10
+    GOTO Owon
+ENDIF
+RETURN
+
+
+
+
+Xwon:
+GOSUB draw
+TCOLOR 1,0,0
+IF choice$="X" THEN
+    TCOLOR 0,1,0.5
+    PRINT "YOU WON!!!"
+ELSE
+    TCOLOR 1,0.3,0
+    PRINT "YOU LOST!!!"
+ENDIF
+INPUT "Type anything to restart or type end to end the game: ",restart$
+IF restart$="end" THEN
+    END
+ENDIF
+CLS
+GOTO clear
+
+Owon:
+GOSUB draw
+IF choice$="O" THEN
+    TCOLOR 0,1,0.5
+    PRINT "YOU WON!!!"
+ELSE
+    TCOLOR 1,0.3,0
+    PRINT "YOU LOST!!!"
+ENDIF
+INPUT "Type anything to restart or type end to end the game: ",restart$
+IF restart$="end" THEN
+    END
+ENDIF
+CLS
+GOTO clear
+
+clear:
+round=0
+tx=0
+ty=0
+match=0
+xbkup=0
+ybkup=0
+topleft$="blank"
+top$="blank"
+topright$="blank"
+l$="blank"
+middle$="blank"
+r$="blank"
+bottomleft$="blank"
+bottom$="blank"
+bottomright$="blank"
+GOTO loop
+
+
+
+
+computerRND:
+match=0
+random=INT(1+RND*9)
+IF random=1 THEN
+    IF topleft$="blank" THEN
+        topleft$=opposite$
+    ELSE
+        GOTO computerRND
+    ENDIF
+ENDIF
+IF random=2 THEN
+    IF top$="blank" THEN
+        top$=opposite$
+    ELSE
+        GOTO computerRND
+    ENDIF
+ENDIF
+IF random=3 THEN
+    IF topright$="blank" THEN
+        topright$=opposite$
+    ELSE
+        GOTO computerRND
+    ENDIF
+ENDIF
+IF random=4 THEN
+    IF l$="blank" THEN
+        l$=opposite$
+    ELSE
+        GOTO computerRND
+    ENDIF
+ENDIF
+IF random=5 THEN
+    IF middle$="blank" THEN
+        middle$=opposite$
+    ELSE
+        GOTO computerRND
+    ENDIF
+ENDIF
+IF random=6 THEN
+    IF r$="blank" THEN
+        r$=opposite$
+    ELSE
+        GOTO computerRND
+    ENDIF
+ENDIF
+IF random=7 THEN
+    IF bottomleft$="blank" THEN
+        bottomleft$=opposite$
+    ELSE
+        GOTO computerRND
+    ENDIF
+ENDIF
+IF random=8 THEN
+    IF bottom$="blank" THEN
+        bottom$=opposite$
+    ELSE
+        GOTO computerRND
+    ENDIF
+ENDIF
+IF random=9 THEN
+    IF bottomright$="blank" THEN
+        bottomright$=opposite$
+    ELSE
+        GOTO computerRND
+    ENDIF
+ENDIF
+RETURN

@@ -1,0 +1,407 @@
+REM Tile Slider by SimeonW
+REM Your goal it to make the lighter square's layout equal to the pattern inside the darker square by sliding the tiles around
+REM The game graphics were made to fit any screen size, in both landscape and portrait mode.
+REM Each day the levels will be different.
+REM Your progress will be saved to file, but will reset at the end of each day.
+
+GOSUB init
+GOSUB colorize
+GOSUB setGoal
+GOSUB swipeTiles
+loop:
+BEGINDRAW
+CLS gfx
+GOSUB touchHandler
+GOSUB draw
+ENDDRAW
+IF Touch=2 THEN
+    GOSUB init
+    GOSUB colorize
+    GOSUB setGoal
+    GOSUB swipeTiles
+ENDIF
+IF Touch=0 THEN
+    holdCounter=0
+    dragx=0
+    dragy=0
+    dragDir=0
+    tileOffset=0
+    GOSUB draw
+    IF correct=1 THEN
+        games=games+1
+        IF MOD(games,2)=1 THEN
+            moves=moves+1
+        ENDIF
+        colors=2+ABS(INT(SIN(games/3)*(grid/2)))
+        IF MOD(games,4)=0 THEN
+            grid=grid+1
+        ENDIF
+        OPEN "Tile Slider" FOR OUTPUT AS #1
+        PRINT #1,STR$(DateDay)+STR$(DateYear)+STR$(DateMonth)
+        PRINT #1,grid
+        PRINT #1,games
+        PRINT #1,moves
+        PRINT #1,colors
+        CLOSE #1
+        GOSUB init
+        GOSUB colorize
+        GOSUB setGoal
+        GOSUB swipeTiles
+        COLOR 0,0,0,0.5
+        RECT 0,0,sw,sh
+        COLOR 0.7,0.7,1
+        TEXTFONT "Times",size/1.2
+        DRAWTEXT "YOU WON",(sw/2)-size*2.1,(sh/2)-size/2
+        CLS tty
+        PAUSE SPC(20)+"Tap to go to Next Puzzle"
+        CLS tty
+        WHILE Touch<>0
+            SLEEP 0.1
+        WEND
+    ELSE
+        CLS tty
+        PAUSE ""
+        CLS tty
+        PRINT SPC(11)+"Two Finger Tap to Restart Level"
+        ENDDRAW
+    ENDIF
+ENDIF
+GOTO loop
+
+init:
+TCOLOR 0.7,0.7,0.7
+IF sw=0 THEN
+    RETINA off
+    LOCKORIENTATION
+    OPEN "Tile Slider" FOR INPUT AS #1
+    INPUT #1,a$
+    CLOSE #1
+    IF a$<>STR$(DateDay)+STR$(DateYear)+STR$(DateMonth) THEN
+        OPEN "Tile Slider" FOR OUTPUT AS #1
+        PRINT #1,STR$(DateDay)+STR$(DateYear)+STR$(DateMonth)
+        PRINT #1,3
+        PRINT #1,0
+        PRINT #1,2
+        PRINT #1,2
+        CLOSE #1
+    ENDIF
+    OPEN "Tile Slider" FOR INPUT AS #1
+    INPUT #1,a$
+    INPUT #1,grid
+    INPUT #1,games
+    INPUT #1,moves
+    INPUT #1,colors
+    CLOSE #1
+ENDIF
+RANDOMIZE((DateDay+games*PI)*DateMonth)
+sw=ScreenWidth
+sh=ScreenHeight
+IF sh>sw THEN
+    min=sw
+    max=sh
+ELSE
+    min=sh
+    max=sw
+ENDIF
+DIM tile(grid,grid)
+DIM goal(grid,grid)
+DIM px(grid),py(grid)
+DIM red(colors),green(colors),blue(colors)
+size=INT((max/grid)/2)
+IF size>min/grid THEN
+    size=min/grid
+ENDIF
+offx=(sw-(size*grid))/2
+offy=(sh-(size*grid))/2
+FOR i=1 TO grid
+    IF offy>offx THEN
+        px(i)=offx+(i-0.5)*size
+    ELSE
+        px(i)=(size*grid/2)+offx+(i-0.5)*size
+    ENDIF
+    FOR j=1 TO grid
+        IF offy>offx THEN
+            py(j)=(size*grid/2)+offy+(j-0.5)*size
+        ELSE
+            py(j)=offy+(j-0.5)*size
+        ENDIF
+    NEXT
+NEXT
+RETURN
+
+HSVtoRGB:
+c1=value*saturation
+c2=c1*(1-ABS(MOD(hue/60,2)-1))
+IF 0<=hue AND hue<60 THEN
+    r=c1
+    g=c2
+    b=0
+ENDIF
+IF 60<=hue AND hue<120 THEN
+    r=c2
+    g=c1
+    b=0
+ENDIF
+IF 120<=hue AND hue<180 THEN
+    r=0
+    g=c1
+    b=c2
+ENDIF
+IF 180<=hue AND hue<240 THEN
+    r=0
+    g=c2
+    b=c1
+ENDIF
+IF 240<=hue AND hue<300 THEN
+    r=c2
+    g=0
+    b=c1
+ENDIF
+IF 300<=hue AND hue<=360 THEN
+    r=c1
+    g=0
+    b=c2
+ENDIF
+r=r+(value-c1)
+g=g+(value-c1)
+b=b+(value-c1)
+RETURN
+
+colorize:
+FOR i=1 TO colors
+    hue=RND*360
+    saturation=0.4
+    value=(RND+3)/4
+    GOSUB HSVtoRGB
+    red(i)=r
+    green(i)=g
+    blue(i)=b
+NEXT
+RETURN
+
+setGoal:
+rotation=INT(1+RND*4)
+r=INT(1+RND*6)
+RND1=RND
+RND2=RND
+FOR i1=1 TO grid
+    FOR j1=1 TO grid
+        IF rotation=1 THEN
+            i=i1
+            j=j1
+        ENDIF
+        IF rotation=2 THEN
+            i=1+grid-i1
+            j=j1
+        ENDIF
+        IF rotation=3 THEN
+            i=i1
+            j=1+grid-j1
+        ENDIF
+        IF rotation=4 THEN
+            i=1+grid-i1
+            j=1+grid-j1
+        ENDIF
+        IF r=1 THEN
+            IF INT(RND1*2)=0 THEN
+                goal(i1,j1)=MOD(i,colors)
+            ELSE
+                goal(i1,j1)=MOD(j,colors)
+            ENDIF
+            IF goal(i1,j1)<=0 THEN
+                goal(i1,j1)=goal(i1,j1)+colors
+            ENDIF
+        ENDIF
+        IF r=2 THEN
+            IF MOD(grid,2)=0 THEN
+                goal(i1,j1)=INT(MOD((i-0.5)*(j-0.5),colors))
+            ELSE
+                goal(i1,j1)=INT(MOD(i*j,colors))
+            ENDIF
+            IF goal(i1,j1)<=0 THEN
+                goal(i1,j1)=goal(i1,j1)+colors
+            ENDIF
+        ENDIF
+        IF r=3 THEN
+            goal(i1,j1)=MOD(i+j,colors)
+            IF goal(i1,j1)<=0 THEN
+                goal(i1,j1)=goal(i1,j1)+colors
+            ENDIF
+        ENDIF
+        IF r=4 THEN
+            goal(i1,j1)=MOD(i*j,colors)
+            IF goal(i1,j1)<=0 THEN
+                goal(i1,j1)=goal(i1,j1)+colors
+            ENDIF
+        ENDIF
+        IF r=5 THEN
+            goal(i1,j1)=MOD(i*(j-i),colors)
+            IF goal(i1,j1)<=0 THEN
+                goal(i1,j1)=goal(i1,j1)+colors
+            ENDIF
+        ENDIF
+        IF r=6 THEN
+            goal(i1,j1)=MOD(i%INT(2+RND1*6)+j%INT(2+RND1*6),colors)
+            IF goal(i1,j1)<=0 THEN
+                goal(i1,j1)=goal(i1,j1)+colors
+            ENDIF
+        ENDIF
+        tile(i1,j1)=goal(i1,j1)
+    NEXT
+NEXT
+RETURN
+
+swipeTiles:
+FOR i=1 TO moves
+    d=0
+    WHILE d=0
+        a=INT(1+RND*grid)
+        b=INT(1+RND*2)
+        c=-1+INT(RND*2)*2
+        GOSUB swipe
+    WEND
+NEXT
+RETURN
+
+swipe:
+DIM row(grid)
+FOR l=1 TO grid
+    m=MOD(l+c,grid)
+    IF m<=0 THEN
+        m=m+grid
+    ENDIF
+    IF b=1 THEN
+        row(l)=tile(m,a)
+    ELSE
+        row(l)=tile(a,m)
+    ENDIF
+NEXT
+d=0
+FOR l=1 TO grid
+    IF l<>grid THEN
+        IF row(l)<>row(l+1) THEN
+            d=1
+        ENDIF
+    ENDIF
+    IF b=1 THEN
+        tile(l,a)=row(l)
+    ELSE
+        tile(a,l)=row(l)
+    ENDIF
+NEXT
+RETURN
+
+touchHandler:
+holdCounter=holdCounter+1
+oldtx=tx
+oldty=ty
+tx=TouchX
+ty=TouchY
+IF dragx<>0 AND dragy<>0 AND dragDir=0 THEN
+    dx=tx-startx
+    dy=ty-starty
+    dist=SQR(dx*dx+dy*dy)
+    IF dist>size/10 THEN
+        IF ABS(dx)>ABS(dy) THEN
+            dragDir=1
+        ELSE
+            dragDir=2
+        ENDIF
+    ENDIF
+ENDIF
+IF holdCounter=1 THEN
+    startx=tx
+    starty=ty
+    FOR i=1 TO grid
+        FOR j=1 TO grid
+            IF tx>=px(i)-size/2 AND tx<px(i)+size/2 AND ty>=py(j)-size/2 AND ty<py(j)+size/2 THEN
+                dragx=i
+                dragy=j
+            ENDIF
+        NEXT
+    NEXT
+ENDIF
+RETURN
+
+draw:
+IF dragDir=0 THEN
+    dragOff=0
+ENDIF
+IF dragDir=1 THEN
+    dragOff=tx-startx
+ENDIF
+IF dragDir=2 THEN
+    dragOff=ty-starty
+ENDIF
+IF INT(dragOff/size)<>tileOffset THEN
+    IF dragDir=1 THEN
+        a=dragy
+    ELSE
+        a=dragx
+    ENDIF
+    b=dragDir
+    c=-INT(INT(dragOff/size)-tileOffset)
+    GOSUB swipe
+    tileOffset=INT(dragOff/size)
+ENDIF
+dragOff=MOD(dragOff,size)
+IF dragDir=1 THEN
+    COLOR red(tile(grid,dragy)),green(tile(grid,dragy)),blue(tile(grid,dragy))
+    POINT px(1)-size+dragOff,py(dragy),size
+    COLOR red(tile(1,dragy)),green(tile(1,dragy)),blue(tile(1,dragy))
+    POINT px(grid)+size+dragOff,py(dragy),size
+ENDIF
+IF dragDir=2 THEN
+    COLOR red(tile(dragx,grid)),green(tile(dragx,grid)),blue(tile(dragx,grid))
+    POINT px(dragx),py(1)-size+dragOff,size
+    COLOR red(tile(dragx,1)),green(tile(dragx,1)),blue(tile(dragx,1))
+    POINT px(dragx),py(grid)+size+dragOff,size
+ENDIF
+FOR i=1 TO grid
+    FOR j=1 TO grid
+        COLOR red(tile(i,j)),green(tile(i,j)),blue(tile(i,j))
+        IF dragDir=1 AND j=dragy THEN
+            POINT px(i)+dragOff,py(j),size
+        ELSE
+            IF dragDir=2 AND i=dragx THEN
+                POINT px(i),py(j)+dragOff,size
+            ELSE
+                POINT px(i),py(j),size
+            ENDIF
+        ENDIF
+    NEXT
+NEXT
+IF dragDir=1 THEN
+    COLOR 1,1,1,0.07
+    LINE px(dragx),py(dragy),px(dragx)+MOD(tileOffset*size,size*grid),py(dragy),size/3
+ENDIF
+IF dragDir=2 THEN
+    COLOR 1,1,1,0.07
+    LINE px(dragx),py(dragy),px(dragx),py(dragy)+MOD(tileOffset*size,size*grid),size/3
+ENDIF
+correct=1
+FOR i=1 TO grid
+    FOR j=1 TO grid
+        IF tile(i,j)<>goal(i,j) THEN
+            correct=0
+        ENDIF
+        COLOR red(goal(i,j))/1.5,green(goal(i,j))/1.5,blue(goal(i,j))/1.5
+        IF offy>offx THEN
+            POINT px(i),py(j)-(size*grid),size
+        ELSE
+            POINT px(i)-(size*grid),py(j),size
+        ENDIF
+    NEXT
+NEXT
+COLOR 0,0,40
+RECT 0,sh-2,sw,sh
+IF offy>offx THEN
+    s=offx
+    RECT 0,0,s,sh
+    RECT sw-s,0,sw,sh
+ELSE
+    s=offx-(size*(grid/2))
+    RECT 0,0,s,sh
+    RECT sw-s,0,sw,sh
+ENDIF
+RETURN

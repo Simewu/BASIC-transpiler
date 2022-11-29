@@ -1,0 +1,89 @@
+menu:
+PRINT "Type what method of math you want to use:"
+PRINT
+PRINT "+      -for Addition"
+PRINT "-       -for subtraction"
+PRINT "*      -for Multiplication"
+PRINT "/       -for Division"
+PRINT "^       -for To the Power of"
+PRINT "SQR -for Square Roots"
+
+INPUT "", Method$
+
+IF Method$="+" THEN
+    CLS
+    PRINT "A + B = C"
+    INPUT "A= ", a
+    CLS
+    PRINT a " + B = C"
+    INPUT "B= ", b
+    CLS
+    c=a+b
+    PRINT a" + "b" = " c
+    PRINT
+    GOTO menu
+ENDIF
+IF Method$="-" THEN
+    CLS
+    PRINT "A - B = C"
+    INPUT "A= ", a
+    CLS
+    PRINT a " - B = C"
+    INPUT "B= ", b
+    CLS
+    c=a-b
+    PRINT a" - "b" = " c
+    PRINT
+    GOTO menu
+ENDIF
+IF Method$="*" THEN
+    CLS
+    PRINT "A * B = C"
+    INPUT "A= ", a
+    CLS
+    PRINT a " * B = C"
+    INPUT "B= ", b
+    CLS
+    c=a*b
+    PRINT a" * "b" = " c
+    PRINT
+    GOTO menu
+ENDIF
+IF Method$="/" THEN
+    CLS
+    PRINT "A / B = C"
+    INPUT "A= ", a
+    CLS
+    PRINT a " / B = C"
+    INPUT "B= ", b
+    CLS
+    c=a/b
+    PRINT a" / "b" = " c
+    PRINT
+    GOTO menu
+ENDIF
+IF Method$="^" THEN
+    CLS
+    PRINT "A ^ B = C"
+    INPUT "A= ", a
+    CLS
+    PRINT a " ^ B = C"
+    INPUT "B= ", b
+    CLS
+    c=a^b
+    PRINT a" ^ "b" = " c
+    PRINT
+    GOTO menu
+ENDIF
+IF Method$="SQR" THEN
+    CLS
+    PRINT "A (SQR) = B"
+    INPUT "A= ", a
+    CLS
+    PRINT a " (SQR) = B"
+    CLS
+    b=SQR (a)
+    PRINT a" (SQR) = " b
+    PRINT
+    GOTO menu
+    PRINT "Ax^2 + Bx + C = 0"

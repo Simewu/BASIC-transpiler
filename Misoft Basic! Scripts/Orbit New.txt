@@ -1,0 +1,285 @@
+REM ******Settings******
+slingPower=100
+planetx=ScreenWidth/2
+planety=ScreenHeight/2
+planetsize=19
+planetgravity=6
+planetspeed=0.1
+pull=0
+Friction=1
+ballsize=10
+numstars=3
+starsize=1
+starTrans=0.5
+REM ****** End of Settings******
+
+
+planetstartx=ScreenWidth/2
+planetstarty=ScreenHeight/2
+TCOLOR 255,255,255
+PRINT "Drag your finger to sling the ball"
+GOTO loop1
+ENDIF
+
+loop1:
+
+
+IF Touch=1 THEN
+    x1=TouchX
+    y1=TouchY
+    ballposx=x1
+    ballposy=y1
+    GOTO loop2
+ENDIF
+GOTO loop1
+
+
+loop2:
+BEGINDRAW
+CLS
+
+
+REM ******Draw the Stars******
+FOR star=1 TO numstars STEP 1
+    DIM starx(star),stary(star)
+    starx(star)=1+RND*ScreenWidth
+    stary(star)=1+RND*ScreenHeight
+    COLOR 1,1,1,RND*starTrans
+    CIRCLE starx(star),stary(star),starsize+RND
+    CIRCLE starx(star),stary(star),starsize+RND*2
+    CIRCLE starx(star),stary(star),starsize+RND*3
+NEXT star
+
+
+IF Touch=1 THEN
+    x2=TouchX
+    y2=TouchY
+    x2backup=TouchX
+    y2backup=TouchY 
+    'PRINT length
+    power=ABS(length/ScreenWidth*slingPower)
+    PRINT "Sling Power:  ", power
+    
+    
+    REM ******Length Detector******
+    dx = x2-x1
+    dy =y2-y1
+    length=ABS(SQR(dx^2+dy^2))
+    
+    
+    REM ******Angle Detector******
+    angley=0-dy/ScreenHeight*power
+    anglex=0-dx/ScreenWidth*power
+    PRINT "AngleX:  ",dx/ScreenWidth
+    PRINT "AngleY:  ",dy/ScreenHeight
+    
+    
+    REM ****** Planet Movement******
+    PlanetS=planetspeed+(altitude/(ScreenWidth/2))
+    i=i+PlanetS
+    planetx=SIN(i)*ScreenWidth/4+planetstartx
+    planety=COS(i)*ScreenWidth/4+planetstarty
+    
+    
+    COLOR length,255-length,0,0.5
+    LINE x1,y1,TouchX,TouchY,10
+    
+    
+    REM ******Draw the Ball******
+    COLOR 75,75,75
+    CIRCLE ballposx,ballposy,ballsize/1
+    COLOR 100,100,100
+    CIRCLE ballposx,ballposy,ballsize/1.25
+    COLOR 125,125,125
+    CIRCLE ballposx,ballposy,ballsize/1.50
+    COLOR 150,150,150
+    CIRCLE ballposx,ballposy,ballsize/1.75
+    COLOR 175,175,175
+    CIRCLE ballposx,ballposy,ballsize/2
+    COLOR 255,255,255
+    CIRCLE ballposx*1.01,ballposy/1.01,ballsize/5
+    
+    
+    REM ******Draw the Planet******
+    COLOR 50,50,50
+    CIRCLE planetx,planety,planetsize/1
+    COLOR 55,55,55
+    CIRCLE planetx,planety,planetsize/1.25
+    COLOR 60,60,60
+    CIRCLE planetx,planety,planetsize/1.50
+    COLOR 65,65,65
+    CIRCLE planetx,planety,planetsize/1.75
+    COLOR 70,70,70
+    CIRCLE planetx,planety,planetsize/2.25
+    
+ENDIF
+ENDDRAW
+
+
+IF Touch=0 THEN
+    COLOR length,255-length,0
+    LINE x1,y1,x2backup,y2backup,length/30
+    CLS
+    GOTO Draw&Movement
+ENDIF
+GOTO loop2
+
+
+
+
+Draw&Movement:
+BEGINDRAW
+CLS
+
+
+
+REM ****** Planet Movement******
+PlanetS=planetspeed+(altitude/(ScreenWidth/2))
+i=i+PlanetS
+planetx=SIN(i)*ScreenWidth/4+planetstartx
+planety=COS(i)*ScreenWidth/4+planetstarty
+
+
+REM ******Draw the Stars******
+FOR star=1 TO numstars STEP 1
+    DIM starx(star),stary(star)
+    starx(star)=1+RND*ScreenWidth
+    stary(star)=1+RND*ScreenHeight
+    COLOR 1,1,1,RND*starTrans
+    CIRCLE starx(star),stary(star),starsize+RND
+    COLOR 1,1,1,RND*starTrans/1.5
+    CIRCLE starx(star),stary(star),starsize+RND*2
+    COLOR 1,1,1,RND*starTrans/2
+    CIRCLE starx(star),stary(star),starsize+RND*3
+NEXT star
+
+
+REM ******Altitude Detector******
+altitudex=planetx-ballposx
+altitudey=planety-ballposy
+altitude2=altitude
+altitude=((ABS((ScreenHeight+ScreenWidth/2)/SQR(altitudex^2+altitudey^2)))+altitude2)/3
+COLOR 1,0,0,0.1
+CIRCLE ballposx,ballposy,altitude,2
+ELLIPSE ballposx-altitude,ballposy-altitude,ballposx+altitude,ballposy+altitude
+
+
+REM ******Planet Gravity Detector***
+planetanglex=(planetx-ballposx)/ScreenWidth
+planetangley=(planety-ballposy)/ScreenHeight
+
+
+REM ******Apply Gravity******
+anglex=anglex+(planetanglex*planetgravity)*(altitude+pull)
+angley=angley+(planetangley*planetgravity)*(altitude+pull)
+anglex=anglex*SQR(Friction)
+angley=angley*SQR(Friction)
+
+
+REM ******Move the Ball******
+ballposxbackup=ballposx
+ballposybackup=ballposy
+ballposx=ballposx+anglex
+ballposy=ballposy+angley
+'PRINT "The Balls X position:  ", ballposx
+'PRINT "The Balls Y position:  ", ballposy
+
+
+REM******Planet Touch******
+IF Touch=1 THEN
+    IF TouchX>=(planetx-(ballsize+30)) THEN
+        IF TouchX<=(planetx+(ballsize+30)) THEN
+            IF TouchY>=(planety-(ballsize+30)) THEN
+                IF TouchY<=(planety+(ballsize+30)) THEN
+                    planetx=TouchX
+                    planety=TouchY
+                ENDIF
+            ENDIF
+        ENDIF
+    ENDIF 
+ENDIF
+
+
+REM******Wall Collision******
+IF ballposx-ballsize>=ScreenWidth THEN
+    REM Left
+    COLOR 1,1,1
+    LINE ballposx,ballposy,ScreenWidth-20,ballposy,5
+ENDIF
+IF ballposx+ballsize<=0 THEN
+    REM Right
+    COLOR 1,1,1
+    LINE ballposx,ballposy,0+20,ballposy,5
+ENDIF
+IF ballposy-ballsize>=ScreenHeight THEN
+    REM Bottom
+    COLOR 1,1,1
+    LINE ballposx,ballposy,ballposx,ScreenHeight-20,5
+ENDIF
+IF ballposy+ballsize<=0 THEN
+    REM Top
+    COLOR 1,1,1
+    LINE ballposx,ballposy,ballposx,0+20,5
+ENDIF
+
+
+REM******Corner Collision******
+IF ballposx-ballsize>=ScreenWidth AND ballposy+ballsize<=0 THEN
+    REM TopRight
+    COLOR 1,1,1
+    LINE ballposx,ballposy,ScreenWidth-20,20,5
+ENDIF
+IF ballposx+ballsize<=0 AND ballposy+ballsize<=0 THEN
+    REM TopLeft
+    COLOR 1,1,1
+    LINE ballposx,ballposy,20,20,5
+ENDIF
+IF ballposx+ballsize<=0 AND ballposy-ballsize>=ScreenHeight THEN
+    REM BottomLeft
+    COLOR 1,1,1
+    LINE ballposx,ballposy,20,ScreenHeight-20,5
+ENDIF
+IF ballposx-ballsize>=ScreenWidth AND ballposy-ballsize>=ScreenHeight THEN
+    REM BottomRight
+    COLOR 1,1,1
+    LINE ballposx,ballposy,ScreenWidth-20,ScreenHeight-20,5
+ENDIF
+
+
+REM ******Draw the Planet******
+COLOR 50,50,50
+CIRCLE planetx,planety,planetsize/1
+COLOR 55,55,55
+CIRCLE planetx,planety,planetsize/1.25
+COLOR 60,60,60
+CIRCLE planetx,planety,planetsize/1.50
+COLOR 65,65,65
+CIRCLE planetx,planety,planetsize/1.75
+COLOR 70,70,70
+CIRCLE planetx,planety,planetsize/2.25
+
+
+REM ******Draw the Ball******
+COLOR 75,75,75
+CIRCLE ballposx,ballposy,ballsize/1
+COLOR 100,100,100
+CIRCLE ballposx,ballposy,ballsize/1.25
+COLOR 125,125,125
+CIRCLE ballposx,ballposy,ballsize/1.50
+COLOR 150,150,150
+CIRCLE ballposx,ballposy,ballsize/1.75
+COLOR 175,175,175
+CIRCLE ballposx,ballposy,ballsize/2
+COLOR 255,255,255
+CIRCLE ballposx*1.01,ballposy/1.01,ballsize/5
+
+
+REM ******Resling the Ball******
+IF Touch=1 THEN
+    x1=TouchX
+    y1=TouchY
+    GOTO loop1
+ENDIF
+
+ENDDRAW
+GOTO Draw&Movement

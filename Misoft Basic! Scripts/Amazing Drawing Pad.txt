@@ -1,0 +1,41 @@
+detail=5
+size=1
+
+
+
+TCOLOR 1,1,1
+PRINT "Dont forget to try it with 2 fingers"
+PRINT
+PRINT "Tap to Continue..."
+wait:
+IF Touch>0 THEN
+    CLS
+    posx=ScreenWidth/2
+    posy=ScreenHeight/2
+    GOTO loop
+ENDIF 
+GOTO wait
+
+loop:
+BEGINDRAW
+
+COLOR 1,1,1
+
+IF Touch=2 THEN
+    tx=(TouchX+TouchX2)/2
+    ty=(TouchY+TouchY2)/2
+ENDIF 
+IF Touch=1 THEN
+    tx=TouchX
+    ty=TouchY
+ENDIF
+dx = posx-tx
+dy = posy-ty
+length=SQR(dx^2+dy^2)
+posxbkup=posx
+posybkup=posy
+posx=posx-dx/ScreenWidth*length/detail
+posy=posy-dy/ScreenHeight*length/detail
+LINE posx,posy,posxbkup,posybkup,size
+ENDDRAW
+GOTO loop

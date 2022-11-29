@@ -1,0 +1,23 @@
+speed=0.021
+angle=180
+REM Modifying the two variables above will drastically change the design outcome, feel free to experiment!
+REM Created by SimeonW 2015
+
+TCOLOR 1,1,1
+PAUSE "Prepare to be mind blown:"
+CLS
+COLOR 1,1,1
+LINE TouchX,TouchY,0,0,ScreenWidth/4
+SLEEP 1
+
+loop:
+BEGINDRAW
+LOADSPRITE 1,0,0,ScreenWidth-1,ScreenHeight-1
+DRAWSPRITE 1,0,0,1,angle
+DRAWSPRITE 1,0,0,0.5-speed
+IF Touch=1 THEN
+    COLOR RND,RND,RND
+    CIRCLE TouchX,TouchY,30
+ENDIF
+ENDDRAW
+GOTO loop

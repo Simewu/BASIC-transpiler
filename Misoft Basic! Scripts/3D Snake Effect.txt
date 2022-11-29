@@ -1,0 +1,82 @@
+REM
+REM 3D SNAKE EFFECT
+REM
+REM iPhone 5 / iOS 6.1 b3 / miSoft 3.4.2
+REM
+
+'screen area
+scw = ScreenWidth
+sch = ScreenHeight
+csw = scw/2
+csh = sch/2
+
+'vars
+sncnt=5 ' Changes shape of snake. 
+bobs=70 ' Number of bits in snake.
+dem=1 ' start with demo 1
+timer=350 ' When timer = 0 demos change 
+
+main:
+BEGINDRAW
+CLS gfx
+timer=timer-1
+IF timer=0 THEN
+timer=350
+dem=dem+1
+END IF 
+IF timer=1 THEN
+IF dem=4 THEN
+sncnt=sncnt+5
+END IF 
+END IF 
+IF dem>2 THEN
+dem=1
+END IF 
+IF dem=1 THEN
+GOSUB snake1
+END IF 
+IF dem=2 THEN
+GOSUB snake2
+END IF 
+ENDDRAW
+GOTO main
+
+'snake one
+snake1:
+IF sncnt>15 THEN
+sncnt=5
+END IF 
+l=200*SIN(b/8)
+m=200*COS(b/7)
+FOR a = 1 TO bobs
+s=csw+l*SIN((b+a)/sncnt)
+t=csh+m*SIN((b+a)/20)
+COLOR 0,0,55
+RECT s,t , s+40,t+40,0
+COLOR 75,55,255
+RECT s+4,t+4 , s+36,t+36,0
+COLOR 0,0,0
+RECT s+8,t+8 , s+32,t+32,0
+NEXT a
+b=b+.5
+RETURN
+
+'snake two
+snake2:
+IF sncnt>15 THEN
+sncnt=5
+END IF 
+l=200*SIN(b/8)
+m=200*COS(b/7)
+FOR a = 1 TO bobs
+s=csw+l*SIN((b+a)/20)
+t=csh+m*SIN((b+a)/sncnt)
+COLOR 0,0,55
+RECT s,t , s+40,t+40,0
+COLOR 75,55,255
+RECT s+4,t+4 , s+36,t+36,0
+COLOR RND*200,RND*200,RND*200
+RECT s+8,t+8 , s+32,t+32,0
+NEXT a
+b=b+.5
+RETURN

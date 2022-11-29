@@ -1,0 +1,83 @@
+money = 400
+times = 8
+PRINT "you have " money " dollars."
+PRINT "Tap the screen when it is between 65 and 70."
+SLEEP 1
+PRINT "Ready?"
+PRINT "3"
+SLEEP 1
+PRINT "2"
+SLEEP 1
+PRINT "1"
+SLEEP 1
+PRINT "GO!"
+SLEEP 1
+start:
+FOR i =1 TO 1000
+    CLS
+    PRINT i
+    
+    IF Touch=1 THEN
+        IF i < 65 THEN
+            PRINT "You were going way to slow."
+            ticket = ((65 - i) * 15)
+            money = money - ticket
+            PRINT "You have $" money
+            IF money < 0 THEN
+                PRINT "game over"
+                END
+            ELSE
+                PRINT "your ticket is " ticket " dollars."
+                times = times - 1
+                PRINT "you just need to last " times " more times!"
+                IF times = 0 THEN
+                    PRINT "You win!"
+                    END
+                ELSE
+                    SLEEP 3
+                    GOTO start
+                ELSE
+                END IF
+            END IF
+        ELSE
+            IF Touch=1 THEN
+                IF i > 70 THEN
+                    PRINT "You were going to fast"
+                    ticket = ((i - 70) * 15)
+                    money = money - ticket
+                    PRINT "You have $" money
+                    IF money < 0 THEN
+                        PRINT "game over"
+                        END
+                    ELSE
+                        PRINT "your ticket is " ticket " dollars."
+                        times = times - 1
+                        PRINT "you just need to last " times " more times!"
+                        IF times = 0 THEN
+                            PRINT "You win!"
+                            END
+                        ELSE
+                            SLEEP 3
+                            GOTO start
+                        END IF
+                    END IF
+                END IF
+                IF Touch=1 THEN
+                    PRINT "Your going the speed limit. Yah!"
+                    times = times - 1
+                    PRINT "you just need to last " times " more times!"
+                    IF times = 0 THEN
+                        PRINT "You win!"
+                        END
+                    ELSE
+                        SLEEP 3
+                        GOTO start
+                    END IF
+                END IF
+            END IF
+        END IF
+    END IF  
+END IF
+NEXT i
+
+GOTO start

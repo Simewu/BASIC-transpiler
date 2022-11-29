@@ -1,0 +1,51 @@
+REM
+REM Circles
+REM too fast on iPhone 5. I had to slow it down.
+REM
+
+color1 = 0
+color2 = 255
+
+loop:
+'BEGINDRAW
+CLS gfx
+GOSUB circles
+SLEEP .
+'ENDDRAW
+GOTO loop
+
+
+circles:
+
+IF color1 = 0 THEN
+color1_direction = 1
+ELSE IF color1 = 255 THEN
+color1_direction = 0
+END IF
+
+IF color2 = 0 THEN
+color2_direction = 1
+ELSE IF color2 = 255 THEN
+color2_direction = 0
+END IF
+
+IF color1_direction = 0 THEN
+color1 = color1 - 1
+ELSE IF color1_direction = 1 THEN
+color1 = color1 + 1
+END IF
+
+IF color2_direction = 0 THEN
+color2 = color2 - 1
+ELSE IF color2_direction = 1 THEN
+color2 = color2 + 1
+END IF
+
+COLOR color1, 0, color2
+
+FOR size = 0 TO 7
+FOR what_circle = 0 TO 15
+CIRCLE ScreenWidth/2, ScreenHeight/2, what_circle * size
+NEXT
+NEXT
+RETURN

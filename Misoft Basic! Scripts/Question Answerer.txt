@@ -1,0 +1,165 @@
+ABC=4+RND*10
+ABC=INT (ABC)
+Menu:
+CLS
+PRINT "QUESTION ANSWERER"
+PRINT
+PRINT "Type 1 if it is True or False"
+PRINT "Type 2 if its Multiple choice"
+PRINT "Type 3 if it has a Number Answer"
+PRINT
+INPUT "" D
+IF D=3 THEN
+    CLS
+    T1=TickCount
+    GOTO loop3
+ENDIF
+IF D=2 THEN
+    CLS
+    T1=TickCount
+    GOTO loop2
+ENDIF
+IF D=1 THEN
+    CLS
+    T1=TickCount
+    GOTO loop0
+ENDIF
+IF D=ABC THEN
+    GOTO ABC
+ELSE
+    CLS
+    PRINT "That number isnt on the menu stupid!"
+    SLEEP 1.3
+    PRINT "Your really dumb!"
+    SLEEP 1
+    PRINT "I hate You!!"
+    SLEEP 1
+    PRINT ">:("
+    SLEEP 0.2
+    GOTO Menu
+    loop0:
+    B=0
+    loop:
+    A=1+RND*100
+    A=INT (A)
+
+    IF A>=50 THEN
+        B=B+1
+        PRINT "Question", B
+        PRINT "Answer= T"
+        PRINT
+    ENDIF
+    IF A<50 THEN
+        B=B+1
+        PRINT "Question", B
+        PRINT "Answer= F"
+        PRINT
+    ENDIF
+    IF B=30 THEN
+        PRINT "Secret code = ", ABC
+        PRINT "Type it into the Menu"
+        SLEEP 3
+        GOTO Menu
+    ENDIF
+    INPUT "Press Enter for next Answer", C
+    IF C=0 THEN
+        CLS
+        GOTO loop
+    ELSE
+        CLS
+        GOTO Menu
+    ENDIF
+
+
+    loop2:
+    B=0
+    loop1:
+    A=1+RND*4
+    A=INT (A)
+
+    IF A=1 THEN
+        B=B+1
+        PRINT "Question", B
+        PRINT "Answer= A"
+        PRINT
+    ENDIF
+    IF A=2 THEN
+        B=B+1
+        PRINT "Question", B
+        PRINT "Answer= B"
+        PRINT
+    ENDIF
+    IF A=3 THEN
+        B=B+1
+        PRINT "Question", B
+        PRINT "Answer= C"
+        PRINT
+    ENDIF
+    IF A=4 THEN
+        B=B+1
+        PRINT "Question", B
+        PRINT "Answer= D"
+        PRINT
+    ENDIF
+    IF B=30 THEN
+        PRINT "Secret code = ", ABC
+        PRINT "Type it into the Menu"
+        SLEEP 3
+        GOTO Menu
+    ENDIF
+    INPUT "Press Enter for next Answer", C
+    IF C=0 THEN
+        CLS
+        GOTO loop1
+    ELSE
+        CLS
+        GOTO Menu
+
+        loop3:
+        B=0
+        loop4:
+        A=1+RND*100
+        A=INT (A)
+        B=B+1
+        PRINT "Question", B
+        PRINT "Answer= ", A
+        PRINT
+    ENDIF
+    IF B=30 THEN
+        PRINT "Secret code = ", ABC
+        PRINT "Type it into the Menu"
+        SLEEP 3
+        GOTO Menu
+    ENDIF
+    INPUT "Press Enter for next Answer" ,C
+    IF C=0 THEN
+        CLS
+        GOTO loop4
+    ELSE
+        CLS
+        GOTO Menu
+    ENDIF
+    ABC:
+    CLS
+    PRINT "You discovered the secret code!"
+    PRINT
+    T2=TickCount
+    T3=TickCount
+    PRINT "That took you " T1-T2 " seconds for you to figure out!"
+    IF T1-T2>20 THEN
+        PRINT  "You failed!"
+    ENDIF
+    IF T1-T2<20 THEN
+        PRINT "You Failed!"
+    ENDIF
+    PRINT
+    INPUT "Press enter to continue",TimedFinnish
+    IF TimedFinnish=0 THEN
+        T4=TickCount
+        PRINT "That took you "T3-T4" seconds to read"
+        PRINT "You failed again!!"
+        PRINT
+        INPUT "Type enter to continue",TimedFinnish1
+        IF TimedFinnish1=0 THEN
+            SLEEP 1
+            GOTO Menu

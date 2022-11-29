@@ -1,0 +1,830 @@
+REM Maze Master 4
+REM by SimeonW
+REM
+REM "Maze Master 4" is more catchy :)
+REM 2 finger to toggle zoomed in mode, it runs a bit slower but it can be really helpful when dealing with larger mazes
+REM The yellow squares are CheckPoints, follow them and they will lead you to the finnish, this makes the mazes more fun to play when grid is large
+REM Each maze seed contains more than one maze, so when you finnish a maze, you can continue onto the next maze of that seed by simply tapping the screen
+REM Difficulty is determined by (SolutionLength/1+NumCheckpoints)
+'
+REM Settings: (feel free to edit)
+'
+grid=15
+'amount of boxes on each side
+'
+mazeSeed=1234
+'like minecraft seeds
+'
+mazeShape=1
+'1=Regular Square, 2=Circle, 3=Outer Circle, 4=Big Outer Circle, 5=Ring, 6=Checkered Grid, 7=Big Checkered Grid
+'
+checkpointFrequency=11
+'1=All Checkpoints, 0=No Checkpoints
+'(dont forget this changes the maze's estimated difficulty level)
+'
+REM End of Settings
+'
+'
+GOSUB preInit
+GOSUB title
+start:
+GOSUB init
+GOSUB generate
+GOSUB generateCheckpoints
+PAUSE
+CLS tty
+GOSUB draw
+GOSUB playMaze
+GOSUB drawSolution
+WHILE Touch=1
+WEND
+PRINT
+PAUSE "Tap to go to the next maze in this seed"
+GOSUB random
+mazeShape=INT(1+rand*7)
+mazeNum=mazeNum+1
+GOTO start
+'
+playMaze:
+posx=startX
+posy=startY
+oldx=posx
+oldy=posy
+curPosx=posx
+curPosy=posy
+done=0
+WHILE done=0
+BEGINDRAW
+COLOR 1,1,1
+CIRCLE x(curPosx,curPosy),y(curPosx,curPosy),(size/4)-1,lineWidth*2
+COLOR 0,0,0
+CIRCLE x(curPosx,curPosy),y(curPosx,curPosy),(size/4)-1
+ENDDRAW
+IF Touch=0 THEN
+CLS tty
+PAUSE pauseMessage$
+posx=INT(((TouchX-offx)/(size))+1)
+posy=INT(((TouchY-offy)/(size))+1)
+ENDIF
+IF Touch=2 THEN
+WHILE Touch=2
+WEND
+GOSUB playZoomedIn
+GOSUB draw
+WHILE Touch=2
+WEND
+ENDIF
+tx=TouchX
+ty=TouchY
+oldx=posx
+oldy=posy
+posx=INT(((tx-offx)/(size))+1)
+posy=INT(((ty-offy)/(size))+1)
+IF posx-oldx<>0 OR posy-oldy<>0 THEN
+mx=posx-oldx
+my=posy-oldy
+IF ABS(mx)<>0 AND ABS(my)<>0 THEN
+IF ABS(mx)=ABS(my) THEN
+mx=0
+my=0
+ENDIF
+IF ABS(mx)>ABS(my) THEN
+my=0
+ENDIF
+IF ABS(my)>ABS(mx) THEN
+mx=0
+ENDIF
+ENDIF
+IF mx>=1 THEN
+mx=1
+ENDIF
+IF my>=1 THEN
+my=1
+ENDIF
+IF mx<=-1 THEN
+mx=-1
+ENDIF
+IF my<=-1 THEN
+my=-1
+ENDIF
+IF my=-1 THEN
+wall=upInTact(curPosx,curPosy)
+ENDIF
+IF mx=-1 THEN
+wall=leftInTact(curPosx,curPosy)
+ENDIF
+IF mx=1 THEN
+wall=rightInTact(curPosx,curPosy)
+ENDIF
+IF my=1 THEN
+wall=downInTact(curPosx,curPosy)
+ENDIF
+IF wall=0 THEN
+IF curPosx=startX AND curPosy=startY THEN
+COLOR br,g,b/3
+ELSE
+COLOR br,bg,bb
+ENDIF
+CIRCLE x(curPosx,curPosy),y(curPosx,curPosy),(size/4)+lineWidth
+curPosx=curPosx+mx
+curPosy=curPosy+my
+ENDIF
+IF checkpoint(curPosx,curPosy)=1 THEN
+IF mx=1 THEN
+leftInTact(curPosx,curPosy)=1
+ENDIF
+IF mx=-1 THEN
+rightInTact(curPosx,curPosy)=1
+ENDIF
+IF my=1 THEN
+upInTact(curPosx,curPosy)=1
+ENDIF
+IF my=-1 THEN
+downInTact(curPosx,curPosy)=1
+ENDIF
+COLOR r,g,b
+IF upInTact(curPosx,curPosy)=1 THEN
+LINE x1(curPosx,curPosy),y1(curPosx,curPosy),x2(curPosx,curPosy),y2(curPosx,curPosy),lineWidth
+ENDIF
+IF leftInTact(curPosx,curPosy)=1 THEN
+LINE x1(curPosx,curPosy),y1(curPosx,curPosy),x3(curPosx,curPosy),y3(curPosx,curPosy),lineWidth
+ENDIF
+IF rightInTact(curPosx,curPosy)=1 THEN
+LINE x2(curPosx,curPosy),y2(curPosx,curPosy),x4(curPosx,curPosy),y4(curPosx,curPosy),lineWidth
+ENDIF
+IF downInTact(curPosx,curPosy)=1 THEN
+LINE x3(curPosx,curPosy),y3(curPosx,curPosy),x4(curPosx,curPosy),y4(curPosx,curPosy),lineWidth
+ENDIF
+checkpoint(curPosx,curPosy)=0
+ENDIF
+IF curPosx=endX AND curPosy=endY THEN
+done=1
+CLS tty
+TCOLOR 0.8,1,0.8
+PAUSE pauseMessage$
+PAUSE "YOU WON!"
+ENDIF
+ENDIF
+IF curPosx>=grid THEN
+curPosx=grid
+ENDIF
+IF curPosy>=grid THEN
+curPosy=grid
+ENDIF
+IF curPosx<=1 THEN
+curPosx=1
+ENDIF
+IF curPosy<=1 THEN
+curPosy=1
+ENDIF
+WEND
+RETURN
+'
+playZoomedIn:
+zoffx=0
+zoffy=(sh-sw)/2
+holding=0
+WHILE done=0
+BEGINDRAW
+zoomSize=sw/zoomGrid
+GOSUB drawZoomedIn
+ENDDRAW
+IF Touch=1 THEN
+holding=holding+1
+ENDIF
+IF Touch=0 THEN
+holding=0
+BEGINDRAW
+COLOR 1,1,1
+CIRCLE b1x,b1y,b1rad/1.3
+CIRCLE b2x,b2y,b2rad/1.3
+CIRCLE b1x,b1y,b1rad-1,2
+CIRCLE b2x,b2y,b2rad-1,2
+COLOR br,bg,bb
+LINE b1x-b1rad/3,b1y,b1x+b1rad/3,b1y,b1rad/5
+LINE b2x-b2rad/3,b2y,b2x+b2rad/3,b2y,b2rad/5
+LINE b2x,b2y-b2rad/3,b2x,b2y+b2rad/3,b2rad/5
+ENDDRAW
+CLS tty
+PAUSE pauseMessage$
+posx=INT(((TouchX-zoffx)/(zoomSize/2))+1)
+posy=INT(((TouchY-zoffy)/(zoomSize/2))+1)
+ENDIF
+IF Touch=2 THEN
+RETURN
+ENDIF
+tx=TouchX
+ty=TouchY
+IF holding=0 THEN
+IF SQR(((tx-b1x)^2)+((ty-b1y)^2))<=b1rad THEN
+zoomGrid=zoomGrid+2
+ENDIF
+IF SQR(((tx-b2x)^2)+((ty-b2y)^2))<=b2rad THEN
+zoomGrid=zoomGrid-2
+IF zoomGrid<=1 THEN
+zoomGrid=1
+ENDIF
+ENDIF
+ENDIF
+oldx=posx
+oldy=posy
+posx=INT(((tx-zoffx)/(zoomSize/2))+1)
+posy=INT(((ty-zoffy)/(zoomSize/2))+1)
+IF posx-oldx<>0 OR posy-oldy<>0 THEN
+mx=posx-oldx
+my=posy-oldy
+IF ABS(mx)<>0 AND ABS(my)<>0 THEN
+IF ABS(mx)=ABS(my) THEN
+mx=0
+my=0
+ENDIF
+IF ABS(mx)>ABS(my) THEN
+my=0
+ENDIF
+IF ABS(my)>ABS(mx) THEN
+mx=0
+ENDIF
+ENDIF
+IF mx>=1 THEN
+mx=1
+ENDIF
+IF my>=1 THEN
+my=1
+ENDIF
+IF mx<=-1 THEN
+mx=-1
+ENDIF
+IF my<=-1 THEN
+my=-1
+ENDIF
+IF my=-1 THEN
+wall=upInTact(curPosx,curPosy)
+ENDIF
+IF mx=-1 THEN
+wall=leftInTact(curPosx,curPosy)
+ENDIF
+IF mx=1 THEN
+wall=rightInTact(curPosx,curPosy)
+ENDIF
+IF my=1 THEN
+wall=downInTact(curPosx,curPosy)
+ENDIF
+IF wall=0 THEN
+curPosx=curPosx+mx
+curPosy=curPosy+my
+IF checkpoint(curPosx,curPosy)=1 THEN
+IF mx=1 THEN
+leftInTact(curPosx,curPosy)=1
+ENDIF
+IF mx=-1 THEN
+rightInTact(curPosx,curPosy)=1
+ENDIF
+IF my=1 THEN
+upInTact(curPosx,curPosy)=1
+ENDIF
+IF my=-1 THEN
+downInTact(curPosx,curPosy)=1
+ENDIF
+ENDIF
+ENDIF
+IF curPosx=endX AND curPosy=endY THEN
+done=1
+CLS tty
+TCOLOR 0.8,1,0.8
+PRINT "YOU WON!"
+PAUSE pauseMessage$
+ENDIF
+ENDIF
+IF curPosx>=grid THEN
+curPosx=grid
+ENDIF
+IF curPosy>=grid THEN
+curPosy=grid
+ENDIF
+IF curPosx<=1 THEN
+curPosx=1
+ENDIF
+IF curPosy<=1 THEN
+curPosy=1
+ENDIF
+WEND
+done=1
+RETURN
+'
+drawSolution:
+curX=startX
+curY=startY
+px=x(curX,curY)
+py=y(curX,curY)
+FOR i=LEN(path$) TO 1 STEP -1
+IF MID$(path$,i,1)="1" THEN
+curY=curY+1
+ENDIF
+IF MID$(path$,i,1)="2" THEN
+curX=curX+1
+ENDIF
+IF MID$(path$,i,1)="3" THEN
+curX=curX-1
+ENDIF
+IF MID$(path$,i,1)="4" THEN
+curY=curY-1
+ENDIF
+oldpx=px
+oldpy=py
+px=x(curX,curY)
+py=y(curX,curY)
+COLOR 1-i/LEN(path$),i/LEN(path$),0
+LINE px,py,oldpx,oldpy,size/4
+NEXT
+COLOR br,g,b/3
+POINT x(startx,starty),y(startx,starty),size/2
+COLOR r,g/3,bb
+POINT x(endx,endy),y(endx,endy),size/2
+RETURN
+'
+generateCheckpoints:
+checkpoints=0
+curX=startX
+curY=startY
+FOR i=LEN(path$) TO 1 STEP -1
+IF MID$(path$,i,1)="1" THEN
+curY=curY+1
+ENDIF
+IF MID$(path$,i,1)="2" THEN
+curX=curX+1
+ENDIF
+IF MID$(path$,i,1)="3" THEN
+curX=curX-1
+ENDIF
+IF MID$(path$,i,1)="4" THEN
+curY=curY-1
+ENDIF
+GOSUB random
+IF MOD(i,INT(0.5+checkpointFrequency))=0 AND INT(1+rand*(3*checkpointFrequency/10))=1 THEN
+checkpoint(curX,curY)=1
+checkpoints=checkpoints+1
+ENDIF
+NEXT
+difficulty$=STR$(INT(0.5+maxDepth/(1+checkpoints)))
+IF VAL(difficulty$)<=10 THEN
+difficulty$=difficulty$+" (Too Easy!)"
+ELSE
+IF VAL(difficulty$)<=20 THEN
+difficulty$=difficulty$+" (Easy)"
+ELSE
+IF VAL(difficulty$)<=40 THEN
+difficulty$=difficulty$+" (Medium)"
+ELSE
+IF VAL(difficulty$)<=100 THEN
+difficulty$=difficulty$+" (Hard)"
+ELSE
+IF VAL(difficulty$)<=200 THEN
+difficulty$=difficulty$+" (Extreme!)"
+ELSE
+difficulty$=difficulty$+" (INSANE!)"
+ENDIF
+ENDIF
+ENDIF
+ENDIF
+ENDIF
+pauseMessage$="Difficulty="+difficulty$+" - Seed="+STR$(mazeSeed)+":"+STR$(mazeNum)
+RETURN
+'
+drawZoomedIn:
+BCOLOR br,bg,bb
+COLOR r,g,b
+zstartx=curPosx-INT(zoomGrid/2)
+zstopx=curPosx+INT(zoomGrid/2)
+zstarty=curPosy-INT(zoomGrid/2)
+zstopy=curPosy+INT(zoomGrid/2)
+IF zstartx<=1 THEN
+zstartx=1
+ENDIF
+IF zstarty<=1 THEN
+zstarty=1
+ENDIF
+IF zstartx>=grid THEN
+zstartx=grid
+ENDIF
+IF zstarty>=grid THEN
+zstarty=grid
+ENDIF
+FOR yii=zstarty TO zstopy
+FOR xii=zstartx TO zstopx
+xi=xii-curPosx+INT(zoomGrid/2)+1
+yi=yii-curPosy+INT(zoomGrid/2)+1
+xx=zoffx+(xi-0.5)*zoomSize
+yy=zoffy+(yi-0.5)*zoomSize
+xx1=xx-zoomSize/2
+yy1=yy-zoomSize/2
+xx2=xx+zoomSize/2
+yy2=yy-zoomSize/2
+xx3=xx-zoomSize/2
+yy3=yy+zoomSize/2
+xx4=xx+zoomSize/2
+yy4=yy+zoomSize/2
+IF xii>=1 AND yii>=1 AND xii<=grid AND yii<=grid THEN
+upIT=upInTact(xii,yii)
+downIT=downInTact(xii,yii)
+leftIT=leftInTact(xii,yii)
+rightIT=rightInTact(xii,yii)
+IF checkpoint(xii,yii)=1 THEN
+isCheckpoint=1
+ELSE
+isCheckpoint=0
+ENDIF
+ELSE
+upIT=0
+downIT=0
+leftIT=0
+rightIT=0
+isCheckpoint=0
+ENDIF
+COLOR r,g,b
+IF upIT=1 THEN
+LINE xx1,yy1,xx2,yy2,lineWidth*(zoomSize/size)
+ENDIF
+IF leftIT=1 THEN
+LINE xx1,yy1,xx3,yy3,lineWidth*(zoomSize/size)
+ENDIF
+IF rightIT=1 THEN
+LINE xx2,yy2,xx4,yy4,lineWidth*(zoomSize/size)
+ENDIF
+IF downIT=1 THEN
+LINE xx3,yy3,xx4,yy4,lineWidth*(zoomSize/size)
+ENDIF
+IF xii=startX AND yii=startY THEN
+COLOR br,g,b/3
+POINT xx,yy,(zoomSize/2)-(lineThickness*(zoomSize/size))
+ENDIF
+IF xii=endX AND yii=endY THEN
+COLOR r,g/3,bb
+POINT xx,yy,(zoomSize/2)-(lineThickness*(zoomSize/size))
+ENDIF
+IF xii=curPosx AND yii=curPosy THEN
+COLOR 1,1,1
+CIRCLE xx,yy,(zoomSize/4)-1,lineWidth*2*(zoomSize/size)
+COLOR 0,0,0
+CIRCLE xx,yy,(zoomSize/4)-1
+IF isCheckpoint=1 THEN
+checkPoint(xii,yii)=0
+isCheckpoint=0
+ENDIF
+ENDIF
+IF isCheckpoint=1 THEN
+COLOR r,g,bb
+POINT xx,yy,(zoomSize/5)
+ENDIF
+NEXT
+NEXT
+b1x=sw/13
+b1y=sh-sw/13
+b1rad=sw/17
+b2x=sw-sw/13
+b2y=sh-sw/13
+b2rad=sw/17
+RETURN
+'
+draw:
+BCOLOR 0,0,0
+COLOR br,bg,bb
+RECT offx,offy,sw-offx,sh-offy
+COLOR (r+br)/2,(g+bg)/2,(b+bb)/2
+RECT offx,offy,sw-offx,sh-offy,lineWidth
+COLOR r,g,b
+FOR yi=1 TO grid
+BEGINDRAW
+FOR xi=1 TO grid
+IF xi=startX AND yi=startY THEN
+COLOR br,g,b/3
+POINT x(xi,yi),y(xi,yi),size/2
+COLOR r,g,b
+ENDIF
+IF xi=endX AND yi=endY THEN
+COLOR r,g/3,bb
+POINT x(xi,yi),y(xi,yi),size/2
+COLOR r,g,b
+ENDIF
+IF checkpoint(xi,yi)=1 THEN
+COLOR r,g,bb
+POINT x(xi,yi),y(xi,yi),(size/5)
+COLOR r,g,b
+ENDIF
+IF upInTact(xi,yi)=1 THEN
+LINE x1(xi,yi),y1(xi,yi),x2(xi,yi),y2(xi,yi),lineWidth
+ENDIF
+IF leftInTact(xi,yi)=1 THEN
+LINE x1(xi,yi),y1(xi,yi),x3(xi,yi),y3(xi,yi),lineWidth
+ENDIF
+IF rightInTact(xi,yi)=1 THEN
+LINE x2(xi,yi),y2(xi,yi),x4(xi,yi),y4(xi,yi),lineWidth
+ENDIF
+IF downInTact(xi,yi)=1 THEN
+LINE x3(xi,yi),y3(xi,yi),x4(xi,yi),y4(xi,yi),lineWidth
+ENDIF
+NEXT
+ENDDRAW
+NEXT
+RETURN
+'
+random:
+newVal=MOD((oldVal*a+c+mazeSeed),(2^24))
+rand=newVal/(2^24)
+oldVal=newVal
+RETURN
+'
+generate:
+COLOR r,g,b
+inBounds=0
+WHILE inBounds=0
+GOSUB random
+curX=INT(1+rand*grid)
+GOSUB random
+curY=INT(1+rand*grid)
+checkx=offx+(curX-0.5)*size
+checky=offy+(curY-0.5)*size
+GOSUB checkIfInBounds
+WEND
+startX=curX
+startY=curY
+DIM intact(4)
+WHILE visitedCells<totalCells
+IF MOD(visitedCells,INT(totalCells/100))=0 THEN
+CLS tty
+PRINT "Generating... "+STR$(INT(100*(visitedCells/totalCells)))+"% Complete"
+ENDIF
+nx=curX
+ny=curY-1
+GOSUB checkIfInTact
+intact(1)=neighborsInTact
+nx=curX-1
+ny=curY
+GOSUB checkIfInTact
+intact(2)=neighborsInTact
+nx=curX+1
+ny=curY
+GOSUB checkIfInTact
+intact(3)=neighborsInTact
+nx=curX
+ny=curY+1
+GOSUB checkIfInTact
+intact(4)=neighborsInTact
+IF intact(1)=1 OR intact(2)=1 OR intact(3)=1 OR intact(4)=1 THEN
+visitedCells=visitedCells+1
+done=0
+WHILE done=0
+GOSUB random
+rand=INT(1+rand*4)
+IF intact(rand)=1 THEN
+done=1
+ENDIF
+WEND
+IF rand=1 THEN
+upInTact(curX,curY)=0
+downInTact(curX,curY-1)=0
+curY=curY-1
+backtrack$=backtrack$+"1"
+ENDIF
+IF rand=2 THEN
+leftInTact(curX,curY)=0
+rightInTact(curX-1,curY)=0
+curX=curX-1
+backtrack$=backtrack$+"2"
+ENDIF
+IF rand=3 THEN
+rightInTact(curX,curY)=0
+leftInTact(curX+1,curY)=0
+curX=curX+1
+backtrack$=backtrack$+"3"
+ENDIF
+IF rand=4 THEN
+downInTact(curX,curY)=0
+upInTact(curX,curY+1)=0
+curY=curY+1
+backtrack$=backtrack$+"4"
+ENDIF
+IF LEN(backtrack$)>=maxDepth THEN
+maxDepth=LEN(backtrack$)
+path$=backtrack$
+endX=curX
+endY=curY
+ENDIF
+POINT x(curX,curY),y(curX,curY),(visitedCells/totalCells)*size/2
+ELSE
+'Go back 1
+IF LEN(backtrack$)>2 THEN
+IF RIGHT$(backtrack$,1)="1" THEN
+curY=curY+1
+ENDIF
+IF RIGHT$(backtrack$,1)="2" THEN
+curX=curX+1
+ENDIF
+IF RIGHT$(backtrack$,1)="3" THEN
+curX=curX-1
+ENDIF
+IF RIGHT$(backtrack$,1)="4" THEN
+curY=curY-1
+ENDIF
+backtrack$=MID$(backtrack$,1,LEN(backtrack$)-1)
+ELSE
+visitedCells=totalCells
+errorOccured=1
+ENDIF
+ENDIF
+WEND
+backupx=endX
+backupy=endY
+endX=startX
+endY=startY
+startX=backupx
+startY=backupy
+CLS tty
+RETURN
+'
+checkIfInTact:
+neighborsInTact=0
+IF nx>=1 AND nx<=grid AND ny>=1 AND ny<=grid THEN
+IF upInTact(nx,ny)=1 AND leftInTact(nx,ny)=1 AND rightInTact(nx,ny)=1 AND downInTact(nx,ny)=1 THEN
+neighborsInTact=1
+ENDIF
+ENDIF
+RETURN
+'
+preInit:
+LOCKORIENTATION
+sw=ScreenWidth
+sh=ScreenHeight
+zoomGrid=5
+initalGrid=grid
+initalSeed=mazeSeed
+a=1140671485
+c=12820163
+oldVal=327680
+mazeNum=1
+RETURN
+'
+init:
+grid=initalGrid
+'The checkered grids are rounded up to their grid pattern sizes:
+IF mazeShape=6 THEN
+grid=(1+INT(0.5+grid/2)*2)
+ENDIF
+IF mazeShape=7 THEN
+grid=(1+INT(0.5+grid/3)*3)
+ENDIF
+GOSUB random
+GOSUB random
+r=(1.5+rand)/2.5
+GOSUB random
+g=(1.5+rand)/2.5
+GOSUB random
+b=(1.5+rand)/2.5
+GOSUB random
+br=rand/3.5
+GOSUB random
+bg=rand/3.5
+GOSUB random
+bb=rand/3.5
+COLOR br,bg,bb
+FOR i=0 TO sw STEP sw/30
+BEGINDRAW
+CIRCLE sw/2,sh/2,i
+ENDDRAW
+NEXT
+BCOLOR br,bg,bb
+TCOLOR 1,1,1
+IF sw/grid>=sh/grid THEN
+size=sh/grid
+offx=(sw-(size*grid))/2
+offy=0
+minGrid=grid
+ELSE
+size=sw/grid
+offx=0
+offy=(sh-(size*grid))/2
+minGrid=grid
+ENDIF
+lineWidth=size/10
+DIM x(grid,grid),y(grid,grid)
+DIM x1(grid,grid),y1(grid,grid)
+DIM x2(grid,grid),y2(grid,grid)
+DIM x3(grid,grid),y3(grid,grid)
+DIM x4(grid,grid),y4(grid,grid)
+DIM upInTact(grid,grid)
+DIM leftInTact(grid,grid)
+DIM rightInTact(grid,grid)
+DIM downInTact(grid,grid)
+DIM checkpoint(grid,grid)
+backTrack$=""
+maxDepth=0
+visitedCells=1
+totalCells=grid*grid
+FOR yi=1 TO grid
+CLS tty
+PRINT "Initalization... "+STR$(INT(100*(yi/grid)))+"% Complete"
+FOR xi=1 TO grid
+x(xi,yi)=offx+(xi-0.5)*size
+y(xi,yi)=offy+(yi-0.5)*size
+x1(xi,yi)=x(xi,yi)-size/2
+y1(xi,yi)=y(xi,yi)-size/2
+x2(xi,yi)=x(xi,yi)+size/2
+y2(xi,yi)=y(xi,yi)-size/2
+x3(xi,yi)=x(xi,yi)-size/2
+y3(xi,yi)=y(xi,yi)+size/2
+x4(xi,yi)=x(xi,yi)+size/2
+y4(xi,yi)=y(xi,yi)+size/2
+checkx=x(xi,yi)
+checky=y(xi,yi)
+GOSUB checkIfInBounds
+IF inBounds=1 THEN
+upInTact(xi,yi)=1
+leftInTact(xi,yi)=1
+rightInTact(xi,yi)=1
+downInTact(xi,yi)=1
+ELSE
+totalCells=totalCells-1
+upInTact(xi,yi)=0
+leftInTact(xi,yi)=0
+rightInTact(xi,yi)=0
+downInTact(xi,yi)=0
+ENDIF
+NEXT
+NEXT
+CLS tty
+RETURN
+'
+title:
+BCOLOR 0,0.1,0.2
+tdone=0
+titley=0
+titlegrid=15
+titlegridsize=SQR((sw^2)+(sh^2))/titlegrid
+COLOR 0,0,1,0.2
+RECT 0,0,sw,sh
+BEGINDRAW
+WHILE tdone=0
+ENDDRAW
+BEGINDRAW
+CLS
+count=count+1
+titlex=sw/30+SIN(count/13)*sw/30
+titley=((14*titley)+(sh/2.2+SIN(count/10)*sh/10))/15
+COLOR 0,0.4,0.6
+FOR i=1 TO titlegrid
+x=MOD(1.5*count,titlegridsize)-titlegridsize*2+(i*titlegridsize)
+LINE 0,x,sw,x,SIN(count/30)*titlegridsize/1.2
+LINE x,0,x,sh,COS(count/30)*titlegridsize/1.2
+NEXT
+COLOR SIN(count/20),0.4,0.6
+TEXTFONT "Trebuchet",sw/6.9
+DRAWTEXT "Maze Master 4",titlex,titley
+COLOR 0,0.1,0.2
+RECT 0,0,sw,(sh/40*SIN(count/40))+sh/7
+RECT 0,sh,sw,(sh/40*SIN(count/30))+sh-sh/7
+IF MOD(count,50)<=24 THEN
+COLOR 0.3,0.4,0.5
+TEXTFONT "Trebuchet",titlegridsize/1.3
+DRAWTEXT "Tap to Begin",sw/3.5,sh-sh/8
+ENDIF
+IF Touch<>0 THEN
+tdone=1
+ENDIF
+WEND
+ENDDRAW
+RETURN
+'
+checkIfInBounds:
+'This is where the maze shape is determined
+checki=1+INT((checkx-offx)/size)
+checkj=1+INT((checky-offy)/size)
+inBounds=0
+dist=SQR(((checkx-sw/2)^2)+((checky-sh/2)^2))
+IF mazeShape<2 OR mazeShape>7 THEN
+'Regular Square
+inBounds=1
+ENDIF
+IF mazeShape=2 AND dist<minGrid*size/2 THEN
+'Circle
+inBounds=1
+ENDIF
+IF mazeShape=3 AND dist>minGrid*size/3.5 THEN
+'Outer Circle
+inBounds=1
+ENDIF
+IF mazeShape=4 AND dist>(minGrid-2)*size/2 THEN
+'Big Outercircle
+inBounds=1
+ENDIF
+IF mazeShape=5 AND dist<minGrid*size/2 AND dist>minGrid*size/4 THEN
+'Ring
+inBounds=1
+ENDIF
+IF mazeShape=6 AND MOD((checki-1)*(checkj-1),2)=0 THEN
+'Checkered Grid
+inBounds=1
+ENDIF
+IF mazeShape=7 AND MOD((checki-1)*(checkj-1),3)=0 THEN
+'Big Checkered Grid
+inBounds=1
+ENDIF
+RETURN

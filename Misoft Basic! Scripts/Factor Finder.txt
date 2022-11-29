@@ -1,0 +1,92 @@
+TCOLOR 1,1,1
+start:
+INPUT "Type a number: ",num
+CLS tty
+IF num=0 THEN
+    GOTO commands
+ENDIF 
+
+PRINT "Factors for ",num ":"
+loop:
+i=i+1
+IF ii=num/i THEN
+    'Stops repeating
+    GOTO finnish
+ENDIF 
+IF num/i=INT(num/i) THEN
+    'finds the factors
+    ii=i 
+    factors=factors+1
+    IF num/i=i THEN
+        'detects perfect square numbers
+        PRINT num/i " *",i " =",num " (Perfect Square Number)"
+        GOTO finnish
+    ELSE
+        PRINT num/i " *",i " =",num
+    ENDIF
+ENDIF
+GOTO loop
+
+finnish:
+'detects when all factors are done
+
+IF factors=1 AND num<>1 THEN
+    PRINT "(", num " is a Prime Number )"
+ELSE 
+    PRINT "There are ",factors " factors of ",num
+ENDIF 
+PRINT 
+PAUSE "Tap to restart..."
+i=0
+ii=0
+factors=0
+GOTO start
+
+commands:
+INPUT "Type a command: ",cmd$
+cmd$=UPPER$(cmd$)
+IF cmd$="" THEN
+    GOTO start
+ENDIF
+
+IF cmd$="COMMANDS" THEN
+    GOSUB LIST
+ENDIF 
+
+IF cmd$="PERFECTSQUARE" OR cmd$="PERFECTSQUARES" OR cmd$="PERFECT SQUARES" OR cmd$="PERFECT SQUARE" THEN
+    GOTO perfectsquare
+ENDIF
+
+list:
+PRINT "The commands are: "
+PRINT
+PRINT "-commands          Lists all the commands"
+PRINT "-perfect squares          Lists the perfect square numbers"
+PRINT
+PAUSE "Tap to continue..."
+i=0
+ii=0
+factors=0
+CLS
+GOTO start
+
+
+
+perfectsquare:
+CLS
+INPUT "How many perfect squares do you want: ",limit
+perfect:
+i=i+1
+PRINT i*i ", ";
+IF i>=limit THEN
+    PRINT
+    PRINT
+    PAUSE "Tap to go back..."
+    i=0
+    ii=0
+    factors=0
+    CLS
+    GOTO start
+ENDIF 
+
+GOTO perfect

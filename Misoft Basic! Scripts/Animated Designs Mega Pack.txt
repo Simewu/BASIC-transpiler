@@ -1,0 +1,359 @@
+menu:
+Width=1+RND*ScreenWidth
+Height=1+RND*ScreenHeight
+r=1+RND*255
+g=1+RND*255
+b=1+RND*255
+BCOLOR r-100,g-100,b-100
+TCOLOR r+50,g+50,b+50
+PRINT "Press RETURN for a random design picker"
+PRINT 
+PRINT "Or type the number of the design"
+PRINT "(There are 10 designs)"
+INPUT "", choice
+IF choice=0 THEN
+    BCOLOR 0,0,0
+    GOTO RandomPicker
+ENDIF 
+
+IF choice=1 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker1
+ENDIF 
+IF choice=2 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker2
+ENDIF 
+IF choice=3 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker3
+ENDIF 
+IF choice=4 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker4
+ENDIF 
+IF choice=5 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker5
+ENDIF 
+IF choice=6 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker6
+ENDIF 
+IF choice=7 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker7
+ENDIF 
+IF choice=8 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker8
+ENDIF 
+IF choice=9 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker9
+ENDIF 
+IF choice=10 THEN
+    CLS 
+    BCOLOR 0,0,0
+    GOTO Picker10
+ENDIF 
+
+
+
+RandomPicker:
+Picker=INT(1+RND*10)
+CLS
+TCOLOR 255,255,255
+PRINT "Number " Picker " was picked"
+SLEEP 1
+IF Picker=1 THEN
+    CLS
+    GOTO Picker1
+ENDIF
+IF Picker=2 THEN
+    CLS
+    GOTO Picker2
+ENDIF
+IF Picker=3 THEN
+    CLS
+    GOTO Picker3
+ENDIF
+IF Picker=4 THEN
+    CLS
+    GOTO Picker4
+ENDIF
+IF Picker=5 THEN
+    CLS
+    GOTO Picker5
+ENDIF
+IF Picker=7 THEN
+    CLS
+    GOTO Picker7
+ENDIF
+IF Picker=8 THEN
+    CLS
+    GOTO Picker8
+ENDIF
+IF Picker=9 THEN
+    CLS
+    GOTO Picker9
+ENDIF
+IF Picker=10 THEN
+    CLS
+    GOTO Picker10
+ENDIF
+
+
+Picker10:
+REM *******************************
+loop10:
+IF Touch=1 THEN
+    x= TouchY
+    y=TouchX
+    Color1=1+RND*255
+    Color2=1+RND*255
+    Color3=1+RND*255
+    Color11=Color1-50
+    Color22=Color2-50
+    Color33=Color3-50
+    random=1+RND*50
+    COLOR Color1, Color2, Color3
+    CIRCLE x, y, random
+    COLOR Color11, Color22, Color33
+    CIRCLE x, y, random/0.1
+    COLOR Color1, Color2, Color3
+    CIRCLE x, y, random/0.2
+    COLOR Color11, Color22, Color33
+    CIRCLE x, y, random/0.3
+    COLOR Color1, Color2, Color3
+    CIRCLE x, y, random/0.4
+    COLOR Color11, Color22, Color33
+    CIRCLE x, y, random/0.5
+    COLOR Color1, Color2, Color3
+    CIRCLE x, y, random-0.7
+    COLOR Color11, Color22, Color33
+    CIRCLE x, y, random-0.9
+ENDIF 
+IF Touch=2 THEN
+    PRINT "CLEARING"
+    SLEEP 1
+    CLS
+ENDIF 
+GOTO loop10
+Picker9:
+REM *******************************
+loop9:
+r=1+RND*255
+g=1+RND*255
+b=1+RND*255
+COLOR r,b,g
+FOR Y=TouchY TO TouchX STEP 1.5
+    CIRCLE X,Y, 1
+NEXT Y
+CIRCLE X,Y, 1
+FOR X=TouchX TO TouchY STEP 1.5
+    CIRCLE X,Y, 1
+NEXT X
+GOTO loop9
+Picker8:
+REM *******************************
+PRINT "Use 2 fingers"
+SLEEP 0.5
+CLS
+loop8:
+IF Touch=0 THEN
+    r=1+RND*255
+    g=1+RND*255
+    b=1+RND*255
+ENDIF 
+IF Touch=1 THEN
+    COLOR r, g, b
+    ELLIPSE x, y, TouchX, TouchY, 1
+ENDIF 
+IF Touch=2 THEN
+    COLOR r, g, b
+    ELLIPSE TouchX, TouchY, TouchX2, TouchY2, 1
+ENDIF 
+GOTO loop8
+Picker7:
+REM *******************************
+BallR=0.01
+Speed = 0.0001/BallR
+r=1+RND*225
+g=1+RND*225
+b=1+RND*225
+loop7:
+BallR = 1+RND*5
+IF Touch=2 THEN
+    Speed=0.0001/BallR+RND*2/BallR
+ENDIF 
+IF Touch=1 THEN
+    BallX = BallX + TouchX*Speed
+    BallY = BallY + TouchY*Speed
+ENDIF 
+COLOR r,g,b
+CIRCLE BallX+A,BallY+A,BallR/2
+CIRCLE BallX+A,BallY+A,BallR/2
+IF BallX > ScreenWidth THEN
+    BallX=Spawn
+    BallY=Spawn
+    r=1+RND*225
+    g=1+RND*225
+    b=1+RND*225 
+ENDIF 
+GOTO loop7
+Picker6:
+REM *******************************
+loop6:
+IF Touch=0 THEN
+    r=1+RND*255
+    g=1+RND*255
+    b=1+RND*255
+ENDIF 
+IF Touch=1 THEN
+    COLOR r, g, b
+    RECT x, y, TouchX, TouchY, 1
+ENDIF 
+IF Touch=2 THEN
+    COLOR r, g, b
+    RECT TouchX, TouchY, TouchX2, TouchY2, 1
+ENDIF 
+GOTO loop6
+Picker5:
+REM *******************************
+loop5:
+IF Touch=1 THEN
+    a1=1+RND*255
+    b1=1+RND*255
+    c1=1+RND*255
+    d1=1+RND*255
+    e1=1+RND*255
+    f1=1+RND*255
+    g1=1+RND*255
+    h1=1+RND*255
+    i1=1+RND*255
+    A=1+RND*25
+    COLOR a1,b1,c1
+    x=1+RND*ScreenWidth
+    y=1+RND*ScreenHeight 
+    POINT x,y,A+10
+    COLOR d1,e1,f1
+    POINT x,y,A+5
+    COLOR g1,h1,i1
+    POINT x,y,A
+ENDIF 
+GOTO loop5
+Picker4:
+REM *******************************
+loop4:
+a1=1+RND*255
+b1=1+RND*255
+c1=1+RND*255
+d1=1+RND*255
+e1=1+RND*255
+f1=1+RND*255
+g1=1+RND*255
+h1=1+RND*255
+i1=1+RND*255
+A=1+RND*25
+ENDIF 
+IF Touch=1 THEN
+    COLOR a1,b1,c1
+    x= TouchX
+    y=TouchY
+    POINT x,y,A+10
+    COLOR d1,e1,f1
+    POINT x,y,A+5
+    COLOR g1,h1,i1
+    POINT x,y,A
+ENDIF 
+IF Touch=2 THEN
+    COLOR a1,b1,c1
+    x= TouchX
+    y=TouchY
+    xx= TouchX2
+    yy=TouchY2
+    LINE x,y,xx,yy,20
+    COLOR d1-50,e1-50,f1-50
+    LINE x,y,xx,yy,A
+    COLOR g1,h1,i1
+    LINE x,y,xx,yy,A-5
+ENDIF 
+GOTO loop4
+Picker3:
+REM *******************************
+PRINT "Use 2 fingers"
+SLEEP 0.5
+CLS 
+loop3:
+a=1+RND*255
+b=1+RND*255
+c=1+RND*255
+ENDIF 
+IF Touch=2 THEN
+    COLOR a,b,c
+    x= TouchX
+    y=TouchY
+    xx= TouchX2
+    yy=TouchY2
+    RECT x,y,xx,yy
+ENDIF 
+GOTO loop3
+Picker2:
+REM *******************************
+loop2:
+IF Touch=0 THEN
+    BCOLOR AccelX*0.25,AccelY*0.25,AccelZ*0.25
+ENDIF 
+IF Touch=1 THEN
+    r=1+RND*255
+    g=1+RND*255
+    b=1+RND*255 
+    BCOLOR r,g,b
+ENDIF 
+GOTO loop2
+
+Picker1:
+REM *******************************
+loop1:
+IF Touch=1 THEN
+    x= TouchX
+    y= TouchY
+    Color1=1+RND*255
+    Color2=1+RND*255
+    Color3=1+RND*255
+    Color11=Color1-50
+    Color22=Color2-50
+    Color33=Color3-50
+    random=1+RND*50
+    COLOR Color1, Color2, Color3
+    CIRCLE x, y, random
+    COLOR Color11, Color22, Color33
+    CIRCLE x, y, random-5
+    COLOR Color1, Color2, Color3
+    CIRCLE x, y, random-10
+    COLOR Color11, Color22, Color33
+    CIRCLE x, y, random-15
+    COLOR Color1, Color2, Color3
+    CIRCLE x, y, random-20
+    COLOR Color11, Color22, Color33
+    CIRCLE x, y, random-25
+    COLOR Color1, Color2, Color3
+    CIRCLE x, y, random-30
+    COLOR Color11, Color22, Color33
+    CIRCLE x, y, random-35
+    COLOR Color1, Color2, Color3
+    CIRCLE x, y, random-40
+    COLOR Color11, Color22, Color33
+    CIRCLE x, y, random-45
+ENDIF 
+GOTO loop1

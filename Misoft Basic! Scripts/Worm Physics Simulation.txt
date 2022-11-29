@@ -1,0 +1,223 @@
+REM ******Settings******
+tiltsensitivity=0.5
+
+slingpower=50
+
+Gravity=1
+
+REM Try turning touchGravity negative
+touchGravity=4
+
+Friction=0.96
+
+ballsize=7
+
+ClearScreen$="yes"
+
+REM ******End of Settings******
+
+
+
+
+
+REM DEFAULT SETTINGS BACKUP
+REM tiltsensitivity=0.5
+REM slingpower=50
+REM Gravity=1
+REM touchGravity=4
+REM Friction=0.96
+REM ballsize=7
+REM ClearScreen$="yes"
+REM END OF DEFAULT SETTINGS
+
+TCOLOR 1,1,1
+
+start:
+
+PRINT "Tap and drag your finger to sling the worm"
+PRINT
+PRINT "Then drag your finger around a second time to give your finger gravity which will create a orbit effect to the worm"
+PRINT 
+PRINT "If you would like to re-sling the worm simply tap with two fingers"
+PRINT
+PRINT "Tilt your device to control gravity"
+PRINT
+PRINT "Feel free to mess around with the settings located at the beginning of this program"
+PRINT
+PRINT
+PAUSE
+CLS
+ballposxbackup5=TouchX
+ballposybackup5=TouchY
+ballposxbackup4=TouchX
+ballposybackup4=TouchY
+ballposxbackup3=TouchX
+ballposybackup3=TouchY
+ballposxbackup2=TouchX
+ballposybackup2=TouchY
+ballposxbackup=TouchX
+ballposybackup=TouchY
+
+loop1:
+IF Touch=1 THEN
+    x1=TouchX
+    y1=TouchY
+    ballposx=x1
+    ballposy=y1
+    GOTO loop2
+ENDIF
+GOTO loop1
+
+loop2:
+BEGINDRAW
+CLS
+
+IF Touch=1 THEN
+    x2=TouchX
+    y2=TouchY
+    x2backup=TouchX
+    y2backup=TouchY 
+    power=length/ScreenWidth*slingpower
+    
+    
+    REM ******Angle Detector******
+    angley=0-dy/ScreenHeight*power
+    anglex=0-dx/ScreenWidth*power
+    
+    
+    COLOR length,255-length,0,0.5
+    LINE x1,y1,TouchX,TouchY,10
+    
+    REM ******Draw the Ball******
+    COLOR 1,1,1
+    CIRCLE ballposx,ballposy,ballsize
+    
+    
+    
+    
+ENDIF
+ENDDRAW
+
+
+REM ******Length Detector******
+dx = x2-x1
+dy = y2-y1
+length=SQR(dx^2+dy^2)
+
+IF Touch=0 THEN
+    COLOR length,255-length,0
+    LINE x1,y1,x2backup,y2backup,length/30
+    CLS
+    GOTO Draw&Movement
+ENDIF
+GOTO loop2
+
+Draw&Movement:
+BEGINDRAW
+IF ClearScreen$="yes" THEN
+    CLS
+ELSE 
+    CLS tty
+ENDIF
+
+
+
+REM ******Draw the Ball******
+
+IF Touch=1 THEN
+    COLOR TouchX,TouchY,TouchX+TouchY/2
+    LINE ballposxbackup,ballposybackup,TouchX,TouchY,2
+ENDIF
+COLOR ballposx,ballposy,ballposx+ballposy/2
+LINE ballposx,ballposy,ballposxbackup,ballposybackup,ballsize*2
+CIRCLE ballposx,ballposy,ballsize
+COLOR ballposybackup,ballposxbackup,ballposxbackup+ballposybackup/2
+LINE ballposxbackup,ballposybackup,ballposxbackup2,ballposybackup2,ballsize*2
+CIRCLE ballposxbackup,ballposybackup,ballsize
+COLOR ballposxbackup2,ballposybackup2,ballposxbackup2+ballposybackup2/2
+LINE ballposxbackup2,ballposybackup2,ballposxbackup3,ballposybackup3,ballsize*2
+CIRCLE ballposxbackup2,ballposybackup2,ballsize
+COLOR ballposybackup3,ballposxbackup3,ballposxbackup3+ballposybackup3/2
+LINE ballposxbackup3,ballposybackup3,ballposxbackup4,ballposybackup4,ballsize*2
+CIRCLE ballposxbackup3,ballposybackup3,ballsize
+COLOR ballposxbackup5,ballposybackup5,ballposxbackup5+ballposybackup5/2
+LINE ballposxbackup4,ballposybackup4,ballposxbackup5,ballposybackup5,ballsize*2
+CIRCLE ballposxbackup5,ballposybackup5,ballsize
+CIRCLE ballposxbackup4,ballposybackup4,ballsize
+COLOR ballposx,ballposx+ballposy/2,ballposy
+CIRCLE ballposx,ballposy,ballsize
+
+
+
+REM ******Apply Gravity******
+angley=angley+AccelY/(tiltsensitivity)*Gravity+touchgravityy
+anglex=anglex+AccelX/(tiltsensitivity)*Gravity+touchgravityx
+anglex=anglex*SQR(Friction)
+angley=angley*SQR(Friction)
+
+
+REM ******Move the Ball******
+ballposxbackup5=ballposxbackup4
+ballposybackup5=ballposybackup4
+ballposxbackup4=ballposxbackup3
+ballposybackup4=ballposybackup3
+ballposxbackup3=ballposxbackup2
+ballposybackup3=ballposybackup2
+ballposxbackup2=ballposxbackup
+ballposybackup2=ballposybackup
+ballposxbackup=ballposx
+ballposybackup=ballposy
+ballposx=ballposx+anglex
+ballposy=ballposy+angley
+
+
+REM ******Re-Sling the Ball******
+IF Touch=2 THEN
+    CLS
+    x1=ballposx
+    y1=ballposy
+    SLEEP 1
+    GOTO start
+ENDIF
+
+
+REM ******Touch gravity******
+touchgravityx=0
+touchgravityy=0
+IF Touch=1 THEN
+    tgravity=touchGravity
+    tgravity=touchGravity
+    anglefromfingerx=(TouchX-ballposxbackup5)/ScreenWidth*tgravity
+    anglefromfingery=(TouchY-ballposybackup5)/ScreenHeight*tgravity
+    touchgravityx=anglefromfingerx
+    touchgravityy=anglefromfingery
+ENDIF
+
+ENDDRAW
+GOTO CollisionDetection
+
+
+CollisionDetection:
+REM******Wall Collision******
+IF ballposx+ballsize>=ScreenWidth OR ballposx-ballsize>=ScreenWidth THEN
+    REM Right
+    ballposx=ScreenWidth-ballsize
+    anglex=0-anglex
+ENDIF
+IF ballposx+ballsize<=0 OR ballposx-ballsize<=0 THEN
+    REM Left
+    ballposx=0+ballsize
+    anglex=0-anglex
+ENDIF
+IF ballposy+ballsize>=ScreenHeight OR ballposy-ballsize>=ScreenHeight THEN
+    REM Bottom
+    ballposy=ScreenHeight-ballsize
+    angley=0-angley
+ENDIF
+IF ballposy+ballsize<=0 OR ballposy-ballsize<=0 THEN
+    REM Top
+    ballposy=0+ballsize
+    angley=0-angley
+ENDIF
+
+GOTO Draw&Movement

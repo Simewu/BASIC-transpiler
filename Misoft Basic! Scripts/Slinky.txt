@@ -1,0 +1,48 @@
+REM 
+REM Slinky 
+REM 
+
+GOSUB setup
+GOTO loop
+END
+
+setup:
+s=5
+springs=70
+timer=150
+RETURN
+
+loop:
+BEGINDRAW
+CLS gfx
+GOSUB spring
+ENDDRAW
+GOTO loop
+RETURN
+
+spring:
+IF s>15 THEN
+s=5
+END IF 
+mm=mm+0.5
+r=100*SIN(mm)
+g=100*SIN(mm/2)
+b=100*SIN(mm/3)
+IF r<20 AND g<20 AND b<20 THEN
+r=100
+END IF 
+timer=timer-1
+IF timer=0 THEN
+s=s+5
+timer=150
+END IF 
+l=200*SIN(b/8)
+m=200*COS(b/7)
+FOR a=1 TO springs
+x=ScreenWidth/2+l*SIN((b+a)/s)
+y=ScreenHeight/2+m*SIN((b+a)/20)
+COLOR r,g,b
+CIRCLE x,y,50
+NEXT a
+b=b+.05
+RETURN

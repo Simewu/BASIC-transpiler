@@ -1,0 +1,37 @@
+PRINT "Welcome!"
+PRINT "This code is by KingFredrick VI"
+PRINT
+PRINT "What do you want to practice on?"
+9 INPUT "1 = adding, 2 = subtracting, 3 = multiplying, 4 = dividing", pra
+IF pra = 1 THEN
+    GOTO 10
+ELSE
+    IF pra = 2 THEN
+        GOTO 20
+    ELSE
+        IF pra = 3 THEN
+            GOTO 30
+        ELSE
+            IF pra = 4 THEN
+                GOTO 40
+            ELSE
+                PRINT "Not a valid choice."
+                GOTO 9
+            END IF
+        END IF
+    END IF
+END IF
+10 CLS
+PRINT "Adding practice"
+a = INT(((RND + 1) * 50))
+b = INT(((RND + 1) * 50))
+c = a + b
+PRINT a " + " b " = ?"
+INPUT d
+IF d = c THEN
+    PRINT "correct"
+    GOTO 9
+ELSE 
+    PRINT "Wrong, the correct answer is: " c "."
+    GOTO 10
+END

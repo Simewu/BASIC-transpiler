@@ -1,0 +1,505 @@
+REM *************************
+REM System of Equations Solver
+REM 2014 SimeonW
+REM *************************
+REM Read me:
+REM Input your system of equations into the matrix, the line separating the numbers from the variables is the equal sign
+REM (0 means your equation does not have that variable in it)
+REM The top row shows a list of your variables, you can change the name of your variables, or add another variable to the equations
+REM
+REM
+REM Tap the pound (#) button to open the command bar. Command bar commands include:
+REM "save" to save your matrix
+REM "load" to load your last saved matrix
+REM "reset" to reset your matrix
+REM "clear" to just clear the numbers
+REM "vars NUM" replace NUM with the number of variables you want (2-26)
+REM "end" to end the program
+REM
+REM When your all done inputting your variables, save (recommended) then tap the solve button, anything greater than a 3 by 3 matrix may take a long time to solve, so be patient
+REM
+REM *************************
+
+numVars=2
+sw=ScreenWidth
+sh=ScreenHeight
+DIM matrix(28,28)
+DIM identity$(28,28)
+DIM temp(28,28)
+DIM inverse(28,28)
+DIM variable$(28)
+variable$(1)="#"
+FOR i=1 TO 26
+    variable$(i+1)=CHR$(65+MOD(i+22,26))
+NEXT
+numVars=numVars+1
+TCOLOR 1,1,1
+loop:
+BEGINDRAW
+CLS
+GOSUB draw
+IF tappedBtnx=numVars+1 AND tappedBtny=numVars THEN
+    GOSUB solve
+ELSE
+    GOSUB setData
+ENDIF
+COLOR 1,1,1
+ENDDRAW
+PAUSE ""
+tx=TouchX
+ty=TouchY
+GOTO loop
+
+setData:
+IF tappedBtnx=1 AND tappedBtny=1 THEN
+    tx=0
+    ty=0
+    INPUT "CMD:",cmd$
+    CLS tty
+    IF cmd$="save" THEN
+        OPEN "matrix" FOR OUTPUT AS #1
+        PRINT #1,numVars
+        FOR i=2 TO numVars
+            PRINT #1,variable$(i)
+        NEXT
+        FOR yi=2 TO numVars
+            FOR xi=1 TO numVars
+                PRINT #1,STR$(matrix(xi,yi))
+            NEXT
+        NEXT
+        CLOSE #1
+        PRINT "Saved!"
+    ENDIF
+    IF cmd$="load" THEN
+        OPEN "matrix" FOR INPUT AS #1
+        INPUT #1,numVars
+        FOR i=2 TO numVars
+            INPUT #1,v$
+            variable$(i)=v$
+        NEXT
+        FOR yi=2 TO numVars
+            FOR xi=1 TO numVars
+                INPUT #1,matrix(xi,yi)
+            NEXT
+        NEXT
+        CLOSE #1
+        CLS
+        GOSUB draw
+        PRINT "Loaded!"
+    ENDIF
+    IF cmd$="reset" THEN
+        numVars=3
+        DIM matrix(28,28)
+        DIM variable$(28)
+        variable$(1)="#"
+        FOR i=1 TO 26
+            variable$(i+1)=CHR$(65+MOD(i+22,26))
+        NEXT
+    ENDIF
+    IF cmd$="clear" THEN
+        DIM matrix(28,28)
+    ENDIF
+    IF LEFT$(cmd$,5)="vars " THEN
+        n=1+VAL(MID$(cmd$,6,LEN(cmd$)))
+        IF n>=3 AND n<=27 THEN
+            numVars=n
+        ELSE
+            PRINT "Invalid number (must be between 2 and 26)"
+        ENDIF
+    ENDIF
+    IF cmd$="end" THEN
+        END
+    ENDIF
+ENDIF
+IF tappedBtnx<>0 AND tappedBtny<>0 THEN
+    IF tappedBtny=1 THEN
+        IF tappedBtnx=numVars+1 THEN
+            ENDDRAW
+            IF numVars<27 THEN
+                numVars=numVars+1
+                alreadyExists=0
+                FOR i=1 TO numVars-1
+                    IF variable$(i)=variable$(numVars) THEN
+                        alreadyExists=1
+                    ENDIF
+                NEXT
+                IF alreadyExists=1 THEN
+                    variable$(numVars)="?"
+                ENDIF
+            ENDIF
+            BEGINDRAW
+            CLS
+        ELSE
+            IF tappedBtnx<>1 THEN
+                message$="Enter a variable name"
+                COLOR 1,1,1
+                DRAWTEXT message$,size/2,(offy+size/3)/2,sw,offy+size/3
+                ENDDRAW
+                INPUT " ",s$
+                CLS tty
+                IF LEN(s$)=1 THEN
+                    s$=UPPER$(s$)
+                    IF ASC(s$)>=65 AND ASC(s$)<=90 THEN
+                        error=0
+                        FOR i=1 TO numVars
+                            IF i<>tappedBtnx THEN
+                                IF variable$(i)=s$ THEN
+                                    error=1
+                                ENDIF
+                            ENDIF
+                        NEXT
+                        IF error=1 THEN
+                            PRINT "Variable already exists!"
+                        ELSE
+                            variable$(tappedBtnx)=s$
+                        ENDIF
+                    ELSE
+                        PRINT "Invalid variable name"
+                    ENDIF
+                ELSE
+                    PRINT "Invalid variable name"
+                ENDIF
+                BEGINDRAW
+            ENDIF
+        ENDIF
+    ELSE
+        IF variable$(tappedBtnx)="?" THEN
+            message$="What is the "
+            IF tappedBtnx=1 THEN
+                message$=message$+"Number value in the "
+            ENDIF
+            IF tappedBtnx=2 THEN
+                message$=message$+"2nd variable's value in the "
+            ENDIF
+            IF tappedBtnx=3 THEN
+                message$=message$+"3rd variable's value in the "
+            ENDIF
+            IF tappedBtnx>=4 THEN
+                message$=message$+STR$(tappedBtnx)+"th variable's value in the "
+            ENDIF
+        ELSE
+            message$="What is "+variable$(tappedBtnx)+"'s value in the "
+        ENDIF
+        IF tappedBtny=1 THEN
+            message$=message$+"1st "
+        ENDIF
+        IF tappedBtny=2 THEN
+            message$=message$+"2nd "
+        ENDIF
+        IF tappedBtny=3 THEN
+            message$=message$+"3rd "
+        ENDIF
+        IF tappedBtny>=4 THEN
+            message$=message$+STR$(tappedBtny)+"th "
+        ENDIF
+        message$=message$+"equation?"
+        COLOR 1,1,1
+        DRAWTEXT message$,size/2,(offy+size/3)/2,sw,offy+size/3
+        ENDDRAW
+        INPUT " ",s$
+        CLS tty
+        IF s$="0" OR VAL(s$)<>0 THEN
+            matrix(tappedBtnx,tappedBtny)=VAL(s$)
+        ELSE
+            PRINT "Invalid number"
+        ENDIF
+        BEGINDRAW
+    ENDIF
+    tx=0
+    ty=0
+    CLS gfx
+    GOSUB draw
+ENDIF
+RETURN
+
+draw:
+IF sh>=sw THEN
+    size=sw/(numVars+1)
+    offx=0
+    offy=(sh-sw)/2
+ELSE
+    size=sh/(numVars+1)
+    offx=(sw-sh)/2
+    offy=0
+ENDIF
+offy=offy+size/2.75
+tappedBtnx=0
+tappedBtny=0
+TEXTFONT "Arial",size/6
+FOR yi=1 TO numVars
+    FOR xi=1 TO numVars+1
+        COLOR 1,1,1
+        x=offx+(xi-0.5)*(size)
+        y=offy+(yi-0.5)*(size)
+        IF xi<=numVars OR yi=1 THEN
+            IF tx>=x-size/2 AND tx<=x+size/2 AND ty>=y-size/2 AND ty<=y+size/2 THEN
+                tappedBtnx=xi
+                tappedBtny=yi
+                COLOR 0.5,0.5,0.5
+            ENDIF
+            POINT x,y,(size/2)-(size/20)
+            COLOR 0,0,0
+            IF xi=numVars+1 AND yi=1 THEN
+                DRAWTEXT "Add Variable",x-size/4,y-size/15,x+size/2.5,y+size
+            ENDIF
+            IF xi<>numVars+1 THEN
+                IF yi=1 THEN
+                    IF variable$(xi)<>"" THEN
+                        DRAWTEXT variable$(xi),x-size/15,y+size/20
+                    ENDIF
+                ELSE
+                    IF xi=1 THEN
+                        DRAWTEXT STR$(matrix(xi,yi)),x-size/10,y-size/15
+                    ELSE
+                        n$=STR$(matrix(xi,yi))
+                        IF n$="1" THEN
+                            n$=""
+                        ENDIF
+                        IF n$="-1" THEN
+                            n$="-"
+                        ENDIF
+                        DRAWTEXT n$+variable$(xi),x-size/10,y-size/15
+                    ENDIF
+                ENDIF
+            ENDIF
+        ENDIF
+        IF xi=numVars+1 AND yi=numVars THEN
+            COLOR 1,1,1
+            IF tx>=x-size/2 AND tx<=x+size/2 AND ty>=y-size/2 AND ty<=y+size/2 THEN
+                tappedBtnx=xi
+                tappedBtny=yi
+                COLOR 0.5,0.5,0.5
+            ENDIF
+            CIRCLE x,y,size/2
+            COLOR 0,0,0
+            DRAWTEXT "Solve",x-size/5,y-(size/10)
+        ENDIF
+        IF yi<>1 THEN
+            IF xi=1 THEN
+                e$=e$+STR$(matrix(xi,yi))+"="
+            ELSE
+                IF matrix(xi,yi)<>0 THEN
+                    IF matrix(xi,yi)=ABS(matrix(xi,yi)) THEN
+                        IF xi>2 AND RIGHT$(e$,1)<>"=" THEN
+                            e$=e$+"+"
+                        ENDIF
+                    ENDIF
+                    n$=STR$(matrix(xi,yi))
+                    IF n$="1" THEN
+                        n$=""
+                    ENDIF
+                    IF n$="-1" THEN
+                        n$="-"
+                    ENDIF
+                    e$=e$+n$+variable$(xi)
+                ENDIF
+                IF xi=numVars THEN
+                    IF RIGHT$(e$,1)="=" THEN
+                        e$=e$+"0"
+                    ENDIF
+                    COLOR 1,1,1
+                    TEXTFONT "Arial","Bold",size/7
+                    DRAWTEXT e$,x+size/1.8,size/1.4+y/1.9,x+size*1.5,sh
+                    TEXTFONT "Arial",size/6
+                    
+                ENDIF
+            ENDIF
+        ENDIF
+    NEXT
+    e$=""
+NEXT
+COLOR 0,0,0
+RECT 0,0,sw,offy+size/3
+COLOR 0,0,0
+LINE offx+size,offy+(size/6),offx+size,(sh-offy)-(size/6),(size/5)
+COLOR 1,1,1
+LINE offx+size,offy+(size/6),offx+size,(sh-offy)-(size/6),(size/40)
+RETURN
+
+getInitalDeterminant:
+IF numVars=2 THEN
+    determinant=matrix(2,2)
+ELSE
+    c=0
+    d=0
+    aa=2
+    bb=numVars
+    IF numVars=3 THEN
+        bb=bb-1
+    ENDIF
+    IF numVars=5 THEN
+        aa=aa-1
+    ENDIF
+    IF numVars=6 THEN
+    ENDIF
+    FOR ii=aa TO bb
+        a=1
+        b=1
+        FOR i=2 TO numVars
+            xi=2+MOD(1+ii+i,numVars-1)
+            yi=i
+            yi2=(numVars+2)-yi
+            a=a*matrix(xi,yi)
+            b=b*matrix(xi,yi2)
+        NEXT
+        c=c+a
+        d=d+b
+    NEXT
+    IF MOD(numVars,2)=0 THEN
+        determinant=c-d
+    ELSE
+        determinant=d-c
+    ENDIF
+ENDIF
+RETURN
+
+getDeterminant:
+IF numV=2 THEN
+    det=temp(2,2)
+ELSE
+    c=0
+    d=0
+    aa=2
+    bb=numV
+    IF numV=3 THEN
+        bb=bb-1
+    ENDIF
+    IF numV=5 THEN
+        aa=aa-1
+    ENDIF
+    IF numV=6 THEN
+    ENDIF
+    FOR ii=aa TO bb
+        a=1
+        b=1
+        FOR i=2 TO numV
+            txi=2+MOD(1+ii+i,numV-1)
+            tyi=i
+            tyi2=(numV+2)-tyi
+            a=a*temp(txi,tyi)
+            b=b*temp(txi,tyi2)
+        NEXT
+        c=c+a
+        d=d+b
+    NEXT
+    IF MOD(numV,2)=0 THEN
+        det=c-d
+    ELSE
+        det=d-c
+    ENDIF
+ENDIF
+RETURN
+
+solve:
+COLOR 0,0,0,0.7
+RECT 0,0,sw,sh
+ENDDRAW
+PRINT "Matrix:"
+FOR yi=2 TO numVars
+    PRINT SPC(7);
+    FOR xi=1 TO numVars
+        PRINT " "+STR$(matrix(xi,yi))+" ";
+        IF xi=1 THEN
+            PRINT "|";
+        ENDIF
+    NEXT
+    PRINT
+NEXT
+GOSUB getInitalDeterminant
+PRINT "Determinant="+STR$(determinant)
+IF determinant=0 THEN
+    PRINT SPC(7)+"ERROR: Zero or Infinite Solutions"
+ENDIF
+FOR yi=2 TO numVars
+    FOR xi=2 TO numVars
+        FOR xii=2 TO numVars
+            FOR yii=2 TO numVars
+                IF xii<>xi AND yii<>yi THEN
+                    IF xii<xi THEN
+                        tempx=xii
+                    ENDIF
+                    IF yii<yi THEN
+                        tempy=yii
+                    ENDIF
+                    IF xii>xi THEN
+                        tempx=xii-1
+                    ENDIF
+                    IF yii>yi THEN
+                        tempy=yii-1
+                    ENDIF
+                    numV=numVars-1
+                    temp(tempx,tempy)=matrix(xii,yii)
+                    GOSUB getDeterminant
+                    IF MOD(xi+yi,2)=0 THEN
+                        inverse(yi,xi)=det/determinant
+                    ELSE
+                        inverse(yi,xi)=-det/determinant
+                    ENDIF
+                ENDIF
+            NEXT
+        NEXT
+    NEXT
+NEXT
+PRINT "Inverse Matrix:"
+FOR yi=2 TO numVars
+    PRINT SPC(7);
+    FOR xi=2 TO numVars
+        PRINT " "+STR$(inverse(xi,yi))+" ";
+        IF xi=1 THEN
+            PRINT "|";
+        ENDIF
+    NEXT
+    PRINT
+NEXT
+PRINT "Identity Matrix:"
+error=0
+FOR yi=2 TO numVars
+    PRINT SPC(7);
+    FOR xi=2 TO numVars
+        n=0
+        FOR i=2 TO numVars
+            n=n+(matrix(i,yi)*inverse(xi,i))
+        NEXT
+        s$=STR$(INT(n*10000000)/10000000)
+        identity$(xi,yi)=s$
+        PRINT " "+s$+" ";
+    NEXT
+    PRINT
+NEXT
+error=0
+FOR yi=2 TO numVars
+    FOR xi=2 TO numVars
+        IF xi=yi AND identity$(xi,yi)<>"1" THEN
+            error=1
+        ENDIF
+        IF xi<>yi AND identity$(xi,yi)<>"0" THEN
+            error=1
+        ENDIF
+    NEXT
+NEXT
+IF error=1 THEN
+    PRINT SPC(7)+"ERROR: Identity Matrix Incorrect"
+ELSE
+    PRINT SPC(7)+"SUCCESS!"
+ENDIF
+PRINT
+FOR i=2 TO numVars
+    n=0
+    FOR ii=2 TO numVars
+        n=n+(inverse(ii,i)*matrix(1,ii))
+    NEXT
+    IF i>2 THEN
+        PRINT " ,  ";
+    ENDIF
+    PRINT variable$(i)+"="+STR$(n);
+NEXT
+tx=0
+ty=0
+PAUSE ""
+WHILE Touch<>0
+    SLEEP 0.1
+WEND
+CLS tty
+BEGINDRAW
+GOSUB draw
+RETURN

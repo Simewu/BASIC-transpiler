@@ -1,0 +1,223 @@
+dificult = 0
+
+unitdata:
+vieE1=INT(14+difficulthp) AND atkE1=INT(6+difficultatk) AND defE1=INT(1+difficultdef) 
+
+vieE2=INT(22+difficulthp) AND atkE2=INT(8+difficultatk) AND defE2=INT(3+difficultdef)
+
+vieE3=INT(32+difficulthp) AND atkE3=INT(12+difficultatk) AND defE3=INT(3+difficultdef)
+
+vieE4=INT(36+difficulthp) AND atkE4=INT(17+difficultatk) AND defE4=INT(4+difficultdef) 
+
+viePersoHum = 18
+atkPersoHum = 9
+defPersoHum = 4
+magiePersoHum = 6
+
+viePersoElfe = 14
+atkPersoElfe = 10
+defPersoElfe = 2
+magiePersoElfe = 14
+
+viePersoOgre = 34
+atkPersoOgre = 18
+defPersoOgre = 8
+magiePersoOgre = 0
+
+viePersoNecro = 17
+atkPersoNecro = 7
+defPersoNecro = 5
+magiePersoNecro = 9
+
+
+REM initilisation
+
+
+start:
+CLS
+PRINT "                      Welcome to Era 1.2 "
+PRINT
+PRINT
+PRINT "Main menu :"
+PRINT
+PRINT "- Start new game ? (n)"
+PRINT "- open a backup  : (open)"
+PRINT "- Read the file ''About Era...'' :  (about)"
+PRINT
+INPUT "Action : ",start$
+
+IF start$ = "n"  THEN 
+    GOTO newgame1
+ELSE
+    IF start$ = "about" THEN 
+        CLS
+        GOTO about
+    ELSE
+        IF start$ = "open" THEN
+            CLS
+            GOTO OPEN
+        ELSE 
+            GOTO start
+        END IF
+    END IF
+END IF
+
+
+about:
+CLS
+PRINT "                     About Era ..."
+PRINT
+PRINT 
+PRINT "Version 1.2"
+PRINT "Production 2011-2012"
+PRINT "All copyrights reserved (*)"
+PRINT 
+PRINT "Creat by :  Alexandre Lomuto"
+PRINT 
+PRINT 
+INPUT "Back : (Enter)", back$
+IF back$ = " " THEN
+    GOTO start
+ELSE
+    IF back$ = "*" THEN
+        GOTO copyright
+    ELSE 
+        GOTO start
+    END IF
+END IF
+
+
+copyright:
+CLS
+PRINT
+PRINT " Copyright*"
+PRINT 
+PRINT "This game is free and can be copied as neededIt is forbidden to change against the elements."
+PRINT "Any person not complying with this rule may be prosecuted judiciere. "
+PRINT
+PRINT
+INPUT "Back : (Enter)", back$
+IF back$ = " " THEN
+    GOTO start
+ELSE
+    GOTO start
+END IF
+
+
+REM game start here 
+
+newgame1:
+CLS
+PRINT "What is your name ? "
+INPUT "Name : ",name$
+PRINT 
+newgame2:
+PRINT "Welcome to Era ",name$," !"
+PRINT "Chose the level of difficulty : "
+PRINT "( between 1 and 4)"
+PRINT 
+INPUT "Level : ",difficult
+
+IF difficult = 1 THEN
+    CLS 
+    GOTO difsimple
+ELSE
+    IF difficult = 2 THEN
+        CLS
+        GOTO difnormal
+    ELSE
+        IF difficult = 3 THEN
+            CLS
+            GOTO difdure
+        ELSE
+            IF difficult = 4 THEN
+                CLS
+                GOTO diftresdure
+            ELSE
+                CLS
+                GOTO newgame2
+            END IF
+        END IF
+    END IF
+ENDIF
+
+newgame3:
+PRINT "You have chose the level of difficult",difficult
+INPUT "Press Enter to continue.",entrer$
+
+newgame4:
+CLS
+PRINT "Choice of character : "
+PRINT 
+PRINT "Human (1)"
+PRINT "Elf (2)"
+PRINT "Ogre (3)"
+PRINT "Necromancer (4)"
+PRINT
+INPUT "Choice : ",choix
+
+IF choix = 1 THEN
+    CLS 
+    GOTO humanCampagne
+ELSE
+    IF choix = 2 THEN
+        CLS
+        GOTO elfeCampagne
+    ELSE
+        IF choix = 3 THEN
+            CLS
+            GOTO ogreCampagne
+        ELSE
+            IF choix = 4 THEN
+                CLS
+                GOTO UDcampagne
+            ELSE
+                GOTO newgame4
+            END IF
+        END IF
+    END IF
+END IF
+
+humanCampagne:
+END
+
+
+
+elfeCampagne:
+GOTO newgame4
+ogreCampagne:
+GOTO newgame4
+UDcampagne:
+GOTO newgame4
+
+
+REM difficulty data
+
+
+difsimple:
+difficult = 1
+difficulthp = -6
+difficultatk = -3
+difficultdef = -1
+GOTO newgame3
+
+difnormal:
+difficult = 2
+difficulthp = 0
+difficultatk = 0
+difficultdef = 0
+GOTO newgame3
+
+difdure:
+difficult = 3
+difficulthp = 12
+difficultatk = 3
+difficultdef = 1
+GOTO newgame3
+
+diftresdure:
+difficult = 4
+difficulthp = 35
+difficultatk = 9
+difficultdef = 2
+GOTO newgame3

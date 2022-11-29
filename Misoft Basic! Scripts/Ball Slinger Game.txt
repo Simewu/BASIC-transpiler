@@ -1,0 +1,323 @@
+REM ******Settings******
+tiltsensitivity=0.5
+Gravity=1
+Friction=0.999
+ClearScreen$="True"
+tapboost=3
+ballsize=8
+linelength=150
+linesize=10
+linespeed=2
+trampolinelength=30
+trampolinesize=7
+trampolinepower=-10
+
+REM ******End of Settings******
+
+
+gravitywellx=1+RND*ScreenWidth
+gravitywelly=50+RND*ScreenHeight/3
+gravitywellsize=ballsize+1
+gravitywelltime=100
+TCOLOR 255,255,255
+linelength=linelength/2
+PRINT "Drag your finger to sling the ball"
+PRINT
+PRINT "- You may only touch the bottom half"
+PRINT
+PRINT "- Stay on the top as long as you can"
+PRINT
+PRINT "-Touching the trampoline generates a new Gravity Well"
+PRINT
+PRINT "-When in a Gravity Well keep your device as flat as possible to stay in it longer"
+PRINT
+GOTO loop1
+ENDIF
+
+loop1:
+
+COLOR 100,100,255
+RECT 0,0,ScreenWidth,ScreenHeight,1
+LINE 0,ScreenHeight/2,ScreenWidth,ScreenHeight/2
+
+IF Touch=1 THEN
+    IF TouchY>=ScreenHeight/2 THEN
+        x1=TouchX
+        y1=TouchY
+        ballposx=x1
+        ballposy=y1
+        GOTO loop2
+    ENDIF
+ENDIF
+GOTO loop1
+
+
+trampg=200
+trampb=255
+loop2:
+BEGINDRAW
+CLS
+PRINT "Your Score: ",scorebackup
+PRINT "High Score: ",highscore
+IF Touch=1 THEN
+    x2=TouchX
+    y2=TouchY
+    x2backup=TouchX
+    y2backup=TouchY 
+    'PRINT length
+    power=length/ScreenWidth*50
+    PRINT "Power:  ", power
+    
+    
+    REM ******Draw the Barrier******
+    COLOR 100,100,255
+    RECT 0,0,ScreenWidth,ScreenHeight,1
+    LINE 0,ScreenHeight/2,ScreenWidth,ScreenHeight/2
+    COLOR 160,160,255,40
+    RECT 0,ScreenHeight/2,ScreenWidth,ScreenHeight
+    
+    
+    REM******Draw Gravitywell******
+    COLOR 200,200,200
+    CIRCLE gravitywellx,gravitywelly,gravitywellsize+1
+    COLOR 0,0,0
+    CIRCLE gravitywellx,gravitywelly,gravitywellsize
+    
+    
+    REM******Draw the Trampoline****
+    COLOR 0,trampg,trampb
+    LINE linemovement+trampolinelength,ScreenHeight/2.05,linemovement-trampolinelength,ScreenHeight/2.05,trampolinesize
+    trampg=200
+    trampb=255
+    
+    REM ******Angle Detector******
+    angley=0-dy/ScreenHeight*power
+    anglex=0-dx/ScreenWidth*power
+    PRINT "AngleX:  ",dx/ScreenWidth
+    PRINT "AngleY:  ",dy/ScreenHeight
+    
+    
+    COLOR length,255-length,0,0.5
+    LINE x1,y1,TouchX,TouchY,10
+    
+    REM ******Draw the Ball******
+    COLOR 75,75,75
+    CIRCLE ballposx,ballposy,ballsize/1
+    COLOR 100,100,100
+    CIRCLE ballposx,ballposy,ballsize/1.25
+    COLOR 125,125,125
+    CIRCLE ballposx,ballposy,ballsize/1.50
+    COLOR 150,150,150
+    CIRCLE ballposx,ballposy,ballsize/1.75
+    COLOR 175,175,175
+    CIRCLE ballposx,ballposy,ballsize/2
+    COLOR 255,255,255
+    CIRCLE ballposx*1.01,ballposy/1.01,ballsize/5
+    
+    
+    
+    REM******Line Movement Formula*
+    i=i+LineSpeed/1.5
+    linemovement=ScreenWidth/2-SIN (i*PI/180)*160
+    
+    
+    REM ******Draw the Line******
+    COLOR 150,150,150
+    LINE linemovement-linelength,ScreenHeight/2,linemovement+linelength,ScreenHeight/2,linesize
+    COLOR 200,200,200
+    LINE linemovement-linelength,ScreenHeight/2,linemovement+linelength,ScreenHeight/2,linesize/2
+    
+ENDIF
+ENDDRAW
+
+
+REM ******Length Detector******
+dx = x2-x1
+dy = y2-y1
+length=SQR(dx^2+dy^2)
+
+IF Touch=0 THEN
+    COLOR length,255-length,0
+    LINE x1,y1,x2backup,y2backup,length/30
+    CLS
+    GOTO Draw&Movement
+ENDIF
+GOTO loop2
+
+Draw&Movement:
+BEGINDRAW
+IF ClearScreen$="True" THEN
+    CLS
+ENDIF
+
+
+REM******Draw Gravitywell******
+COLOR 200,200,200
+CIRCLE gravitywellx,gravitywelly,gravitywellsize+1
+COLOR 0,0,0
+CIRCLE gravitywellx,gravitywelly,gravitywellsize
+
+
+REM ******Draw the Ball******
+COLOR length,255-length,0,50
+LINE ballposx,ballposy,ballposxbackup,ballposybackup,ballsize*2
+COLOR 75,75,75
+CIRCLE ballposx,ballposy,ballsize/1
+COLOR 100,100,100
+CIRCLE ballposx,ballposy,ballsize/1.25
+COLOR 125,125,125
+CIRCLE ballposx,ballposy,ballsize/1.50
+COLOR 150,150,150
+CIRCLE ballposx,ballposy,ballsize/1.75
+COLOR 175,175,175
+CIRCLE ballposx,ballposy,ballsize/2
+COLOR 255,255,255
+CIRCLE ballposx*1.01,ballposy/1.01,ballsize/5
+
+
+REM ******Draw the Barrier******
+COLOR 100,100,255
+RECT 0,0,ScreenWidth,ScreenHeight,1
+LINE 0,ScreenHeight/2,ScreenWidth,ScreenHeight/2
+COLOR 160,160,255,40
+RECT 0,ScreenHeight/2,ScreenWidth,ScreenHeight 
+
+
+REM******Score Keeper******
+IF ballposy<=ScreenHeight/2 THEN
+    score=score+1
+    scorebackup=score
+    scorestart=TickCount
+    IF scorebackup>highscore THEN
+        highscore=score
+        PRINT "New Highscore!"
+    ENDIF
+    PRINT "Your Score: ",scorebackup
+    PRINT "High Score: ",highscore
+ENDIF
+IF ballposy>=ScreenHeight/2 THEN
+    IF score>scorebackup THEN
+        highscore=score
+    ENDIF
+    PRINT "Your Score: ",scorebackup
+    PRINT "High Score: ",highscore
+    score=0
+ENDIF 
+
+REM ******Apply Gravity******
+angley=angley+Gravity
+anglex=anglex+AccelX/(tiltsensitivity)*Gravity
+anglex=anglex*SQR(Friction)
+angley=angley*SQR(Friction)
+
+
+REM ******Move the Ball******
+ballposxbackup=ballposx
+ballposybackup=ballposy
+ballposx=ballposx+anglex
+ballposy=ballposy+angley
+'PRINT "The Balls X position:  ", ballposx
+'PRINT "The Balls Y position:  ", ballposy
+
+
+REM******Line Movement Formula***
+i=i+LineSpeed
+linemovement=ScreenWidth/2-SIN (i*PI/180)*160
+
+REM******Draw the Trampoline*****
+COLOR 0,trampg,trampb
+LINE linemovement+trampolinelength,ScreenHeight/2.05,linemovement-trampolinelength,ScreenHeight/2.05,trampolinesize
+trampg=200
+trampb=255
+
+REM ******Draw the Line******
+COLOR 150,150,150
+LINE linemovement-linelength,ScreenHeight/2,linemovement+linelength,ScreenHeight/2,linesize
+COLOR 200,200,200
+LINE linemovement-linelength,ScreenHeight/2,linemovement+linelength,ScreenHeight/2,linesize/2
+
+
+REM ******Re-Sling the Ball******
+IF Touch=1 THEN
+    IF TouchY>=ScreenHeight/2 THEN
+        x1=ballposx
+        y1=ballposy
+        GOTO loop1
+    ENDIF
+    IF TouchY<=ScreenHeight/2 THEN
+        IF ballposy<=ScreenHeight/2 THEN
+            ballposy=ballposy+angley*tapboost
+        ENDIF
+    ENDIF
+ENDIF
+ENDDRAW
+GOTO CollisionDetection
+
+
+CollisionDetection:
+REM******Wall Collision******
+IF ballposx+ballsize>=ScreenWidth OR ballposx-ballsize>=ScreenWidth THEN
+    REM Right
+    ballposx=ScreenWidth-ballsize
+    anglex=0-anglex
+ENDIF
+IF ballposx+ballsize<=0 OR ballposx-ballsize<=0 THEN
+    REM Left
+    ballposx=0+ballsize
+    anglex=0-anglex
+ENDIF
+IF ballposy+ballsize>=ScreenHeight OR ballposy-ballsize>=ScreenHeight THEN
+    REM Bottom
+    ballposy=ScreenHeight-ballsize
+    angley=0-angley
+ENDIF
+IF ballposy+ballsize<=0 OR ballposy-ballsize<=0 THEN
+    REM Top
+    ballposy=0+ballsize
+    angley=0-angley
+ENDIF
+
+
+
+REM ******Line Collision******
+IF ballposy+ballsize>((ScreenHeight/2)-linesize) AND ballposy-ballsize<((ScreenHeight/2)+linesize) THEN
+    IF linemovement<=(ballposx+linelength) THEN
+        IF linemovement>=(ballposx-linelength) THEN
+            angley=0-angley
+        ENDIF 
+    ENDIF
+ENDIF
+
+
+REM******Gravitywell Collision******
+IF ballposx>(gravitywellx-(ballsize+gravitywellsize)) THEN
+    IF ballposx<(gravitywellx+(ballsize+gravitywellsize)) THEN
+        IF ballposy>(gravitywelly-(ballsize+gravitywellsize)) THEN
+            IF ballposy<(gravitywelly+(ballsize+gravitywellsize)) THEN
+                PRINT "Gravity Well"
+                score=score+1
+                FOR gravitywell=1 TO gravitywelltime STEP 1
+                    ballposx=gravitywellx
+                    ballposy=gravitywelly
+                NEXT gravitywell
+            ENDIF
+        ENDIF
+    ENDIF
+ENDIF
+
+
+REM ******Trampoline Collision******
+IF ballposy+ballsize>((ScreenHeight/2.05)-trampolinesize) AND ballposy-ballsize<((ScreenHeight/2.05)+trampolinesize) THEN
+    IF linemovement<=(ballposx+trampolinelength) THEN
+        IF linemovement>=(ballposx-trampolinelength) THEN
+            score=score+20
+            gravitywellx=1+RND*ScreenWidth
+            gravitywelly=50+RND*ScreenHeight/3 
+            anglex=anglex
+            ballposy=ballposy+angley+trampolinepower-ballsize
+            trampg=0
+            tranpb=255
+        ENDIF 
+    ENDIF
+ENDIF
+GOTO Draw&Movement

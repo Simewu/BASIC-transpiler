@@ -1,0 +1,23 @@
+hours = 1  
+minutes = 0
+PRINT hours":0"minutes
+SLEEP 1
+REM 
+
+clock:
+minutes = minutes + 1
+SLEEP 1
+CLS
+IF minutes < 10 THEN
+    PRINT hours":0"minutes
+ELSE
+    PRINT hours":"minutes
+END IF
+IF minutes > 59 THEN
+    hours = hours + 1
+    minutes = 0
+END IF
+IF hours > 12 THEN
+    hours = 1
+END IF
+GOTO clock

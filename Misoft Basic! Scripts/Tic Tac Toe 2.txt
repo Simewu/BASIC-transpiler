@@ -1,0 +1,660 @@
+'Tic Tac Toe
+'By Simeon
+'Thanks for trying out my game!
+'I worked extremely hard on this one
+'Every single object in this game is a graphic, no print statements
+'I even had to completely restart because I messed just one thing up and forgot about it
+'Im pretty sure that theyres no bugs in this version
+'If you find one please tell me
+
+
+replays=1
+turn$="you"
+GOSUB pick
+
+start:
+lineThickness=6
+lineIncrease=-0.5
+sw=ScreenWidth
+sh=ScreenWidth
+cutx=sw/3
+cuty=sh/3
+xWin$="XXX"
+oWin$="OOO"
+r=0
+b=0
+b=0
+tr$="blank"
+t$="blank"
+tl$="blank"
+l$="blank"
+m$="blank"
+r$="blank"
+bl$="blank"
+b$="blank"
+br$="blank"
+check$="blank"
+blank$="blankblankblank"
+BCOLOR 1,1,1
+TCOLOR 0,0,0
+
+IF replays>1 THEN
+    IF you$="X" THEN
+        you$="O"
+        bot$="X"
+    ELSE
+        IF you$="O" THEN
+            you$="X"
+            bot$="O"
+        ENDIF
+    ENDIF
+ENDIF
+
+GOSUB draw
+
+
+
+
+
+loop:
+BEGINDRAW
+CLS
+
+buttonColor=0.8
+GOSUB scan
+GOSUB draw
+GOSUB DRAWTEXT
+GOSUB ifTouch
+GOSUB tieBreakerCheck
+
+IF turn$="bot" THEN
+    GOSUB Computer
+ENDIF
+
+IF check$="blank" THEN
+ELSE
+    GOTO WINorLOSE
+ENDIF
+check$="blank"
+
+ENDDRAW
+GOTO loop
+
+
+
+
+
+
+
+
+
+
+
+ifTouch:
+IF turn$="you" THEN
+    IF Touch=1 THEN
+        tx=TouchX
+        ty=TouchY
+        IF ty<=(sh-sw)+sw THEN
+            GOSUB touchData
+        ELSE
+            WHILE ty>(sh-sw)+sw AND tx>=sw-(sw/4)
+                BEGINDRAW
+                ty=TouchY
+                tx=TouchX
+                clearColor=0.5
+                GOSUB drawGrid
+                IF Touch=0 THEN
+                    BCOLOR 0.6,0.6,1
+                    you$=firstChoice$
+                    IF firstChoice$="X" THEN
+                        bot$="O"
+                    ELSE
+                        IF firstChoice$="O" THEN
+                            bot$="X"
+                        ENDIF
+                    ENDIF
+                    botWins=0
+                    youWins=0
+                    replays=1
+                    ENDDRAW
+                    GOTO start
+                ENDIF
+            WEND
+        ENDIF
+    ENDIF
+ENDIF
+ENDIF
+ENDIF
+RETURN
+
+
+
+pick:
+lineThickness=7
+sw=ScreenWidth
+sh=ScreenHeight
+cutx=sw/3
+cuty=sw/3
+BCOLOR 0,0,0
+COLOR 1,1,1
+GOSUB drawStart
+GOSUB textStart
+GOSUB tapStart
+RETURN
+
+
+
+drawStart:
+REM Borders
+RECT 0,0,sw,sh,lineThickness*2
+LINE sw/2,0,sw/2,sh/1.5,lineThickness
+LINE 0,sh/1.5,sw,sh/1.5,lineThickness
+
+REM X
+LINE (sw/4-cutx/2),(sw/2.5+cuty/2),(sw/4+cutx/2),(sw/2.5-cuty/2),lineThickness
+LINE (sw/4-cutx/2),(sw/2.5-cuty/2),(sw/4+cutx/2),(sw/2.5+cuty/2),lineThickness
+
+REM O
+ELLIPSE sw-(sw/4-cutx/2),(sw/2.5-cuty/2),sw-(sw/4+cutx/2),(sw/2.5+cuty/2),lineThickness
+RETURN
+
+
+textStart:
+TEXTFONT "Helvetica", ScreenWidth/5.5
+DRAWTEXT "I Dont Care",10,sh/1.40,sw,sh
+RETURN
+
+
+tapStart:
+PAUSE ""
+IF TouchX<=sw/2 AND TouchY<=sh/1.5 THEN
+    firstChoice$="X"
+    you$="X"
+    bot$="O"
+    RETURN
+ENDIF
+IF TouchX>=sw/2 AND TouchY<=sh/1.5 THEN
+    firstChoice$="O"
+    you$="O"
+    bot$="X"
+    RETURN
+ENDIF
+IF TouchY>=sh/1.5 THEN
+    CLS
+    GOSUB drawStart
+    xo=INT(RND*2)
+    IF xo=1 THEN
+        TEXTFONT "Helvetica", ScreenWidth/12
+        DRAWTEXT "Randomly Selected to X",15,sh/1.3,sw,sh
+        SLEEP 1
+        firstChoice$="X"
+        you$="X"
+        bot$="O"
+        RETURN
+    ENDIF
+    IF xo=0 THEN
+        TEXTFONT "Helvetica", ScreenWidth/12
+        DRAWTEXT "Randomly Selected to O",15,sh/1.3,sw,sh
+        SLEEP 1
+        firstChoice$="O"
+        you$="O"
+        bot$="X"
+        RETURN
+    ENDIF 
+ENDIF
+RETURN
+
+
+
+
+
+scan:
+IF tl$+t$+tr$=xWin$ OR l$+m$+r$=xWin$ OR bl$+b$+br$=xWin$ OR tl$+l$+bl$=xWin$ OR t$+m$+b$=xWin$ OR tr$+r$+br$=xWin$ OR tl$+m$+br$=xWin$ OR bl$+m$+tr$=xWin$ THEN
+    IF you$="X" THEN
+        win$="WON"
+    ENDIF
+    IF you$="O" THEN
+        win$="LOST"
+    ENDIF
+    check$="X"
+ELSE
+    IF tl$+t$+tr$=oWin$ OR l$+m$+r$=oWin$ OR bl$+b$+br$=oWin$ OR tl$+l$+bl$=oWin$ OR t$+m$+b$=oWin$ OR tr$+r$+br$=oWin$ OR tl$+m$+br$=oWin$ OR bl$+m$+tr$=oWin$ THEN
+        IF you$="O" THEN
+            win$="WON"
+        ENDIF
+        IF you$="X" THEN
+            win$="LOST"
+        ENDIF
+        check$="0"
+    ENDIF
+ENDIF
+RETURN
+
+
+
+draw:
+REM Draw X's
+COLOR r,g,b
+IF tl$="X" THEN
+    LINE 0,0,cutx,cuty,lineThickness
+    LINE 0,cuty,cutx,0,lineThickness
+ENDIF
+IF m$="X" THEN
+    LINE cutx,cutx,cutx*2,cuty*2,lineThickness
+    LINE cuty,cuty*2,cutx*2,cuty,lineThickness
+ENDIF
+IF br$="X" THEN
+    REM middle
+    LINE cutx*2,cutx*2,cutx*3,cuty*3,lineThickness
+    LINE cuty*2,cuty*3,cutx*3,cuty*2,lineThickness
+ENDIF
+IF tr$="X" THEN
+    LINE cutx*2,0,cutx*3,cuty,lineThickness
+    LINE cutx*3,0,cutx*2,cuty,lineThickness
+ENDIF
+IF bl$="X" THEN
+    LINE 0,cuty*2,cutx,cuty*3,lineThickness
+    LINE cuty,cuty*2,0,cuty*3,lineThickness
+ENDIF
+IF t$="X" THEN
+    LINE cutx,0,cutx*2,cuty,lineThickness
+    LINE cutx,cuty,cutx*2,0,lineThickness
+ENDIF
+IF b$="X" THEN
+    LINE cutx,cuty*2,cutx*2,cuty*3,lineThickness
+    LINE cutx,cuty*3,cutx*2,cuty*2,lineThickness
+ENDIF
+IF l$="X" THEN
+    LINE 0,cuty,cutx,cuty*2,lineThickness
+    LINE 0,cuty*2,cutx,cuty,lineThickness
+ENDIF
+IF r$="X" THEN
+    LINE cutx*2,cuty,cutx*3,cuty*2,lineThickness
+    LINE cutx*2,cuty*2,cutx*3,cuty,lineThickness
+ENDIF
+
+
+
+
+IF tl$="O" THEN
+    ELLIPSE 0,0,cutx,cuty,lineThickness
+ENDIF
+IF m$="O" THEN
+    ELLIPSE cutx,cutx,cutx*2,cuty*2,lineThickness
+ENDIF
+IF br$="O" THEN
+    ELLIPSE cutx*2,cutx*2,cutx*3,cuty*3,lineThickness
+ENDIF
+IF tr$="O" THEN
+    ELLIPSE cutx*2,0,cutx*3,cuty,lineThickness
+ENDIF
+IF bl$="O" THEN
+    ELLIPSE 0,cuty*2,cutx,cuty*3,lineThickness
+ENDIF
+IF t$="O" THEN
+    ELLIPSE cutx,0,cutx*2,cuty,lineThickness
+ENDIF
+IF b$="O" THEN
+    ELLIPSE cutx,cuty*2,cutx*2,cuty*3,lineThickness
+ENDIF
+IF l$="O" THEN
+    ELLIPSE 0,cuty,cutx,cuty*2,lineThickness
+ENDIF
+IF r$="O" THEN
+    ELLIPSE cutx*2,cuty,cutx*3,cuty*2,lineThickness
+ENDIF
+
+
+
+
+REM Draw the borders and outlines
+drawGrid:
+COLOR r+50,g+50,b+50
+LINE cutx,0,cutx,sh,lineThickness
+LINE cutx*2,0,cutx*2,sh,lineThickness
+LINE 0,cuty,sw,cuty,lineThickness
+LINE 0,cuty*2,sw,cuty*2,lineThickness
+RECT 0,0,sw,sh,lineThickness*2
+COLOR 1,1,1
+LINE 0,ScreenWidth+2.5,ScreenWidth,ScreenWidth+2.5,lineThickness/2
+COLOR 0.3,0.3,0.3
+RECT 0,ScreenWidth,ScreenWidth,ScreenHeight
+COLOR buttonColor,buttonColor,buttonColor
+RECT sw-(sw/4),ScreenWidth,ScreenWidth,ScreenHeight
+COLOR 0,0,0
+LINE sw-(sw/4),ScreenWidth,sw-(sw/4),ScreenHeight,lineThickness/2
+LINE ScreenWidth,ScreenWidth,ScreenWidth,ScreenHeight,lineThickness
+RETURN
+
+
+
+
+
+drawText:
+TEXTFONT "Zapfino","Bold", 10
+COLOR 1,1,1
+DRAWTEXT "Round "+STR$(replays),sw/2,sw-(sh-sw)
+DRAWTEXT STR$(youWins)+ "  to "+ STR$(botWins),sw/2,sw-(sh-sw)+20
+
+TEXTFONT "Zapfino","Bold", 17
+DRAWTEXT "You are "+you$,sw/20,sw-(sh-sw)
+
+TEXTFONT "Zapfino","Bold", 10
+COLOR 0,0,0
+DRAWTEXT "Clear Data",sw-(sw/4),sw-(sw-sh)+10
+RETURN
+
+
+
+
+
+
+
+touchData:
+IF tx<=cutx AND ty<=cuty THEN
+    IF tl$="blank" THEN
+        tl$=you$
+        turn$="bot"
+        lineThickness=lineThickness+lineIncrease
+    ENDIF
+ENDIF
+IF tx>=cutx AND tx<=cutx*2 AND ty<=cuty THEN
+    IF t$="blank" THEN
+        t$=you$
+        turn$="bot"
+        lineThickness=lineThickness+lineIncrease
+    ENDIF
+ENDIF
+IF tx>=cutx*2 AND ty<=cuty THEN
+    IF tr$="blank" THEN
+        tr$=you$
+        turn$="bot"
+        lineThickness=lineThickness+lineIncrease
+    ENDIF
+ENDIF
+IF tx>=cutx AND tx<=cutx*2 AND ty>=cuty AND ty<=cuty*2 THEN
+    IF m$="blank" THEN
+        m$=you$
+        turn$="bot"
+        lineThickness=lineThickness+lineIncrease
+    ENDIF
+ENDIF
+IF tx<=cutx AND ty>=cuty AND ty<=cuty*2 THEN
+    IF l$="blank" THEN
+        l$=you$
+        turn$="bot"
+        lineThickness=lineThickness+lineIncrease
+    ENDIF
+ENDIF
+IF tx>=cutx*2 AND ty>=cuty AND ty<=cuty*2 THEN
+    IF r$="blank" THEN
+        r$=you$   
+        turn$="bot"
+        lineThickness=lineThickness+lineIncrease
+    ENDIF
+ENDIF
+IF tx>=cutx AND tx<=cutx*2 AND ty>=cuty*2  THEN
+    IF b$="blank" THEN
+        b$=you$
+        turn$="bot"
+        lineThickness=lineThickness+lineIncrease
+    ENDIF
+ENDIF
+IF tx<=cutx AND ty>=cuty*2  THEN
+    IF bl$="blank" THEN
+        bl$=you$
+        turn$="bot"
+        lineThickness=lineThickness+lineIncrease
+    ENDIF
+ENDIF
+IF tx>=cutx*2 AND ty>=cuty*2  THEN
+    IF br$="blank" THEN
+        br$=you$
+        turn$="bot"
+        lineThickness=lineThickness+lineIncrease
+    ENDIF
+ENDIF
+RETURN
+
+
+
+
+Computer:
+IF turn$="bot" THEN
+    IF replays>1 AND win$="LOST" THEN
+        GOTO random
+    ENDIF
+    IF m$="blank" THEN
+        m$=bot$
+    ELSE
+        IF LEN(tl$+l$+bl$)=7 THEN
+            IF tl$="blank" THEN
+                tl$=bot$
+            ENDIF
+            IF l$="blank" THEN
+                l$=bot$
+            ENDIF
+            IF bl$="blank" THEN
+                bl$=bot$
+            ENDIF
+        ELSE
+            IF LEN(tr$+r$+br$)=7 THEN
+                IF tr$="blank" THEN
+                    tr$=bot$
+                ENDIF
+                IF r$="blank" THEN
+                    r$=bot$
+                ENDIF
+                IF br$="blank" THEN
+                    br$=bot$
+                ENDIF
+            ELSE
+                IF LEN(tl$+t$+tr$)=7 THEN
+                    IF tl$="blank" THEN
+                        tl$=bot$
+                    ENDIF
+                    IF t$="blank" THEN
+                        t$=bot$
+                    ENDIF
+                    IF tr$="blank" THEN
+                        tr$=bot$
+                    ENDIF
+                ELSE
+                    IF LEN(bl$+b$+br$)=7 THEN
+                        IF bl$="blank" THEN
+                            bl$=bot$
+                        ENDIF
+                        IF b$="blank" THEN
+                            b$=bot$
+                        ENDIF
+                        IF br$="blank" THEN
+                            br$=bot$
+                        ENDIF
+                    ELSE
+                        IF LEN(l$+m$+r$)=7 THEN
+                            IF l$="blank" THEN
+                                l$=bot$
+                            ENDIF
+                            IF m$="blank" THEN
+                                m$=bot$
+                            ENDIF
+                            IF r$="blank" THEN
+                                r$=bot$
+                            ENDIF
+                        ELSE
+                            IF LEN(t$+m$+b$)=7 THEN
+                                IF t$="blank" THEN
+                                    t$=bot$
+                                ENDIF
+                                IF m$="blank" THEN
+                                    m$=bot$
+                                ENDIF
+                                IF b$="blank" THEN
+                                    b$=bot$
+                                ENDIF
+                            ELSE
+                                IF LEN(bl$+m$+tr$)=7 THEN
+                                    IF tr$="blank" THEN
+                                        tr$=bot$
+                                    ENDIF
+                                    IF m$="blank" THEN
+                                        m$=bot$
+                                    ENDIF
+                                    IF bl$="blank" THEN
+                                        bl$=bot$
+                                    ENDIF
+                                ELSE
+                                    IF LEN(tl$+m$+br$)=7 THEN
+                                        IF tl$="blank" THEN
+                                            tl$=bot$
+                                        ENDIF
+                                        IF m$="blank" THEN
+                                            m$=bot$
+                                        ENDIF
+                                        IF br$="blank" THEN
+                                            br$=bot$
+                                        ENDIF
+                                    ELSE
+                                        GOTO random
+                                    ENDIF
+                                ENDIF
+                            ENDIF
+                        ENDIF
+                    ENDIF
+                ENDIF
+            ENDIF
+        ENDIF
+    ENDIF
+ENDIF
+turn$="you"
+RETURN
+random:
+IF turn$="bot" THEN
+    random=INT(1+RND*9)
+    IF random=1 THEN
+        IF tl$="blank" THEN
+            tl$=bot$
+        ELSE
+            GOTO Computer
+        ENDIF
+    ELSE
+        IF random=2 THEN
+            IF t$="blank" THEN
+                t$=bot$
+            ELSE
+                GOTO Computer
+            ENDIF
+        ELSE
+            IF random=3 THEN
+                IF tr$="blank" THEN
+                    tr$=bot$
+                ELSE
+                    GOTO Computer
+                ENDIF
+            ELSE
+                IF random=4 THEN
+                    IF l$="blank" THEN
+                        l$=bot$
+                    ELSE
+                        GOTO Computer
+                    ENDIF
+                ELSE
+                    IF random=5 THEN
+                        IF m$="blank" THEN
+                            m$=bot$
+                        ELSE
+                            GOTO Computer
+                        ENDIF
+                    ELSE
+                        IF random=6 THEN
+                            IF r$="blank" THEN
+                                r$=bot$
+                            ELSE
+                                GOTO Computer
+                            ENDIF
+                        ELSE
+                            IF random=7 THEN
+                                IF bl$="blank" THEN
+                                    bl$=bot$
+                                ELSE
+                                    GOTO Computer
+                                ENDIF
+                            ELSE
+                                IF random=8 THEN
+                                    IF b$="blank" THEN
+                                        b$=bot$
+                                    ELSE
+                                        GOTO Computer
+                                    ENDIF
+                                ELSE
+                                    IF random=9 THEN
+                                        IF br$="blank" THEN
+                                            br$=bot$
+                                        ELSE
+                                            GOTO Computer
+                                        ENDIF
+                                    ENDIF
+                                ENDIF
+                            ENDIF
+                        ENDIF
+                    ENDIF
+                ENDIF
+            ENDIF
+        ENDIF
+    ENDIF
+    turn$="you"
+ENDIF
+RETURN
+
+
+
+
+tieBreakerCheck:
+IF LEN(tl$+t$+tr$+l$+m$+r$+bl$+b$+br$)=9 THEN
+    BEGINDRAW
+    CLS
+    replays=replays+1
+    TEXTFONT "Zapfino", "Bold", 25
+    DRAWTEXT "TIE BREAKER",1,ScreenHeight/2.5
+    RECT 0,0,ScreenWidth,ScreenHeight/2.5
+    RECT 0,ScreenHeight/1.75,ScreenWidth,ScreenHeight
+    ENDDRAW
+    SLEEP 2
+    GOTO start
+ENDIF
+RETURN
+
+
+
+
+WINorLOSE:
+BEGINDRAW
+CLS
+GOSUB draw
+r=200
+g=200
+b=200
+IF win$="WON" THEN
+    BCOLOR 0,1,0
+ENDIF
+IF win$="LOST" THEN
+    BCOLOR 1,0,0
+ENDIF
+GOSUB draw
+replays=replays+1
+IF win$="WON" THEN
+    youWins=youWins+1
+    turn$="you"
+ELSE
+    IF win$="LOST" THEN
+        botWins=botWins+1
+        turn$="bot"
+    ENDIF
+ENDIF
+r=0
+g=0
+b=0
+CLS
+ENDDRAW
+GOTO start
