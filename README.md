@@ -1,5 +1,5 @@
 # BASIC Code Transpiler
-This web application transpiles from the BASIC programming language into executable JavaScript. The programming language is derived from [MiSoft BASIC](https://apps.apple.com/us/app/basic/id362411238) (some old apps from 2011 can be found [here](Misoft%20Basic!%20Scripts)). The application stores all code/files into LocalStorage, pressing "Run" will also backup the current code into LocalStorage.
+This web application transpiles from the BASIC programming language into executable JavaScript. The programming language is derived from [miSoft Basic!](https://apps.apple.com/us/app/basic/id362411238) (some old apps from 2011 can be found [here](Misoft%20Basic!%20Scripts)). The application stores all code/files into LocalStorage, pressing "Run" will also backup the current code into LocalStorage.
 
 ## Preloaded Applications
 ```
