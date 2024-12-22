@@ -1365,7 +1365,6 @@
 									var str=line.substr(6);
 									var reg=/(["])(?:\\?[\s\S])*?\1/g;
 									var quotes=str.match(reg);
-									var parts2=str.split(',');
 									str=str.replace(reg,'\u3147');
 									var parts=str.split(',');
 									var string='';
@@ -1373,18 +1372,18 @@
 									if(parts.length==1){
 										if(parts[0]=='\u3147'){
 											variable='';
-											string=parts2[0];
+											string=quotes[0];
 										}else{
-											variable=parts2[0];
+											variable=parts[0];
 											string='""';
 										}
 									}else{
 										if(parts[0]=='\u3147'){
-											variable=parts2[1];
-											string=parts2[0];
+											variable=parts[1];
+											string=quotes[0];
 										}else{
-											variable=parts2[0];
-											string=parts2[1];
+											variable=parts[0];
+											string=parts[1];
 										}
 									}
 									if(variable==''){
