@@ -1,5 +1,5 @@
 # BASIC Code Transpiler
-This web application transpiles from the BASIC programming language into executable JavaScript. The programming language is derived from [miSoft Basic!](https://apps.apple.com/us/app/basic/id362411238) (some apps from the forgotton http://appball.com/basic back in 2011 can be found [here](miSoft%20Basic!%20Files)). The application stores all code/files into LocalStorage, pressing "Run" will also backup the current code into LocalStorage.
+This web application was developed in 2015 and converts from the BASIC programming language into executable JavaScript. The programming language is derived from [miSoft Basic!](https://apps.apple.com/us/app/basic/id362411238) (some apps from the forgotten http://appball.com/basic back in 2011 can be found [here](miSoft%20Basic!%20Files)). The application stores all code/files into LocalStorage, pressing "Run" will also backup the current code into LocalStorage.
 
 ## Preloaded Applications
 ```
@@ -22,16 +22,12 @@ Interactive Mandelbrot Fractal
 Interactive Julia Set Fractal
 Interactive Burning Ship Fractal
 ```
+
 ### This application is hosted at
 https://simewu.github.io/BASIC-transpiler
 
-and
-
-http://simewu.com/BASIC-transpiler.
-
-
 ## Screenshots
-![](/screenshots/1.png)
-![](/screenshots/2.png)
-![](/screenshots/3.png)
-![](/screenshots/4.png)
+|      |      |
+| ---- | ---- |
+| ![](/documentation_and_miscellaneous/screenshots/1.png) | ![](/documentation_and_miscellaneous/screenshots/2.png) |
+| ![](/documentation_and_miscellaneous/screenshots/3.png) | ![](/documentation_and_miscellaneous/screenshots/4.png) |

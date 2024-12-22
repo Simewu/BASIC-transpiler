@@ -1,7 +1,7 @@
 List of BASIC commands:
 
 
-To start, I would highly recommend using Google Chrome to run this html file, Chrome was the browser used to test all of the functions.
+To start, it is recommended to use Google Chrome to run this index.html file, as Chrome was the browser used to test all of the functions.
 
 
 Editor Shortcuts:
@@ -38,9 +38,9 @@ General Commands:
 			PRINT "World"
 		Will return "Hello World"
 	INPUT "What is your name?",nameVar
-		Asks the user what their name is then stores the value they type into nameVar
+		Asks the user what their name is and then stores the value they type into nameVar
 			INPUT nameVar
-			Opens a blank input window, whatever the user types gets stores in nameVar
+			Opens a blank input window, whatever the user types get stored in nameVar
 			(if the user clicks cancel or X, the input will return -1)
 		You can also add a : (colon) to the end of the string followed by a default value
 		Example:
@@ -61,10 +61,10 @@ General Commands:
 	DIM var1(10,10,10),var2(5,8,12)
 		Creates a 10x10x10 array named var1 and a 5x8x12 array named var2
 		All the values in it are initialized to 0
-		(if var was to be var$ then all the values would be initialized to "" since it would be a string array)
+		(if var were to be var$ then all the values would be initialized to "" since it would be a string array)
 		You can also print out the entire array separated by commas like so:
 			PRINT var1
-		There is no limit as to how many dimensions an array can have. Although I cannot think of a situation where more than 3 is needed.
+		There is no limit to the number of dimensions an array can have
 	BEEP Frequency[,Duration][,Offset]
 		(BEEP is only supported in some browsers, Google Chrome is recommended)
 		Frequency:
@@ -96,7 +96,7 @@ Strings:
 			PRINT STR$(5)+5
 				Prints "55"
 	VAL(str)
-		Opposite of STR$ command, converts a string into a number
+		Opposite of the STR$ command, it converts a string into a number
 	LEFT$(str,len)
 		Returns str trimmed down to len length from the left side
 		Example:
@@ -113,7 +113,7 @@ Strings:
 			PRINT MID$("Hello World",1,6)
 				Prints "ello W"
 	REPLACE$(str,a,b)
-		Returns str with all occurences of string a replaced with string b
+		Returns str with all occurrences of string a replaced with string b
 		a can be a regular expressions
 		b can contain $1,$2,$3,... to match every capturing group in a
 		Surrounding something in parentheses in the regular expression will create a new variable $1
@@ -127,10 +127,10 @@ Strings:
 			PRINT REPLACE$("Hello World","([a-zA-Z]+) ([a-zA-Z]+)","$2 $1")
 				Returns "World Hello"
 	INDEXOF(str,a)
-		Returns the index of the first occurence of string a in str
+		Returns the index of the first occurrence of string a in str
 		Returns -1 if string a was not found in str
 	LASTINDEXOF(str,a)
-		Returns the index of the last occurence of string a in str
+		Returns the index of the last occurrence of string a in str
 		Returns -1 if string a was not found in str
 	CHR$(str)
 		Converts the first character of str into an ASCII Number
@@ -403,4 +403,4 @@ Comments:
 
 Be sure to try out the examples to understand this documentation better.
 
-~ Simeon
+~ SimeonW, 1/15/2015
