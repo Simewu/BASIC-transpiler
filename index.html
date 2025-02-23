@@ -1786,6 +1786,7 @@
                 var dependencies = '';
                 for (var i = 0; i < usedFunctions.length; i++) {
                     var functionCode = window[usedFunctions[i]].toString();
+                    if (functionCode.includes('[native code]')) continue;
                     var minifiedFunctionCode = functionCode.replaceAll('\n', '').replaceAll('\t', '');
                     dependencies += minifiedFunctionCode + '\n';
                 }
